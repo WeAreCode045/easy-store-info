@@ -115,3 +115,6 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 		}
 	}
 }
+
+// Instantiate admin handler so hooks are registered.
+new Easy_Store_Info_Admin();

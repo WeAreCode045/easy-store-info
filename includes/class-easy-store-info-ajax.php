@@ -21,3 +21,7 @@ if ( ! class_exists( 'Easy_Store_Info_Ajax' ) ) {
 		}
 	}
 }
+
+
+// Instantiate ajax handler to register any AJAX endpoints if needed.
+new Easy_Store_Info_Ajax();

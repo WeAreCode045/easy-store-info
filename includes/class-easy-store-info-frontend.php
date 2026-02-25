@@ -37,3 +37,6 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
 	}
 }
 
+// Instantiate frontend handler to register enqueues.
+new Easy_Store_Info_Frontend();
+
