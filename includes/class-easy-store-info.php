@@ -1,53 +1,45 @@
 <?php
 /**
- * Plugin main class file.
- *
- * @package StandaloneTech
+ * Main plugin class for Easy Store Info
  */
-
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+	exit;
 }
 
-/**
- * Main plugin calss
- */
 final class Easy_Store_Info {
 	/**
-	 * The single instance of the class.
+	 * Instance
 	 *
-	 * @var %PLUGIN_SLUG%
-	 * @since 1.0.0
+	 * @var Easy_Store_Info|null
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Main instance
+	 * Get instance
 	 *
-	 * @return class object
+	 * @return Easy_Store_Info
 	 */
 	public static function instance() {
-		if ( is_null( self::$instance ) ) {
+		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
 		return self::$instance;
 	}
 
 	/**
-	 * Class constructor
+	 * Constructor
 	 */
 	public function __construct() {
 		$this->includes();
 		$this->load_plugin_textdomain();
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
-		// AJAX handlers for authenticated users (settings saved from frontend)
 		add_action( 'wp_ajax_esi_save_settings', array( $this, 'ajax_save_settings' ) );
 	}
 
 	/**
-	 * Check request
+	 * Determine request type
 	 *
-	 * @param string $type Type.
+	 * @param string $type
 	 * @return bool
 	 */
 	private function is_request( $type ) {
@@ -65,36 +57,33 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Load plugin files
+	 * Include files
 	 */
 	public function includes() {
 		if ( $this->is_request( 'admin' ) ) {
 			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-admin.php';
 		}
-
 		if ( $this->is_request( 'frontend' ) ) {
 			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-frontend.php';
 		}
-
 		if ( $this->is_request( 'ajax' ) ) {
 			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-ajax.php';
 		}
 	}
 
 	/**
-	 * Text Domain loader
+	 * Load textdomain
 	 */
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'easy-store-info' );
-
 		unload_textdomain( 'easy-store-info' );
 		load_textdomain( 'easy-store-info', WP_LANG_DIR . '/easy-store-info/easy-store-info-' . $locale . '.mo' );
 		load_plugin_textdomain( 'easy-store-info', false, plugin_basename( dirname( EASY_STORE_INFO_PLUGIN_FILE ) ) . '/languages' );
 	}
 
 	/**
-	 * Register the shortcodes used by the plugin
+	 * Register shortcodes
 	 */
 	public function register_shortcodes() {
 		add_shortcode( 'esi_store_hours', array( $this, 'shortcode_store_hours' ) );
@@ -103,7 +92,7 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Shortcode: show opening hours from Google Places
+	 * Shortcode: store hours
 	 */
 	public function shortcode_store_hours( $atts = array() ) {
 		$api_key = get_option( 'esi_google_api_key', '' );
@@ -147,11 +136,10 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Shortcode: media grid (2 rows x 4 cols)
+	 * Shortcode: media grid
 	 */
 	public function shortcode_media_grid( $atts = array() ) {
 		$grid = get_option( 'esi_media_grid', array() );
-		// Ensure 8 slots
 		$grid = array_pad( $grid, 8, 0 );
 		$out = '<div class="esi-media-grid">';
 		foreach ( $grid as $idx => $att_id ) {
@@ -173,64 +161,18 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Shortcode: frontend settings page with login
+	 * Shortcode: link to admin settings
 	 */
-	public function shortcode_settings( $atts = array() ) {
-		if ( ! is_user_logged_in() ) {
-			$args = array( 'redirect' => get_permalink(), 'echo' => false );
-			return '<div class="esi-login-form">' . wp_login_form( $args ) . '</div>';
+	public function shortcode_settings() {
+		if ( current_user_can( 'manage_options' ) ) {
+			$link = admin_url( 'options-general.php?page=easy_store_info' );
+			return '<p>Manage plugin settings in the admin: <a href="' . esc_url( $link ) . '">Store Info Settings</a></p>';
 		}
-		// Enqueue media and scripts/styles
-		wp_enqueue_media();
-		wp_enqueue_script( 'esi-frontend', plugins_url( 'assets/js/frontend.js', EASY_STORE_INFO_PLUGIN_FILE ), array( 'jquery' ), '1.0.0', true );
-		wp_localize_script( 'esi-frontend', 'esiSettings', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce' => wp_create_nonce( 'esi-save-settings' ),
-		) );
-		wp_enqueue_style( 'esi-frontend-style', plugins_url( 'assets/css/frontend.css', EASY_STORE_INFO_PLUGIN_FILE ) );
-
-		$api_key = esc_attr( get_option( 'esi_google_api_key', '' ) );
-		$place_id = esc_attr( get_option( 'esi_place_id', '' ) );
-		$grid = get_option( 'esi_media_grid', array() );
-		$grid = array_pad( $grid, 8, 0 );
-
-		ob_start();
-		?>
-		<div class="esi-settings-wrap">
-			<form id="esi-settings-form">
-				<h3>Google Places</h3>
-				<label>API Key<br/><input type="text" name="esi_google_api_key" value="<?php echo $api_key; ?>"/></label><br/>
-				<label>Place ID<br/><input type="text" name="esi_place_id" value="<?php echo $place_id; ?>"/></label>
-
-				<h3>Media Grid</h3>
-				<div class="esi-media-grid esi-admin-grid">
-					<?php foreach ( $grid as $i => $att_id ) : ?>
-						<div class="esi-media-item" data-index="<?php echo esc_attr( $i ); ?>">
-							<?php if ( $att_id && get_post( $att_id ) ) : $url = wp_get_attachment_url( $att_id ); $mime = get_post_mime_type( $att_id ); ?>
-								<div class="esi-thumb-wrap">
-									<?php echo wp_get_attachment_image( $att_id, 'medium' ); ?>
-								</div>
-								<input type="hidden" name="esi_media_grid[]" value="<?php echo esc_attr( $att_id ); ?>" />
-								<button class="esi-remove-media button" type="button" title="Remove">&times;</button>
-							<?php else: ?>
-								<div class="esi-media-empty"></div>
-								<input type="hidden" name="esi_media_grid[]" value="0" />
-								<button class="esi-add-media button" type="button" title="Add">+</button>
-							<?php endif; ?>
-						</div>
-					<?php endforeach; ?>
-				</div>
-				<p>
-					<button class="button button-primary" type="submit">Save Settings</button>
-				</p>
-			</form>
-		</div>
-		<?php
-		return ob_get_clean();
+		return '<p>Settings are available in the admin area.</p>';
 	}
 
 	/**
-	 * AJAX: save settings
+	 * AJAX save handler (admin only)
 	 */
 	public function ajax_save_settings() {
 		if ( ! is_user_logged_in() ) {
@@ -251,11 +193,6 @@ final class Easy_Store_Info {
 
 	/**
 	 * Load template
-	 *
-	 * @param string $template_name Tempate Name.
-	 * @param array  $args args.
-	 * @param string $template_path Template Path.
-	 * @param string $default_path Default path.
 	 */
 	public function get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
 		if ( $args && is_array( $args ) ) {
@@ -266,12 +203,7 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Locate template file
-	 *
-	 * @param string $template_name template_name.
-	 * @param string $template_path template_path.
-	 * @param string $default_path default_path.
-	 * @return string
+	 * Locate template
 	 */
 	public function locate_template( $template_name, $template_path = '', $default_path = '' ) {
 		$default_path = apply_filters( 'easy-store-info_template_path', $default_path );
@@ -281,16 +213,13 @@ final class Easy_Store_Info {
 		if ( ! $default_path ) {
 			$default_path = EASY_STORE_INFO_ABSPATH . 'templates/';
 		}
-		// Look within passed path within the theme - this is priority.
 		$template = locate_template( array( trailingslashit( $template_path ) . $template_name, $template_name ) );
-		// Add support of third party plugin.
 		$template = apply_filters( 'easy-store-info_locate_template', $template, $template_name, $template_path, $default_path );
-		// Get default template.
 		if ( ! $template ) {
 			$template = $default_path . $template_name;
 		}
 		return $template;
-
+	}
 
 }
 

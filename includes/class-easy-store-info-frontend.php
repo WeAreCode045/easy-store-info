@@ -2,7 +2,7 @@
 /**
  * The frontend-specific functionality of the plugin.
  *
- * @package StandaloneTech
+ * @package Code045
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
