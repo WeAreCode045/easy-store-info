@@ -8,11 +8,11 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
-if ( ! class_exists( 'EASY-STORE-INFO_ADMIN' ) ) {
+if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 	/**
-	 * Plugin EASY-STORE-INFO_ADMIN Class.
+	 * Plugin Easy_Store_Info_Admin Class.
 	 */
-	class EASY-STORE-INFO_ADMIN {
+	class Easy_Store_Info_Admin {
 		/**
 		 * Initialize the class and set its properties.
 		 *
@@ -29,7 +29,7 @@ if ( ! class_exists( 'EASY-STORE-INFO_ADMIN' ) ) {
 		 * @since    1.0.0
 		 */
 		public function enqueue_styles() {
-			wp_enqueue_style( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY-STORE-INFO_PLUGIN_FILE ) ) . '/assets/css/admin.css', array(), '1.0.0', 'all' );
+			wp_enqueue_style( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/css/admin.css', array(), '1.0.0', 'all' );
 		}
 
 		/**
@@ -38,9 +38,9 @@ if ( ! class_exists( 'EASY-STORE-INFO_ADMIN' ) ) {
 		 * @since    1.0.0
 		 */
 		public function enqueue_scripts() {
-			wp_enqueue_script( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY-STORE-INFO_PLUGIN_FILE ) ) . '/assets/js/admin.js', array( 'jquery' ), '1.0.0', false );
+			wp_enqueue_script( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/js/admin.js', array( 'jquery' ), '1.0.0', false );
 		}
 	}
 }
 
-new EASY-STORE-INFO_ADMIN();
+new Easy_Store_Info_Admin();

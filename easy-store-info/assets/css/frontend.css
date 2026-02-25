@@ -2,3 +2,37 @@
  * All of the CSS for your frontend-specific functionality should be
  * included in this file.
  */
+.esi-media-grid{
+	display:flex;
+	flex-wrap:wrap;
+	gap:10px;
+}
+.esi-media-item{
+	width:calc(25% - 7.5px);
+	box-sizing:border-box;
+	border-radius:20px;
+	overflow:hidden;
+	background:#f5f5f5;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	min-height:80px;
+	position:relative;
+}
+.esi-media-item img{
+	width:100%;
+	height:auto;
+	display:block;
+	border-radius:20px;
+}
+.esi-media-empty{
+	width:100%;
+	height:100%;
+}
+.esi-admin-grid .esi-media-item{min-height:100px}
+.esi-admin-grid .button{position:absolute;right:8px;top:8px}
+
+/* Lightbox */
+.esi-lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:99999}
+.esi-lightbox-content{max-width:90%;max-height:90%}
+.esi-lightbox-content img, .esi-lightbox-content video, .esi-lightbox-content audio{max-width:100%;max-height:100%;display:block}

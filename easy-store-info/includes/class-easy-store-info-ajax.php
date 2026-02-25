@@ -8,20 +8,20 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
-if ( ! class_exists( 'EASY-STORE-INFO_AJAX' ) ) {
+if ( ! class_exists( 'Easy_Store_Info_Ajax' ) ) {
 	/**
-	 * Plugin EASY-STORE-INFO_AJAX Class.
+	 * Plugin Easy_Store_Info_Ajax Class.
 	 */
-	class EASY-STORE-INFO_AJAX {
+	class Easy_Store_Info_Ajax {
 		/**
 		 * Initialize the class and set its properties.
 		 *
 		 * @since 1.0.0
 		 */
 		public function __construct() {
-			// Your ajax hooks here.
+			// AJAX endpoints could be registered here if needed for non-auth requests.
 		}
 	}
 }
 
-new EASY-STORE-INFO_AJAX();
+new Easy_Store_Info_Ajax();
