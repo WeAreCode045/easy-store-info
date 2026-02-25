@@ -278,10 +278,19 @@ final class Easy_Store_Info {
 		if ( ! $template_path ) {
 			$template_path = 'easy-store-info';
 		}
-		// Settings page moved to admin. Provide link for users to open admin settings if they have permission.
-		if ( current_user_can( 'manage_options' ) ) {
-			$link = admin_url( 'options-general.php?page=easy_store_info' );
-			return '<p>Manage plugin settings in the admin: <a href="' . esc_url( $link ) . '">Store Info Settings</a></p>';
+		if ( ! $default_path ) {
+			$default_path = EASY_STORE_INFO_ABSPATH . 'templates/';
 		}
-		return '<p>Settings are available in the admin area.</p>';
+		// Look within passed path within the theme - this is priority.
+		$template = locate_template( array( trailingslashit( $template_path ) . $template_name, $template_name ) );
+		// Add support of third party plugin.
 		$template = apply_filters( 'easy-store-info_locate_template', $template, $template_name, $template_path, $default_path );
+		// Get default template.
+		if ( ! $template ) {
+			$template = $default_path . $template_name;
+		}
+		return $template;
+
+
+}
+
