@@ -237,7 +237,7 @@ final class Easy_Store_Info {
 			wp_send_json_error( 'not_logged_in', 403 );
 		}
 		check_ajax_referer( 'esi-save-settings', 'nonce' );
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( 'forbidden', 403 );
 		}
 		$api_key = isset( $_POST['esi_google_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_google_api_key'] ) ) : '';
@@ -278,18 +278,10 @@ final class Easy_Store_Info {
 		if ( ! $template_path ) {
 			$template_path = 'easy-store-info';
 		}
-		if ( ! $default_path ) {
-			$default_path = EASY_STORE_INFO_ABSPATH . 'templates/';
+		// Settings page moved to admin. Provide link for users to open admin settings if they have permission.
+		if ( current_user_can( 'manage_options' ) ) {
+			$link = admin_url( 'options-general.php?page=easy_store_info' );
+			return '<p>Manage plugin settings in the admin: <a href="' . esc_url( $link ) . '">Store Info Settings</a></p>';
 		}
-		// Look within passed path within the theme - this is priority.
-		$template = locate_template( array( trailingslashit( $template_path ) . $template_name, $template_name ) );
-		// Add support of third perty plugin.
+		return '<p>Settings are available in the admin area.</p>';
 		$template = apply_filters( 'easy-store-info_locate_template', $template, $template_name, $template_path, $default_path );
-		// Get default template.
-		if ( ! $template ) {
-			$template = $default_path . $template_name;
-		}
-		return $template;
-	}
-
-}

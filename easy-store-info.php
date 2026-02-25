@@ -5,7 +5,7 @@
  * Description:easy-store-info Plugin.
  * Author: Code045
  * Author URI: https://code045.nl/
- * Version: 1.0.0
+ * Version: 1.0.2
  * Requires at least: 6.0
  * Tested up to: 6.7
  *
@@ -46,7 +46,7 @@ if ( ! function_exists( 'easy_store_info' ) ) {
 	}
 }
 
-easy_store_info();
+add_action( 'plugins_loaded', 'easy_store_info' );
 
 /**
  * Plugin activation: create role for frontend settings users.
