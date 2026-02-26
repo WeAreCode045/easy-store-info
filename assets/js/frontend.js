@@ -3,6 +3,31 @@
  * included in this file.
  */
 jQuery(function ($) {
+    // Ensure mobile grids show 2 columns and an even number of items
+    function adjustMobileGrids() {
+        try {
+            var isMobile = window.matchMedia('(max-width:600px)').matches;
+            $('.esi-media-grid').each(function () {
+                var $grid = $(this);
+                var $items = $grid.find('.esi-media-item');
+                $items.removeClass('esi-hidden-mobile');
+                if (isMobile) {
+                    if ($items.length % 2 === 1) {
+                        $($items.get($items.length - 1)).addClass('esi-hidden-mobile');
+                    }
+                }
+            });
+        } catch (e) { /* ignore */ }
+    }
+
+    var resizeTimer;
+    $(window).on('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(adjustMobileGrids, 150);
+    });
+    // run on init
+    adjustMobileGrids();
+
     // Slider lightbox handler (supports previous/next)
     $(document).on('click', '.esi-lightbox', function (e) {
         e.preventDefault();
