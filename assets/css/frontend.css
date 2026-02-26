@@ -41,7 +41,7 @@
 .esi-opening-hours ul{list-style:none;margin:0;padding:0;font-size:var(--esi-font-size,14px);font-weight:var(--esi-font-weight,400)}
 .esi-opening-hours li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;color:var(--esi-open-color,inherit)}
 .esi-opening-hours li{position:relative}
-.esi-opening-hours li:not(:last-child)::after{content:"";position:absolute;left:0;right:0;height:0;border-top:var(--esi-row-sep-weight,1px) var(--esi-row-sep-style,solid) var(--esi-row-sep-color,rgba(229,229,229,1));bottom:calc(-1 * var(--esi-row-sep-gap,8px) / 2);pointer-events:none}
+.esi-opening-hours li:not(:last-child)::after{content:"";position:absolute;left:0;right:0;height:0;bottom:calc(-1 * var(--esi-row-sep-gap,8px) / 2);pointer-events:none;z-index:2;border-top-width:var(--esi-row-sep-weight,1px);border-top-style:var(--esi-row-sep-style,solid);border-top-color:var(--esi-row-sep-color,rgba(229,229,229,1));}
 .esi-opening-hours li:nth-child(odd){background:var(--esi-bg-odd,rgba(255,255,255,1));color:var(--esi-text-odd,var(--esi-open-color,inherit))}
 .esi-opening-hours li:nth-child(even){background:var(--esi-bg-even,rgba(247,247,247,1));color:var(--esi-text-even,var(--esi-open-color,inherit))}
 .esi-opening-hours .esi-day{flex:1;text-align:var(--esi-day-align,left)}
@@ -49,4 +49,4 @@
 .esi-opening-hours .esi-closed{color:var(--esi-closed-color,rgba(153,153,153,1))}
 
 /* Status line above the hours */
-.esi-open-state{margin:0 0 8px;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.03);font-size:0.95rem;color:var(--esi-text-odd,inherit)}
+.esi-open-state{margin:0 0 8px;padding:0;border-radius:0;background:transparent;color:var(--esi-text-odd,inherit);font-size:var(--esi-font-size,14px);font-weight:var(--esi-font-weight,400)}
