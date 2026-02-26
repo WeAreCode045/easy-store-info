@@ -38,7 +38,7 @@ jQuery(function ($) {
                         var attachment = frame.state().get('selection').first().toJSON();
                         $item.find('input[type=hidden]').val(attachment.id);
                         var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                        $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img src="' + img + '" /></div>');
+                        $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
                         $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
                     });
                     frame.open();
@@ -49,7 +49,7 @@ jQuery(function ($) {
                     var attachment = frame.state().get('selection').first().toJSON();
                     $item.find('input[type=hidden]').val(attachment.id);
                     var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                    $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img src="' + img + '" /></div>');
+                    $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
                     $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
                 });
                 frame.open();
@@ -60,7 +60,7 @@ jQuery(function ($) {
             var $btn = $(this);
             var $item = $btn.closest('.esi-media-item');
             $item.find('input[type=hidden]').val(0);
-            $item.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
+                $item.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
             $btn.replaceWith('<button class="esi-add-media button" type="button">+</button>');
         });
 
