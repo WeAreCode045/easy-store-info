@@ -600,9 +600,11 @@ final class Easy_Store_Info {
 			$out .= '<aside class="esi-editor-sidebar">';
 			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
 			$out .= '<div class="esi-dropzone-placeholder"></div>';
+			$out .= '<div class="esi-sidebar-actions">';
+			$out .= '<button class="button button-primary esi-save-button" type="submit">Save Grid</button>';
+			$out .= '</div>';
 			$out .= '</aside>';
 			$out .= '</div>'; // .esi-editor-panel
-			$out .= '<p class="submit"><button class="button button-primary" type="submit">Save Grid</button></p>';
 			$out .= '</form></div>';
 			return $out;
 		}
