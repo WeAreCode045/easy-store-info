@@ -280,7 +280,7 @@ final class Easy_Store_Info {
 	 * @param int $opacity_percent 0-100
 	 * @return string
 	 */
-	private function hex_to_rgba( $hex, $opacity_percent = 100 ) {
+	public function hex_to_rgba( $hex, $opacity_percent = 100 ) {
 		$hex = ltrim( $hex, '#' );
 		if ( strlen( $hex ) === 3 ) {
 			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
