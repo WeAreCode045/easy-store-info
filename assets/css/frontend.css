@@ -60,11 +60,17 @@
 .esi-editor-instructions{font-size:13px;color:#444;margin:0 0 8px;padding:8px 12px;background:rgba(255,255,255,0.9);border-radius:8px;border:1px solid rgba(0,0,0,0.04)}
 
 /* Editor two-column layout */
-.esi-editor-panel{display:flex;gap:20px;margin:16px 0}
-.esi-editor-left{flex:1}
-.esi-editor-sidebar{flex:0 0 320px}
-.esi-settings-wrap{margin:18px}
+.esi-settings-wrap{margin:18px auto;max-width:80%}
+.esi-editor-panel{display:flex;gap:20px;margin:16px 0;flex-wrap:nowrap;align-items:flex-start}
+.esi-editor-left{flex:0 0 70%}
+.esi-editor-sidebar{flex:0 0 30%;min-width:220px}
 .esi-dropzone-placeholder{padding:6px}
+
+@media (max-width:900px){
+	.esi-settings-wrap{max-width:100%;padding:0 12px}
+	.esi-editor-panel{flex-direction:column}
+	.esi-editor-left,.esi-editor-sidebar{flex:1 1 auto;min-width:0}
+}
 
 /* Bulk upload dropzone */
 .esi-dropzone{border:2px dashed rgba(0,0,0,0.08);border-radius:8px;padding:14px;margin-bottom:12px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,250,0.4));display:flex;align-items:center;justify-content:center;gap:12px;color:#666}
