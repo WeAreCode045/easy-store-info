@@ -38,7 +38,9 @@ jQuery(function ($) {
                         var attachment = frame.state().get('selection').first().toJSON();
                         $item.find('input[type=hidden]').val(attachment.id);
                         var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                        $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
+                        var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
+                        $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                        $item.find('.esi-media-empty').replaceWith($thumb);
                         $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
                     });
                     frame.open();
@@ -49,7 +51,9 @@ jQuery(function ($) {
                     var attachment = frame.state().get('selection').first().toJSON();
                     $item.find('input[type=hidden]').val(attachment.id);
                     var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                    $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
+                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
+                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                    $item.find('.esi-media-empty').replaceWith($thumb);
                     $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
                 });
                 frame.open();
