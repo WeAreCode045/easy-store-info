@@ -89,6 +89,12 @@
 .esi-upload-error{color:#ffd2d2;background:rgba(0,0,0,0.6);padding:6px 8px;border-radius:6px;font-size:13px}
 .esi-media-item.selected{outline:3px solid rgba(11,102,178,0.12)}
 
+/* Icon buttons for add/remove */
+.esi-add-media, .esi-remove-media{width:36px;height:36px;border-radius:6px;border:0;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;padding:0;box-shadow:0 1px 2px rgba(0,0,0,0.06)}
+.esi-add-media svg, .esi-remove-media svg{width:18px;height:18px;display:block}
+.esi-remove-media{background:rgba(255,255,255,0.9)}
+.esi-add-media:hover, .esi-remove-media:hover{transform:translateY(-1px)}
+
 /* Drag & drop feedback for media grid editor */
 .esi-media-item.drag-over{outline:2px dashed rgba(0,0,0,0.16);}
 .esi-media-item.dragging{opacity:0.6}
