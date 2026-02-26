@@ -106,6 +106,21 @@
 .esi-remove-media{background:rgba(255,255,255,0.9)}
 .esi-add-media:hover, .esi-remove-media:hover{transform:translateY(-1px)}
 
+/* Ensure anchor-wrapped thumbnails fill the grid cell and use cover */
+.esi-media-item > a.esi-lightbox,
+.esi-media-item a.esi-lightbox{
+	display:block;
+	width:100%;
+	height:100%;
+}
+.esi-media-item a.esi-lightbox .esi-thumb,
+.esi-media-item .esi-thumb{
+	width:100% !important;
+	height:100% !important;
+	object-fit:cover !important;
+	display:block !important;
+}
+
 /* Drag & drop feedback for media grid editor */
 .esi-media-item.drag-over{outline:2px dashed rgba(0,0,0,0.16);}
 .esi-media-item.dragging{opacity:0.6}
