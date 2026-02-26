@@ -2,6 +2,11 @@
 // This file was created to match requested structure: assets/js/editor.js
 
 jQuery(function ($) {
+    // Only initialize editor bindings when frontend editor wrapper is present
+    if ($('.esi-frontend-editor').length === 0) {
+        return;
+    }
+
     // Settings page: media modal and save
     var frame;
     var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="Add image">' +
@@ -80,9 +85,9 @@ jQuery(function ($) {
             var $target = $(this);
             $target.removeClass('drag-over');
             var $dragging = $(dragSrcEl);
-                if ($dragging.length && $dragging[0] !== $target[0]) {
-                if ($target.index() > $dragging.index()) { $target.after($dragging); }
-                else { $target.before($dragging); }
+            if ($dragging.length && $dragging[0] !== $target[0]) {
+                // Instead of moving DOM nodes, swap the media content between cells
+                swapMediaItems($dragging, $target);
                 persistGridOrder();
             }
             return false;
@@ -123,8 +128,7 @@ jQuery(function ($) {
             var $dragging = $(dragSrcEl);
             $('.esi-media-item').removeClass('drag-over');
             if ($targetItem.length && $dragging.length && $targetItem.get(0) !== $dragging.get(0)) {
-                if ($targetItem.index() > $dragging.index()) { $targetItem.after($dragging); }
-                else { $targetItem.before($dragging); }
+                swapMediaItems($dragging, $targetItem);
                 debouncedPersist();
             }
             if (dragSrcEl) $(dragSrcEl).removeClass('dragging');
@@ -297,6 +301,51 @@ jQuery(function ($) {
             });
         }
         return $.Deferred().resolve();
+    }
+
+    // Swap media content between two grid items (hidden value, thumbnail and buttons)
+    function swapMediaItems($a, $b) {
+        try {
+            var aVal = parseInt($a.find('input[type=hidden]').val() || 0, 10) || 0;
+            var bVal = parseInt($b.find('input[type=hidden]').val() || 0, 10) || 0;
+            // attempt to read src from existing thumb if present
+            var aSrc = $a.find('.esi-thumb-wrap img').attr('src') || '';
+            var bSrc = $b.find('.esi-thumb-wrap img').attr('src') || '';
+
+            // helper to apply a value to an item
+            var apply = function ($it, val, src) {
+                $it.find('input[type=hidden]').val(val);
+                if (val && val !== 0) {
+                    var $thumb = $it.find('.esi-thumb-wrap');
+                    if (!$thumb.length) {
+                        $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + (src || '') + '" /></div>');
+                        $it.find('.esi-media-empty').replaceWith($thumb);
+                    } else {
+                        $thumb.html('<img class="esi-thumb" src="' + (src || '') + '" />');
+                    }
+                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                    // ensure remove button exists
+                    if ($it.find('.esi-remove-media').length === 0) {
+                        $it.find('.esi-add-media').replaceWith(removeBtnHtml);
+                    }
+                } else {
+                    // empty state
+                    if ($it.find('.esi-thumb-wrap').length) {
+                        $it.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
+                    }
+                    if ($it.find('.esi-add-media').length === 0) {
+                        $it.find('.esi-remove-media').replaceWith(addBtnHtml);
+                    }
+                }
+            };
+
+            // apply swapped values
+            apply($a, bVal, bSrc);
+            apply($b, aVal, aSrc);
+        } catch (err) {
+            // fallback: move DOM nodes if swap fails
+            try { $b.after($a); } catch (e) {}
+        }
     }
 
     function debounce(fn, wait) {
