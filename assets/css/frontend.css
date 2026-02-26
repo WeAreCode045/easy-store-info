@@ -45,8 +45,10 @@
 .esi-admin-grid .button{position:absolute;right:8px;top:8px}
 
 /* Lightbox */
-.esi-lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:99999}
-.esi-lightbox-wrap{position:relative;max-width:90%;max-height:90%;width:90%;display:flex;align-items:center;justify-content:center}
+.esi-lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;z-index:99999}
+.esi-lightbox-wrap{position:relative;max-width:1100px;max-height:80vh;width:100%;display:flex;align-items:center;justify-content:center}
+.esi-lb-thumbs{order:2;width:100%;max-width:1100px}
+.esi-lightbox-wrap{order:1}
 .esi-lightbox-content{flex:1;display:flex;align-items:center;justify-content:center}
 .esi-lb-media{max-width:100%;max-height:100%;display:block;object-fit:contain}
 .esi-lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);color:#fff;border:0;padding:12px 16px;font-size:28px;cursor:pointer;border-radius:6px;z-index:100000}
