@@ -13,12 +13,6 @@ jQuery(function ($) {
         // Build items array and capture thumbnail src if present in DOM
         var items = $all.map(function () {
             var $el = $(this);
-        var items = $all.map(function () {
-            return {
-                href: $(this).attr('href'),
-                mime: $(this).data('mime') || ''
-            };
-        }).get();
             var href = $el.attr('href');
             var mime = $el.data('mime') || '';
             var thumb = '';
@@ -28,7 +22,6 @@ jQuery(function ($) {
             } else {
                 var $vid = $el.find('video.esi-thumb');
                 if ($vid.length) {
-                    // prefer poster attribute if present
                     thumb = $vid.attr('poster') || $vid.attr('src') || '';
                 }
             }
@@ -84,9 +77,9 @@ jQuery(function ($) {
                 $new.removeClass('enter-from-right enter-from-left').addClass('enter-to-center');
             }
             idx = i;
-            // thumbs
-            $thumbs.find('img').removeClass('active');
-            $thumbs.find('img[data-index="' + idx + '"]').addClass('active');
+            // thumbs: clear active state for any thumb element and mark the one with matching data-index
+            $thumbs.find('[data-index]').removeClass('active');
+            $thumbs.find('[data-index="' + idx + '"]').addClass('active');
             // ensure active thumb visible
             var $active = $thumbs.find('img.active');
             if ($active.length) {
@@ -98,13 +91,22 @@ jQuery(function ($) {
         // build thumbs
         items.forEach(function (it, i) {
             var $t;
+            var isVideoThumb = false;
             if (it.thumb) {
-                $t = $('<img class="esi-lb-thumb" data-index="' + i + '" src="' + it.thumb + '" />');
+                // if thumb URL points to a video file, treat as video
+                if (it.thumb.match(/\.(mp4|webm|mov)(\?.*)?$/i) || (it.mime && it.mime.indexOf('video') === 0)) {
+                    isVideoThumb = true;
+                }
             } else if (it.mime && it.mime.indexOf('video') === 0) {
-                // show video element as thumb when no poster available
-                $t = $('<video class="esi-lb-thumb" data-index="' + i + '" muted preload="metadata" src="' + it.href + '"></video>');
+                isVideoThumb = true;
+            }
+
+            if (isVideoThumb) {
+                var src = it.thumb || it.href;
+                $t = $('<video class="esi-lb-thumb" data-index="' + i + '" muted preload="metadata" src="' + src + '"></video>');
             } else {
-                $t = $('<img class="esi-lb-thumb" data-index="' + i + '" src="' + it.href + '" />');
+                var srcImg = it.thumb || it.href;
+                $t = $('<img class="esi-lb-thumb" data-index="' + i + '" src="' + srcImg + '" />');
             }
             if (i === idx) $t.addClass('active');
             $thumbs.append($t);
