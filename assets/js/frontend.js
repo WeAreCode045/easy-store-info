@@ -267,11 +267,11 @@ jQuery(function ($) {
         // init drag sort on load
         initMediaDragSort();
 
-        // Insert dropzone into editor wrapper (bulk upload)
-        var $editorWrap = $('.esi-editor-wrapper');
-        if ($editorWrap.length) {
+        // Insert dropzone into editor sidebar placeholder (bulk upload)
+        var $dzPlaceholder = $('.esi-dropzone-placeholder');
+        if ($dzPlaceholder.length) {
             var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
-            $editorWrap.prepend($dz);
+            $dzPlaceholder.append($dz);
 
             // Click to open file picker
             $dz.on('click', function () {
@@ -289,66 +289,140 @@ jQuery(function ($) {
                 handleFiles(dt.files);
             });
         }
+        // selected slot for targeted insertion
+        var $selectedSlot = null;
+
+        // click to select slot (only in editor)
+        $(document).on('click', '.esi-media-item', function (e) {
+            // ignore clicks on buttons/inputs
+            if ($(e.target).is('button') || $(e.target).is('input') || $(e.target).closest('button').length) return;
+            $('.esi-media-item').removeClass('selected');
+            $selectedSlot = $(this);
+            $selectedSlot.addClass('selected');
+        });
 
         // Handle file list and upload via WP REST API
         function handleFiles(fileList) {
             if (!fileList || !fileList.length) return;
             var files = Array.prototype.slice.call(fileList);
-            var emptyInputs = $('.esi-media-item').find('input[type=hidden]').filter(function () { return !this.value || this.value === '0'; });
-            if (emptyInputs.length === 0) {
-                alert('Keine freien Slots verfügbar. Leeren Sie einen Slot oder ändern Sie das Grid-Layout.');
-                return;
+
+            // Build list of target slots: if selectedSlot set, start there; otherwise use empties
+            var $targets = $();
+            if ($selectedSlot && $selectedSlot.length) {
+                // start from selected index and go forward
+                var startIdx = $selectedSlot.index();
+                var $allItems = $('.esi-media-item');
+                for (var s = startIdx; s < $allItems.length; s++) { $targets = $targets.add($($allItems.get(s))); }
+                // then wrap around to earlier items
+                for (var s2 = 0; s2 < startIdx; s2++) { $targets = $targets.add($($allItems.get(s2))); }
+            } else {
+                // use empty slots first
+                $targets = $('.esi-media-item').filter(function () { var v = $(this).find('input[type=hidden]').val(); return !v || v === '0'; });
             }
-            var maxUploads = Math.min(files.length, emptyInputs.length);
+
+            // If targets fewer than files, we'll auto-expand by adding new slots
+            if (files.length > $targets.length) {
+                var need = files.length - $targets.length;
+                for (var a = 0; a < need; a++) { $targets = $targets.add(createEmptySlot()); }
+            }
+
             $dz.addClass('uploading');
-            var uploadCount = 0;
-            files.slice(0, maxUploads).forEach(function (file, i) {
-                // only images
-                if (!file.type.match('image.*')) { return; }
-                uploadFile(file).done(function (res) {
-                    // res should be attachment object
+            var uploadIdx = 0;
+            // sequential uploads to map files -> targets
+            function nextUpload() {
+                if (uploadIdx >= files.length) { $dz.removeClass('uploading'); return; }
+                var file = files[uploadIdx];
+                if (!file.type.match('image.*')) { uploadIdx++; nextUpload(); return; }
+                var $target = $($targets.get(uploadIdx));
+                if (!$target || !$target.length) { uploadIdx++; nextUpload(); return; }
+                // create overlay UI
+                var $overlay = $("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
+                $target.append($overlay);
+
+                uploadFile(file, function (pct) {
+                    $overlay.find('.esi-upload-percent').text(Math.round(pct) + '%');
+                    $overlay.find('.esi-upload-progress > i').css('width', Math.round(pct) + '%');
+                }).done(function (res) {
                     var attId = res.id || 0;
                     var src = res.source_url || res.source_url || '';
-                    if (!attId || !src) return;
-                    // assign to next empty slot
-                    var $input = $(emptyInputs.get(uploadCount));
-                    var $item = $input.closest('.esi-media-item');
-                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
-                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
-                    $item.find('.esi-media-empty').replaceWith($thumb);
-                    $input.val(attId);
-                    // replace add button with remove if present
-                    var $btn = $item.find('.esi-add-media');
-                    if ($btn.length) { $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>'); }
-                    uploadCount++;
-                    // save state after each successful upload (debounced behavior already applied elsewhere)
-                    debouncedPersist();
-                }).fail(function () {
-                    // ignore single failure
+                    if (attId && src) {
+                        var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
+                        $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                        $target.find('.esi-media-empty').replaceWith($thumb);
+                        $target.find('input[type=hidden]').val(attId);
+                        var $btn = $target.find('.esi-add-media');
+                        if ($btn.length) { $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>'); }
+                        $overlay.remove();
+                        debouncedPersist();
+                    } else {
+                        showUploadError($overlay, 'Upload failed');
+                    }
+                }).fail(function (xhr, status, err) {
+                    showUploadError($overlay, 'Upload error');
                 }).always(function () {
-                    if (--maxUploads <= 0) { $dz.removeClass('uploading'); }
+                    uploadIdx++; nextUpload();
                 });
+            }
+            nextUpload();
+        }
+
+        function showUploadError($overlay, msg) {
+            $overlay.empty();
+            var $err = $("<div class='esi-upload-error'></div>").text(msg);
+            var $retry = $("<button class='button' type='button'>Retry</button>");
+            $retry.on('click', function () {
+                var $parent = $overlay.closest('.esi-media-item');
+                // attempt to re-upload by simulating file selection (user must retry via dropzone)
+                $overlay.remove();
+                alert('Please try re-uploading by dropping the file again or using the dropzone.');
             });
+            $overlay.append($err).append($retry);
+        }
+
+        function createEmptySlot() {
+            var $grid = $('.esi-media-grid');
+            var idx = $grid.find('.esi-media-item').length;
+            var $item = $("<div class='esi-media-item' data-index='" + idx + "'>");
+            $item.append('<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>');
+            $item.append('<div class="esi-media-empty"></div>');
+            $item.append('<input type="hidden" name="esi_media_grid[]" value="0" />');
+            $item.append('<button class="esi-add-media button" type="button">+</button>');
+            $grid.append($item);
+            // re-init drag handles
+            initMediaDragSort();
+            return $item;
         }
 
         // Upload file to WP media via REST API
-        function uploadFile(file) {
+            // Upload file to WP media via REST API with progress callback
+            function uploadFile(file, onProgress) {
             var url = window.location.origin + '/wp-json/wp/v2/media';
             var fd = new FormData();
             fd.append('file', file, file.name);
-            // jQuery deferred
-            return $.ajax({
-                url: url,
-                method: 'POST',
-                data: fd,
-                processData: false,
-                contentType: false,
-                beforeSend: function (xhr) {
-                    if (typeof esiSettings !== 'undefined' && esiSettings.rest_nonce) {
-                        xhr.setRequestHeader('X-WP-Nonce', esiSettings.rest_nonce);
+                return $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    xhr: function () {
+                        var xhr = $.ajaxSettings.xhr();
+                        if (xhr.upload && typeof onProgress === 'function') {
+                            xhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    var pct = (e.loaded / e.total) * 100;
+                                    onProgress(pct);
+                                }
+                            }, false);
+                        }
+                        return xhr;
+                    },
+                    beforeSend: function (xhr) {
+                        if (typeof esiSettings !== 'undefined' && esiSettings.rest_nonce) {
+                            xhr.setRequestHeader('X-WP-Nonce', esiSettings.rest_nonce);
+                        }
                     }
-                }
-            });
+                });
         }
 
         // Persist current grid order via AJAX (auto-save)

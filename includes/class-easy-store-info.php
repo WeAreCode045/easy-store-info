@@ -573,9 +573,9 @@ final class Easy_Store_Info {
 			$slots = max( 1, $rows * $cols );
 			$grid = array_pad( $grid, $slots, 0 );
 			$out = '<div class="esi-settings-wrap"><form id="esi-settings-form">';
-			$out .= '<div class="esi-editor-wrapper">';
-			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
-			$out .= '</div>';
+			// two-column editor: left = grid, right = sidebar with instructions and dropzone
+			$out .= '<div class="esi-editor-panel">';
+			$out .= '<div class="esi-editor-left">';
 			$out .= '<div class="esi-media-grid esi-admin-grid esi-grid-' . esc_attr( $layout ) . '">';
 			foreach ( $grid as $i => $att_id ) {
 				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
@@ -594,7 +594,13 @@ final class Easy_Store_Info {
 				}
 				$out .= '</div>';
 			}
-			$out .= '</div>';
+			$out .= '</div>'; // .esi-editor-left
+			// sidebar
+			$out .= '<aside class="esi-editor-sidebar">';
+			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
+			$out .= '<div class="esi-dropzone-placeholder"></div>';
+			$out .= '</aside>';
+			$out .= '</div>'; // .esi-editor-panel
 			$out .= '<p class="submit"><button class="button button-primary" type="submit">Save Grid</button></p>';
 			$out .= '</form></div>';
 			return $out;
