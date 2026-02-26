@@ -74,6 +74,13 @@ jQuery(function ($) {
         
         var textOddRgba = hexToRgba(textOdd, textOddOp);
         var textEvenRgba = hexToRgba(textEven, textEvenOp);
+        var stateBg = $('#esi_style_state_bg').val() || '#000000';
+        var stateBgOp = parseInt($('#esi_style_state_bg_opacity').val() || 0, 10);
+        var stateFontSize = parseInt($('#esi_style_state_font_size').val() || 14, 10);
+        var stateAlign = $('#esi_style_state_align').val() || 'left';
+        var statePadding = parseInt($('#esi_style_state_padding').val() || 0, 10);
+
+        var stateBgRgba = hexToRgba(stateBg, stateBgOp);
 
         // set CSS variables on preview element
         var el = $preview.get(0);
@@ -89,6 +96,10 @@ jQuery(function ($) {
             el.style.setProperty('--esi-row-sep-style', rowSepStyle);
             el.style.setProperty('--esi-text-odd', textOddRgba);
             el.style.setProperty('--esi-text-even', textEvenRgba);
+            el.style.setProperty('--esi-state-bg', stateBgRgba);
+            el.style.setProperty('--esi-state-font-size', stateFontSize + 'px');
+            el.style.setProperty('--esi-state-align', stateAlign);
+            el.style.setProperty('--esi-state-padding', statePadding + 'px');
         } catch (e) {
             // ignore
         }
@@ -99,6 +110,7 @@ jQuery(function ($) {
         $('#esi_style_row_sep_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', rowSepRgba);
         $('#esi_style_text_odd_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', textOddRgba);
         $('#esi_style_text_even_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', textEvenRgba);
+        $('#esi_style_state_bg').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', stateBgRgba);
     }
 
     // Bind change listeners for live updates

@@ -335,6 +335,12 @@ final class Easy_Store_Info {
 		$bg_odd_op = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
 		$bg_even = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
 		$bg_even_op = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
+		// state / status line styles
+		$state_bg = esc_attr( get_option( 'esi_style_state_bg', '#000000' ) );
+		$state_bg_op = intval( get_option( 'esi_style_state_bg_opacity', 0 ) );
+		$state_font_size = intval( get_option( 'esi_style_state_font_size', get_option( 'esi_style_font_size', 14 ) ) );
+		$state_align = esc_attr( get_option( 'esi_style_state_align', 'left' ) );
+		$state_padding = intval( get_option( 'esi_style_state_padding', 0 ) );
 		$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 		$row_sep_op = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 		$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
@@ -348,9 +354,10 @@ final class Easy_Store_Info {
 		$row_sep_rgba = $this->hex_to_rgba( $row_sep_color, $row_sep_op );
 		$text_odd_rgba = $this->hex_to_rgba( $text_odd, $text_odd_op );
 		$text_even_rgba = $this->hex_to_rgba( $text_even, $text_even_op );
+		$state_bg_rgba = $this->hex_to_rgba( $state_bg, $state_bg_op );
 
 		$style_attr = sprintf(
-			'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s',
+			'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-state-bg:%s;--esi-state-font-size:%spx;--esi-state-align:%s;--esi-state-padding:%spx',
 			$font_size,
 			$font_weight,
 			$day_align,
@@ -361,7 +368,12 @@ final class Easy_Store_Info {
 			$text_even_rgba,
 			$row_sep_rgba,
 			$row_sep_weight,
-			esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) )
+			esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) ),
+			// state styles
+			$state_bg_rgba,
+			$state_font_size,
+			$state_align,
+			$state_padding
 		);
 		$out = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '">' . $state_html . '<ul>';
 		foreach ( $order as $day_index ) {
@@ -612,6 +624,12 @@ final class Easy_Store_Info {
 			$style_text_odd_op = isset( $_POST['esi_style_text_odd_opacity'] ) ? intval( $_POST['esi_style_text_odd_opacity'] ) : intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
 			$style_text_even = isset( $_POST['esi_style_text_even_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_text_even_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_text_even_color', '#222222' ) );
 			$style_text_even_op = isset( $_POST['esi_style_text_even_opacity'] ) ? intval( $_POST['esi_style_text_even_opacity'] ) : intval( get_option( 'esi_style_text_even_opacity', 100 ) );
+			// state / status line inputs
+			$style_state_bg = isset( $_POST['esi_style_state_bg'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_state_bg'] ) ) : sanitize_hex_color( get_option( 'esi_style_state_bg', '#000000' ) );
+			$style_state_bg_op = isset( $_POST['esi_style_state_bg_opacity'] ) ? intval( $_POST['esi_style_state_bg_opacity'] ) : intval( get_option( 'esi_style_state_bg_opacity', 0 ) );
+			$style_state_font_size = isset( $_POST['esi_style_state_font_size'] ) ? intval( $_POST['esi_style_state_font_size'] ) : intval( get_option( 'esi_style_state_font_size', get_option( 'esi_style_font_size', 14 ) ) );
+			$style_state_align = isset( $_POST['esi_style_state_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_state_align'] ) ) : sanitize_text_field( get_option( 'esi_style_state_align', 'left' ) );
+			$style_state_padding = isset( $_POST['esi_style_state_padding'] ) ? intval( $_POST['esi_style_state_padding'] ) : intval( get_option( 'esi_style_state_padding', 0 ) );
 			update_option( 'esi_google_api_key', $api_key );
 			update_option( 'esi_place_id', $place_id );
 			update_option( 'esi_media_grid', $grid );
@@ -632,6 +650,12 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_text_odd_opacity', $style_text_odd_op );
 			update_option( 'esi_style_text_even_color', $style_text_even );
 			update_option( 'esi_style_text_even_opacity', $style_text_even_op );
+			// persist state options
+			update_option( 'esi_style_state_bg', $style_state_bg );
+			update_option( 'esi_style_state_bg_opacity', $style_state_bg_op );
+			update_option( 'esi_style_state_font_size', $style_state_font_size );
+			update_option( 'esi_style_state_align', $style_state_align );
+			update_option( 'esi_style_state_padding', $style_state_padding );
 		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
 			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();

@@ -90,6 +90,12 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$text_even_op_val = intval( get_option( 'esi_style_text_even_opacity', 100 ) );
 			$row_sep_val = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 			$row_sep_op_val = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
+			// state text styling
+			$state_bg_val = esc_attr( get_option( 'esi_style_state_bg', '#000000' ) );
+			$state_bg_op_val = intval( get_option( 'esi_style_state_bg_opacity', 0 ) );
+			$state_font_size = intval( get_option( 'esi_style_state_font_size', get_option( 'esi_style_font_size', 14 ) ) );
+			$state_align = esc_attr( get_option( 'esi_style_state_align', 'left' ) );
+			$state_padding = intval( get_option( 'esi_style_state_padding', 0 ) );
 			$bg_odd_swatch = $bg_even_swatch = $row_sep_swatch = 'rgba(0,0,0,1)';
 			if ( class_exists( 'Easy_Store_Info' ) ) {
 				$main = Easy_Store_Info::instance();
@@ -99,6 +105,7 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 					$text_odd_swatch = $main->hex_to_rgba( $text_odd_val, $text_odd_op_val );
 					$text_even_swatch = $main->hex_to_rgba( $text_even_val, $text_even_op_val );
 					$row_sep_swatch = $main->hex_to_rgba( $row_sep_val, $row_sep_op_val );
+					$state_bg_swatch = $main->hex_to_rgba( $state_bg_val, $state_bg_op_val );
 				}
 			}
 			// Try to fetch opening hours for display if API key/place ID present
@@ -160,7 +167,7 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 					}
 
 					$style_attr = sprintf(
-						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s',
+						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-state-bg:%s;--esi-state-font-size:%spx;--esi-state-align:%s;--esi-state-padding:%spx',
 						$font_size,
 						$font_weight,
 						$day_align,
@@ -172,7 +179,12 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						$text_even_rgba,
 						$row_sep_rgba,
 						$row_sep_weight,
-						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) )
+						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) ),
+						// state styles
+						isset( $state_bg_swatch ) ? $state_bg_swatch : 'rgba(0,0,0,0)',
+						$state_font_size,
+						$state_align,
+						$state_padding
 					);
 
 					$opening_hours_html = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '"><ul>';
@@ -313,6 +325,35 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 									<option value="none" <?php selected( $rss, 'none' ); ?>>None</option>
 								</select>
 							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_state_bg">Status line background</label></th>
+							<td>
+								<div class="esi-alpha-picker">
+									<input name="esi_style_state_bg" id="esi_style_state_bg" class="esi-alpha-color" type="color" value="<?php echo $state_bg_val; ?>" />
+									<input name="esi_style_state_bg_opacity" id="esi_style_state_bg_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_state_bg_opacity', 0 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_state_bg_opacity', 0 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $state_bg_swatch ); ?>"></span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_state_font_size">Status font size (px)</label></th>
+							<td><input name="esi_style_state_font_size" id="esi_style_state_font_size" type="number" min="8" max="72" value="<?php echo esc_attr( $state_font_size ); ?>" class="small-text"/> px</td>
+						</tr>
+						<tr>
+							<th scope="row">Status alignment</th>
+							<td>
+								<select name="esi_style_state_align" id="esi_style_state_align">
+									<option value="left" <?php selected( $state_align, 'left' ); ?>>Left</option>
+									<option value="center" <?php selected( $state_align, 'center' ); ?>>Center</option>
+									<option value="right" <?php selected( $state_align, 'right' ); ?>>Right</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_state_padding">Status padding (px)</label></th>
+							<td><input name="esi_style_state_padding" id="esi_style_state_padding" type="number" min="0" max="40" value="<?php echo esc_attr( $state_padding ); ?>" class="small-text"/> px</td>
 						</tr>
                         
 								</table>
