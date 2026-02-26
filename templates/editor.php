@@ -6,19 +6,9 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-// If user is not logged in, show a simple login component and stop rendering the editor
+// Redirect guests to the WP login page when accessing the frontend editor
 if ( ! is_user_logged_in() ) {
-    $redirect = esc_url( ( ! empty( $_SERVER['REQUEST_URI'] ) ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : home_url() );
-    $login_url = esc_url( wp_login_url( $redirect ) );
-    ?>
-    <div class="esi-settings-wrap esi-frontend-editor esi-editor-login-wrap">
-        <div class="esi-editor-login">
-            <p class="esi-editor-login-message">Bitte melden Sie sich an, um den Editor zu verwenden.</p>
-            <a class="button button-primary esi-editor-login-button" href="<?php echo $login_url; ?>">Anmelden</a>
-        </div>
-    </div>
-    <?php
-    return;
+    auth_redirect();
 }
 ?>
 <div class="esi-settings-wrap esi-frontend-editor"><form id="esi-editor-form">

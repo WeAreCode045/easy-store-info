@@ -555,10 +555,20 @@ final class Easy_Store_Info {
 		// Determine if current user is allowed to edit the media grid on the frontend
 		$user = wp_get_current_user();
 		$allowed_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
-		$can_edit_frontend = is_user_logged_in() && $user && array_intersect( $allowed_roles, (array) $user->roles );
+
+		// If the visitor is not logged in, redirect them to WP login and return to this page afterwards.
+		if ( ! is_user_logged_in() ) {
+			$redirect = ( function_exists( 'wp_sanitize_redirect' ) ) ? wp_unslash( ( empty( $_SERVER['REQUEST_URI'] ) ? home_url() : wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : home_url();
+			wp_safe_redirect( wp_login_url( $redirect ) );
+			exit;
+		}
+
+		$can_edit_frontend = $user && array_intersect( $allowed_roles, (array) $user->roles );
 
 		if ( $can_edit_frontend ) {
 			// Enqueue media scripts and ensure editor assets are available
+			// Hide the admin bar while on the frontend editor page for a cleaner experience
+			add_filter( 'show_admin_bar', '__return_false' );
 			wp_enqueue_media();
 			// enqueue the editor-only JS & CSS (registered by frontend loader)
 			wp_enqueue_style( 'easy-store-info-editor' );
