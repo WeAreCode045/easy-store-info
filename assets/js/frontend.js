@@ -25,6 +25,8 @@ jQuery(function ($) {
         var $content = $('<div class="esi-lightbox-content" />');
         var $prev = $('<button class="esi-lb-nav esi-lb-prev" aria-label="Previous">‹</button>');
         var $next = $('<button class="esi-lb-nav esi-lb-next" aria-label="Next">›</button>');
+        var $close = $('<button class="esi-lb-close" aria-label="Close">×</button>');
+        var $thumbs = $('<div class="esi-lb-thumbs" />');
 
         function render(i) {
             $content.empty();
@@ -48,6 +50,22 @@ jQuery(function ($) {
             if (index >= items.length) index = 0;
             idx = index;
             render(idx);
+            // update active thumb
+            if ($thumbs && $thumbs.length) {
+                $thumbs.find('img').removeClass('active');
+                $thumbs.find('img[data-index="' + idx + '"]').addClass('active');
+                // ensure active thumb visible
+                var $active = $thumbs.find('img.active');
+                if ($active.length) {
+                    var wrap = $thumbs.get(0);
+                    var aLeft = $active.position().left + $thumbs.scrollLeft();
+                    var aRight = aLeft + $active.outerWidth();
+                    var viewLeft = $thumbs.scrollLeft();
+                    var viewRight = viewLeft + $thumbs.innerWidth();
+                    if (aLeft < viewLeft) { $thumbs.animate({scrollLeft: aLeft}, 200); }
+                    else if (aRight > viewRight) { $thumbs.animate({scrollLeft: aRight - $thumbs.innerWidth()}, 200); }
+                }
+            }
         }
 
         $prev.on('click', function (ev) { ev.stopPropagation(); show(idx - 1); });
@@ -69,9 +87,17 @@ jQuery(function ($) {
             $overlay.remove();
         }
 
+        // build thumbs strip
+        items.forEach(function (it, i) {
+            var $t = $('<img class="esi-lb-thumb" data-index="' + i + '" src="' + it.href + '" alt="" />');
+            $thumbs.append($t);
+        });
+        $thumbs.on('click', 'img', function (ev) { ev.stopPropagation(); var i = parseInt($(this).data('index'), 10); show(i); });
+
         // Assemble and open
         $container.append($prev, $content, $next);
-        $overlay.append($container).appendTo('body');
+        $overlay.append($container).append($thumbs).append($close).appendTo('body');
+        $close.on('click', function (ev) { ev.stopPropagation(); close(); });
         show(idx);
         $(document).on('keydown', keyHandler);
     });

@@ -53,6 +53,16 @@
 .esi-lb-prev{left:12px}
 .esi-lb-next{right:12px}
 
+/* Thumbnails strip below the large image */
+.esi-lb-thumbs{display:flex;gap:8px;overflow-x:auto;padding:8px 12px;margin-top:12px;justify-content:center;align-items:center}
+.esi-lb-thumb{width:64px;height:64px;flex:0 0 64px;object-fit:cover;border-radius:6px;cursor:pointer;opacity:0.8;transition:transform 120ms ease, opacity 120ms ease;border:2px solid transparent}
+.esi-lb-thumb.active{opacity:1;transform:scale(1.03);border-color:rgba(255,255,255,0.9)}
+.esi-lb-thumb:focus{outline:none;box-shadow:0 0 0 3px rgba(0,0,0,0.2)}
+
+/* Close button */
+.esi-lb-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);color:#fff;border:0;padding:8px 10px;font-size:20px;cursor:pointer;border-radius:6px;z-index:100002}
+.esi-lb-close:hover{background:rgba(0,0,0,0.65)}
+
 /* Opening hours styles using CSS variables for theming */
 .esi-opening-hours ul{list-style:none;margin:0;padding:0;font-size:var(--esi-font-size,14px);font-weight:var(--esi-font-weight,400)}
 .esi-opening-hours li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;color:var(--esi-open-color,inherit)}
