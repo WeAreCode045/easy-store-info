@@ -31,16 +31,28 @@ jQuery(function ($) {
             e.preventDefault();
             var $btn = $(this);
             var $item = $btn.closest('.esi-media-item');
-            if (frame) { frame.open(); return; }
-            frame = wp.media({ title: 'Select media', button: { text: 'Select' }, multiple: false });
-            frame.on('select', function () {
-                var attachment = frame.state().get('selection').first().toJSON();
-                $item.find('input[type=hidden]').val(attachment.id);
-                var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img src="' + img + '" /></div>');
-                $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
-            });
-            frame.open();
+                if (frame) {
+                    // Rebind select handler for the currently clicked item
+                    try { frame.off('select'); } catch (e) { /* ignore */ }
+                    frame.on('select', function () {
+                        var attachment = frame.state().get('selection').first().toJSON();
+                        $item.find('input[type=hidden]').val(attachment.id);
+                        var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+                        $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img src="' + img + '" /></div>');
+                        $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
+                    });
+                    frame.open();
+                    return;
+                }
+                frame = wp.media({ title: 'Select media', button: { text: 'Select' }, multiple: false });
+                frame.on('select', function () {
+                    var attachment = frame.state().get('selection').first().toJSON();
+                    $item.find('input[type=hidden]').val(attachment.id);
+                    var img = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+                    $item.find('.esi-media-empty').replaceWith('<div class="esi-thumb-wrap"><img src="' + img + '" /></div>');
+                    $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
+                });
+                frame.open();
         });
 
         $(document).on('click', '.esi-remove-media', function (e) {
