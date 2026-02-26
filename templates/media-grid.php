@@ -38,10 +38,17 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <?php if ( $att_id && get_post( $att_id ) ) :
                     $mime = get_post_mime_type( $att_id );
                     $url = wp_get_attachment_url( $att_id );
-                    $thumb_url = $url;
+                    // Prefer an image-size thumbnail if available
+                    $thumb_url = wp_get_attachment_image_url( $att_id, 'medium' );
                 ?>
                     <a class="esi-lightbox" href="<?php echo esc_url( $url ); ?>" data-mime="<?php echo esc_attr( $mime ); ?>">
-                        <img class="esi-thumb" src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
+                        <?php if ( $thumb_url ) : ?>
+                            <img class="esi-thumb" src="<?php echo esc_url( $thumb_url ); ?>" alt="" />
+                        <?php elseif ( strpos( (string) $mime, 'video/' ) === 0 ) : ?>
+                            <video class="esi-thumb" muted preload="metadata" src="<?php echo esc_url( $url ); ?>"></video>
+                        <?php else : ?>
+                            <img class="esi-thumb" src="<?php echo esc_url( $url ); ?>" alt="" />
+                        <?php endif; ?>
                     </a>
                 <?php else : ?>
                     <div class="esi-media-empty"></div>
