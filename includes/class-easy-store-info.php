@@ -572,7 +572,7 @@ final class Easy_Store_Info {
 			$cols = intval( $cols );
 			$slots = max( 1, $rows * $cols );
 			$grid = array_pad( $grid, $slots, 0 );
-			$out = '<div class="esi-settings-wrap"><form id="esi-settings-form">';
+			$out = '<div class="esi-settings-wrap esi-frontend-editor"><form id="esi-settings-form">';
 			// two-column editor: left = grid, right = sidebar with instructions and dropzone
 			$out .= '<div class="esi-editor-panel">';
 			$out .= '<div class="esi-editor-left">';

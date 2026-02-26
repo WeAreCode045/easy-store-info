@@ -66,6 +66,8 @@
 .esi-editor-sidebar{flex:0 0 30%;min-width:220px}
 /* make sidebar stand out from plain white admin backgrounds */
 .esi-settings-wrap .esi-editor-sidebar{background:linear-gradient(180deg,#ffffff,#fbfeff); padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(29,33,41,0.04); border:1px solid rgba(0,0,0,0.04);}
+/* Stronger, frontend-only rule to ensure visibility on white admin-like backgrounds */
+.esi-frontend-editor .esi-editor-sidebar{background:linear-gradient(180deg,#ffffff,#f6fcff) !important; padding:18px !important; border-radius:10px !important; box-shadow:0 10px 28px rgba(29,33,41,0.06) !important; border:1px solid rgba(0,0,0,0.06) !important}
 .esi-dropzone-placeholder{padding:6px}
 .esi-sidebar-actions{margin-top:12px}
 .esi-sidebar-actions .esi-save-button{width:100%;display:block}
