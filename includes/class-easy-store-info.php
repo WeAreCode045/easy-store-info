@@ -100,6 +100,65 @@ final class Easy_Store_Info {
 		if ( empty( $api_key ) || empty( $place_id ) ) {
 			return '<p>Please configure the store Place ID and API key.</p>';
 		}
+		$hours = $this->fetch_place_opening_hours( $api_key, $place_id );
+		if ( false === $hours || empty( $hours ) ) {
+			return '<p>Keine Öffnungszeiten verfügbar.</p>';
+		}
+
+		// German weekday names with Monday first
+		$weekdays = array(
+			1 => 'Montag',
+			2 => 'Dienstag',
+			3 => 'Mittwoch',
+			4 => 'Donnerstag',
+			5 => 'Freitag',
+			6 => 'Samstag',
+			0 => 'Sonntag',
+		);
+
+		$order = array( 1, 2, 3, 4, 5, 6, 0 );
+		$out = '<div class="esi-opening-hours"><ul>';
+
+		// Build inline CSS from options
+		$font_size = intval( get_option( 'esi_style_font_size', 14 ) );
+		$font_weight = esc_attr( get_option( 'esi_style_font_weight', '400' ) );
+		$day_align = esc_attr( get_option( 'esi_style_day_align', 'left' ) );
+		$time_align = esc_attr( get_option( 'esi_style_time_align', 'right' ) );
+		$bg_odd = esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+		$bg_even = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+		$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+		$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
+		$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
+
+		$inline_css = "<style>
+.esi-opening-hours ul{list-style:none;margin:0;padding:0;font-size:{$font_size}px;font-weight:{$font_weight}}
+.esi-opening-hours li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:{$row_sep_weight}px solid {$row_sep_color}}
+.esi-opening-hours li:nth-child(odd){background:{$bg_odd}}
+.esi-opening-hours li:nth-child(even){background:{$bg_even}}
+.esi-opening-hours .esi-day{flex:1;text-align:{$day_align}}
+.esi-opening-hours .esi-time{flex:1;text-align:{$time_align}}
+.esi-opening-hours .esi-closed{color:{$closed_color}}
+</style>";
+		$out = $inline_css . $out;
+		foreach ( $order as $day_index ) {
+			$label = isset( $weekdays[ $day_index ] ) ? $weekdays[ $day_index ] : $day_index;
+			$line = isset( $hours[ $day_index ] ) ? $hours[ $day_index ] : 'Geschlossen';
+			$closed = ( 'Geschlossen' === $line || empty( $line ) );
+			$li_class = $closed ? ' class="esi-closed"' : '';
+			$out .= '<li' . $li_class . '><span class="esi-day">' . esc_html( $label ) . '</span><span class="esi-time">' . esc_html( $line ) . '</span></li>';
+		}
+		$out .= '</ul></div>';
+		return $out;
+	}
+
+	/**
+	 * Format opening hours periods into an array of day => times (H:i)
+	 *
+	 * @param string $api_key
+	 * @param string $place_id
+	 * @return array|false Array with keys 0-6 mapping to time strings or false on error
+	 */
+	private function fetch_place_opening_hours( $api_key, $place_id ) {
 		$transient_key = 'esi_place_hours_' . md5( $place_id );
 		$data = get_transient( $transient_key );
 		if ( false === $data ) {
@@ -113,7 +172,7 @@ final class Easy_Store_Info {
 			);
 			$response = wp_remote_get( $url );
 			if ( is_wp_error( $response ) ) {
-				return '<p>Could not fetch opening hours.</p>';
+				return false;
 			}
 			$body = wp_remote_retrieve_body( $response );
 			$json = json_decode( $body );
@@ -121,18 +180,85 @@ final class Easy_Store_Info {
 				$data = $json->result->opening_hours;
 				set_transient( $transient_key, $data, HOUR_IN_SECONDS );
 			} else {
-				return '<p>No opening hours available.</p>';
+				return false;
 			}
 		}
-		if ( empty( $data ) || empty( $data->weekday_text ) ) {
-			return '<p>No opening hours available.</p>';
+		// Build default result
+		$result = array_fill( 0, 7, 'Geschlossen' );
+		if ( ! empty( $data->periods ) && is_array( $data->periods ) ) {
+			$per_day = array_fill( 0, 7, array() );
+			foreach ( $data->periods as $period ) {
+				if ( isset( $period->open->day, $period->open->time ) ) {
+					$d = intval( $period->open->day );
+					$open = $this->format_time_Hi( $period->open->time );
+					if ( isset( $period->close->time ) ) {
+						$close = $this->format_time_Hi( $period->close->time );
+						$per_day[ $d ][] = $open . '–' . $close;
+					} else {
+						$per_day[ $d ][] = $open;
+					}
+				}
+			}
+			foreach ( $per_day as $d => $ranges ) {
+				if ( ! empty( $ranges ) ) {
+					$result[ $d ] = implode( ', ', $ranges );
+				}
+			}
+		} elseif ( ! empty( $data->weekday_text ) && is_array( $data->weekday_text ) ) {
+			// Fallback: attempt to parse weekday_text strings
+			foreach ( $data->weekday_text as $i => $line ) {
+				$parts = explode( ': ', $line, 2 );
+				if ( 2 === count( $parts ) ) {
+					$timestr = $parts[1];
+					if ( stripos( $timestr, 'closed' ) !== false ) {
+						$result[ $i ] = 'Geschlossen';
+					} else {
+						// Split by common range separators
+						$ranges = preg_split( '/\s*[–—-]\s*/u', $timestr );
+						$newranges = array();
+						foreach ( $ranges as $r ) {
+							preg_match_all( '/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)/', $r, $m );
+							if ( ! empty( $m[1] ) && count( $m[1] ) >= 2 ) {
+								$open = date( 'H:i', strtotime( $m[1][0] ) );
+								$close = date( 'H:i', strtotime( $m[1][1] ) );
+								$newranges[] = $open . '–' . $close;
+							} else {
+								$newranges[] = $r;
+							}
+						}
+						$result[ $i ] = implode( ', ', $newranges );
+					}
+				} else {
+					$result[ $i ] = $line;
+				}
+			}
 		}
-		$out = '<div class="esi-opening-hours"><ul>';
-		foreach ( $data->weekday_text as $line ) {
-			$out .= '<li>' . esc_html( $line ) . '</li>';
+		return $result;
+	}
+
+	/**
+	 * Format time strings like '0900' into '09:00'
+	 *
+	 * @param string $time
+	 * @return string
+	 */
+	private function format_time_Hi( $time ) {
+		$time = trim( (string) $time );
+		// If already in HH:MM format, try to normalize
+		if ( preg_match( '/^\d{1,2}:\d{2}$/', $time ) ) {
+			$parts = explode( ':', $time );
+			return sprintf( '%02d:%02d', intval( $parts[0] ), intval( $parts[1] ) );
 		}
-		$out .= '</ul></div>';
-		return $out;
+		// If format is HHMM
+		if ( preg_match( '/^(\d{1,2})(\d{2})$/', $time, $m ) ) {
+			return sprintf( '%02d:%02d', intval( $m[1] ), intval( $m[2] ) );
+		}
+		// Fallback: try strtotime
+		$ts = strtotime( $time );
+		if ( $ts ) {
+			return date( 'H:i', $ts );
+		}
+		return $time;
 	}
 
 	/**
@@ -164,6 +290,45 @@ final class Easy_Store_Info {
 	 * Shortcode: link to admin settings
 	 */
 	public function shortcode_settings() {
+		// Determine if current user is allowed to edit the media grid on the frontend
+		$user = wp_get_current_user();
+		$allowed_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
+		$can_edit_frontend = is_user_logged_in() && $user && array_intersect( $allowed_roles, (array) $user->roles );
+
+		if ( $can_edit_frontend ) {
+			// Enqueue media scripts and ensure frontend script localized
+			wp_enqueue_media();
+			wp_enqueue_script( 'easy-store-info-frontend' );
+			wp_localize_script( 'easy-store-info-frontend', 'esiSettings', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce' => wp_create_nonce( 'esi-save-settings' ),
+			) );
+
+			$grid = get_option( 'esi_media_grid', array() );
+			$grid = array_pad( $grid, 8, 0 );
+			$out = '<div class="esi-settings-wrap"><form id="esi-settings-form">';
+			$out .= '<div class="esi-media-grid esi-admin-grid">';
+			foreach ( $grid as $i => $att_id ) {
+				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
+				if ( $att_id && get_post( $att_id ) ) {
+					$url = wp_get_attachment_url( $att_id );
+					$out .= '<div class="esi-thumb-wrap">' . wp_get_attachment_image( $att_id, 'medium' ) . '</div>';
+					$out .= '<input type="hidden" name="esi_media_grid[]" value="' . esc_attr( $att_id ) . '" />';
+					$out .= '<button class="esi-remove-media button" type="button">&times;</button>';
+				} else {
+					$out .= '<div class="esi-media-empty"></div>';
+					$out .= '<input type="hidden" name="esi_media_grid[]" value="0" />';
+					$out .= '<button class="esi-add-media button" type="button">+</button>';
+				}
+				$out .= '</div>';
+			}
+			$out .= '</div>';
+			$out .= '<p class="submit"><button class="button button-primary" type="submit">Save Grid</button></p>';
+			$out .= '</form></div>';
+			return $out;
+		}
+
+		// Default: prompt to login or use admin
 		if ( current_user_can( 'manage_options' ) ) {
 			$link = admin_url( 'options-general.php?page=easy_store_info' );
 			return '<p>Manage plugin settings in the admin: <a href="' . esc_url( $link ) . '">Store Info Settings</a></p>';
@@ -179,15 +344,44 @@ final class Easy_Store_Info {
 			wp_send_json_error( 'not_logged_in', 403 );
 		}
 		check_ajax_referer( 'esi-save-settings', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
+		// Allow two flows: admin saves (manage_options) or frontend grid saves for specific roles
+		$user = wp_get_current_user();
+		$frontend_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
+		if ( current_user_can( 'manage_options' ) ) {
+			// Admin: accept full payload
+			$api_key = isset( $_POST['esi_google_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_google_api_key'] ) ) : '';
+			$place_id = isset( $_POST['esi_place_id'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_place_id'] ) ) : '';
+			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			// Style settings
+			$style_font_size = isset( $_POST['esi_style_font_size'] ) ? intval( $_POST['esi_style_font_size'] ) : intval( get_option( 'esi_style_font_size', 14 ) );
+			$style_font_weight = isset( $_POST['esi_style_font_weight'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_font_weight'] ) ) : sanitize_text_field( get_option( 'esi_style_font_weight', '400' ) );
+			$style_day_align = isset( $_POST['esi_style_day_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_day_align'] ) ) : sanitize_text_field( get_option( 'esi_style_day_align', 'left' ) );
+			$style_time_align = isset( $_POST['esi_style_time_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_time_align'] ) ) : sanitize_text_field( get_option( 'esi_style_time_align', 'right' ) );
+			$style_bg_odd = isset( $_POST['esi_style_bg_odd'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_bg_odd'] ) ) : sanitize_hex_color( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+			$style_bg_even = isset( $_POST['esi_style_bg_even'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_bg_even'] ) ) : sanitize_hex_color( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+			$style_row_sep_color = isset( $_POST['esi_style_row_sep_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_row_sep_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+			$style_row_sep_weight = isset( $_POST['esi_style_row_sep_weight'] ) ? intval( $_POST['esi_style_row_sep_weight'] ) : intval( get_option( 'esi_style_row_sep_weight', 1 ) );
+			$style_closed_color = isset( $_POST['esi_style_closed_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_closed_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_closed_color', '#999999' ) );
+			update_option( 'esi_google_api_key', $api_key );
+			update_option( 'esi_place_id', $place_id );
+			update_option( 'esi_media_grid', $grid );
+			// Save style settings
+			update_option( 'esi_style_font_size', $style_font_size );
+			update_option( 'esi_style_font_weight', $style_font_weight );
+			update_option( 'esi_style_day_align', $style_day_align );
+			update_option( 'esi_style_time_align', $style_time_align );
+			update_option( 'esi_style_bg_odd', $style_bg_odd );
+			update_option( 'esi_style_bg_even', $style_bg_even );
+			update_option( 'esi_style_row_sep_color', $style_row_sep_color );
+			update_option( 'esi_style_row_sep_weight', $style_row_sep_weight );
+			update_option( 'esi_style_closed_color', $style_closed_color );
+		} elseif ( $user && array_intersect( $frontend_roles, (array) $user->roles ) ) {
+			// Frontend role: only allow updating the media grid
+			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			update_option( 'esi_media_grid', $grid );
+		} else {
 			wp_send_json_error( 'forbidden', 403 );
 		}
-		$api_key = isset( $_POST['esi_google_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_google_api_key'] ) ) : '';
-		$place_id = isset( $_POST['esi_place_id'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_place_id'] ) ) : '';
-		$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
-		update_option( 'esi_google_api_key', $api_key );
-		update_option( 'esi_place_id', $place_id );
-		update_option( 'esi_media_grid', $grid );
 
 		// For admin saves, attempt to fetch opening hours and return them for verification.
 		$opening_hours_html = '';
@@ -207,43 +401,7 @@ final class Easy_Store_Info {
 		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
 	}
 
-	/**
-	 * Fetch place opening hours from Google Places API
-	 *
-	 * @param string $api_key
-	 * @param string $place_id
-	 * @return array|false
-	 */
-	private function fetch_place_opening_hours( $api_key, $place_id ) {
-		$transient_key = 'esi_place_hours_' . md5( $place_id );
-		$data = get_transient( $transient_key );
-		if ( false === $data ) {
-			$url = add_query_arg(
-				array(
-					'place_id' => rawurlencode( $place_id ),
-					'fields' => 'opening_hours',
-					'key' => rawurlencode( $api_key ),
-				),
-				'https://maps.googleapis.com/maps/api/place/details/json'
-			);
-			$response = wp_remote_get( $url );
-			if ( is_wp_error( $response ) ) {
-				return false;
-			}
-			$body = wp_remote_retrieve_body( $response );
-			$json = json_decode( $body );
-			if ( isset( $json->result->opening_hours ) ) {
-				$data = $json->result->opening_hours;
-				set_transient( $transient_key, $data, HOUR_IN_SECONDS );
-			} else {
-				return false;
-			}
-		}
-		if ( ! empty( $data ) && ! empty( $data->weekday_text ) ) {
-			return (array) $data->weekday_text;
-		}
-		return false;
-	}
+
 
 	/**
 	 * Load template

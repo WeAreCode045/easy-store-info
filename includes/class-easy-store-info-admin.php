@@ -120,6 +120,64 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						</tr>
 					</table>
 
+					<h2>Display Styles</h2>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="esi_style_font_size">Font size (px)</label></th>
+							<td><input name="esi_style_font_size" id="esi_style_font_size" type="number" min="8" max="72" value="<?php echo esc_attr( get_option( 'esi_style_font_size', 14 ) ); ?>" class="small-text"/> px</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_font_weight">Font weight</label></th>
+							<td>
+								<select name="esi_style_font_weight" id="esi_style_font_weight">
+									<?php $fw = get_option( 'esi_style_font_weight', '400' ); ?>
+									<option value="300" <?php selected( $fw, '300' ); ?>>300</option>
+									<option value="400" <?php selected( $fw, '400' ); ?>>400 (normal)</option>
+									<option value="600" <?php selected( $fw, '600' ); ?>>600</option>
+									<option value="700" <?php selected( $fw, '700' ); ?>>700 (bold)</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">Alignment</th>
+							<td>
+								<label>Days: <select name="esi_style_day_align">
+									<?php $da = get_option( 'esi_style_day_align', 'left' ); ?>
+									<option value="left" <?php selected( $da, 'left' ); ?>>Left</option>
+									<option value="center" <?php selected( $da, 'center' ); ?>>Center</option>
+									<option value="right" <?php selected( $da, 'right' ); ?>>Right</option>
+								</select></label>
+								&nbsp;
+								<label>Times: <select name="esi_style_time_align">
+									<?php $ta = get_option( 'esi_style_time_align', 'right' ); ?>
+									<option value="left" <?php selected( $ta, 'left' ); ?>>Left</option>
+									<option value="center" <?php selected( $ta, 'center' ); ?>>Center</option>
+									<option value="right" <?php selected( $ta, 'right' ); ?>>Right</option>
+								</select></label>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_bg_odd">Background odd rows</label></th>
+							<td><input name="esi_style_bg_odd" id="esi_style_bg_odd" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) ); ?>" /></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_bg_even">Background even rows</label></th>
+							<td><input name="esi_style_bg_even" id="esi_style_bg_even" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) ); ?>" /></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_row_sep_color">Row separator color</label></th>
+							<td><input name="esi_style_row_sep_color" id="esi_style_row_sep_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) ); ?>" /></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_row_sep_weight">Row separator weight (px)</label></th>
+							<td><input name="esi_style_row_sep_weight" id="esi_style_row_sep_weight" type="number" min="0" max="10" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_weight', 1 ) ); ?>" class="small-text" /> px</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_closed_color">Closed day font color</label></th>
+							<td><input name="esi_style_closed_color" id="esi_style_closed_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_closed_color', '#999999' ) ); ?>" /></td>
+						</tr>
+					</table>
+
 					<div id="esi-opening-hours-placeholder">
 						<?php echo $opening_hours_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
