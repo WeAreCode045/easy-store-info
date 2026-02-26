@@ -649,7 +649,7 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_state_padding', $style_state_padding );
 			// persist grid layout
 			update_option( 'esi_grid_layout', $style_grid_layout );
-		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
+		} elseif ( $user && is_array( $user->roles ) && array_intersect( $frontend_roles, (array) $user->roles ) ) {
 			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
 			// Normalize/pad to 8 slots to make per-item operations predictable

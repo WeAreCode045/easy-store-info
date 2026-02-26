@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="esi-editor-panel">
         <div class="esi-editor-left">
             <?php
-            // Render media grid using the media-grid template for consistency
-            $this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout ) );
+            // Render media grid using the media-grid template in editor mode
+            $this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout, 'editor' => true ) );
             ?>
         </div>
         <aside class="esi-editor-sidebar">
