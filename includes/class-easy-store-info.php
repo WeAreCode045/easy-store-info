@@ -128,15 +128,45 @@ final class Easy_Store_Info {
 		$state_html = '';
 		$date_str = date_i18n( 'Y-m-d', $now_ts );
 
+		// helper: normalize time strings like 900, 9.00, 09:00 to H:i
+		$normalize_time = function( $t ) {
+			$t = trim( html_entity_decode( strip_tags( (string) $t ), ENT_QUOTES | ENT_HTML5 ) );
+			$t = str_replace( ["\xC2\xA0", "\u00A0", "\u202F"], ' ', $t );
+			$t = trim( $t );
+			$t = str_replace( '.', ':', $t );
+			// if digits-only like 900 or 0900 -> insert colon before last two digits
+			if ( preg_match( '/^[0-9]{3,4}$/', $t ) ) {
+				$t = substr( $t, 0, -2 ) . ':' . substr( $t, -2 );
+			}
+			// ensure format H:i
+			if ( preg_match( '/^(\d{1,2}):(\d{2})$/', $t, $mm ) ) {
+				$h = intval( $mm[1] );
+				$m = intval( $mm[2] );
+				if ( $h >= 0 && $h <= 23 && $m >= 0 && $m <= 59 ) {
+					return sprintf( '%02d:%02d', $h, $m );
+				}
+			}
+			return false;
+		};
+
 		// helper: parse ranges from a day string into array of [open,close]
-		$parse_ranges = function( $line ) {
+		$parse_ranges = function( $line ) use ( $normalize_time ) {
 			$out = array();
 			if ( empty( $line ) ) return $out;
-			if ( 'Geschlossen' === $line ) return $out;
-			$parts = preg_split('/\s*,\s*/u', $line);
+			$line = trim( (string) $line );
+			if ( '' === $line ) return $out;
+			// treat common 'closed' words (case-insensitive)
+			if ( preg_match( '/closed|geschlossen/i', $line ) ) return $out;
+			// split on commas or semicolons
+			$parts = preg_split( '/\s*[;,\n]\s*/u', $line );
 			foreach ( $parts as $p ) {
-				if ( preg_match('/(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/', $p, $m ) ) {
-					$out[] = array( 'open' => $m[1], 'close' => $m[2] );
+				// allow various dash characters (hyphen, en/em dash)
+				if ( preg_match( '/(\d{1,2}[:\.]?\d{2})\s*[\x{2012}\x{2013}\x{2014}\-–—]\s*(\d{1,2}[:\.]?\d{2})/u', $p, $m ) ) {
+					$o = $normalize_time( $m[1] );
+					$c = $normalize_time( $m[2] );
+					if ( $o && $c ) {
+						$out[] = array( 'open' => $o, 'close' => $c );
+					}
 				}
 			}
 			return $out;
