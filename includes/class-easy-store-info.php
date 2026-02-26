@@ -225,7 +225,54 @@ final class Easy_Store_Info {
 									$when_text = isset( $weekdays[ $idx ] ) ? $weekdays[ $idx ] : $target_date;
 								}
 								$next_open_time = $open_dt->format( 'H:i' );
-								break;
+									break;
+							}
+						}
+						// If we didn't find ranges, try to parse by weekday name inside the provided string
+						if ( empty( $parts ) && isset( $weekdays[ $idx ] ) ) {
+							$candidate = $hours[ $idx ];
+							if ( is_string( $candidate ) && false !== stripos( $candidate, $weekdays[ $idx ] ) ) {
+								$sp = explode( ':', $candidate, 2 );
+								$line_to_parse = count( $sp ) === 2 ? trim( $sp[1] ) : $candidate;
+								$parts = $parse_ranges( $line_to_parse );
+								if ( ! empty( $parts ) ) {
+									$target_date = date_i18n( 'Y-m-d', $now_ts + ( $i * DAY_IN_SECONDS ) );
+									$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $target_date . ' ' . $parts[0]['open'], $tz );
+									if ( $open_dt ) {
+										$found = true;
+										if ( $i === 1 ) {
+											$when_text = 'morgen';
+										} else {
+											$when_text = $weekdays[ $idx ];
+										}
+										$next_open_time = $open_dt->format( 'H:i' );
+										break;
+									}
+								}
+							}
+							// fallback: search all entries for weekday name and parse
+							if ( ! $found ) {
+								foreach ( $hours as $h ) {
+									if ( is_string( $h ) && false !== stripos( $h, $weekdays[ $idx ] ) ) {
+										$sp = explode( ':', $h, 2 );
+										$line_to_parse = count( $sp ) === 2 ? trim( $sp[1] ) : $h;
+										$parts = $parse_ranges( $line_to_parse );
+										if ( ! empty( $parts ) ) {
+											$target_date = date_i18n( 'Y-m-d', $now_ts + ( $i * DAY_IN_SECONDS ) );
+											$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $target_date . ' ' . $parts[0]['open'], $tz );
+											if ( $open_dt ) {
+												$found = true;
+												if ( $i === 1 ) {
+													$when_text = 'morgen';
+												} else {
+													$when_text = $weekdays[ $idx ];
+												}
+												$next_open_time = $open_dt->format( 'H:i' );
+												break 2;
+											}
+										}
+									}
+								}
 							}
 						}
 					}
