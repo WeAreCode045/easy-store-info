@@ -531,9 +531,9 @@ final class Easy_Store_Info {
 			if ( $att_id && $attachment = get_post( $att_id ) ) {
 				$mime = get_post_mime_type( $att_id );
 				$url = wp_get_attachment_url( $att_id );
-				$thumb = wp_get_attachment_image( $att_id, 'medium' );
+				$thumb_url = wp_get_attachment_image_url( $att_id, 'medium' );
 				$out .= '<a class="esi-lightbox" href="' . esc_url( $url ) . '" data-mime="' . esc_attr( $mime ) . '">';
-				$out .= $thumb;
+				$out .= '<img class="esi-thumb" src="' . esc_url( $thumb_url ) . '" alt="" />';
 				$out .= '</a>';
 			} else {
 				$out .= '<div class="esi-media-empty"></div>';
@@ -567,7 +567,8 @@ final class Easy_Store_Info {
 				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
 				if ( $att_id && get_post( $att_id ) ) {
 					$url = wp_get_attachment_url( $att_id );
-					$out .= '<div class="esi-thumb-wrap">' . wp_get_attachment_image( $att_id, 'medium' ) . '</div>';
+					$thumb_url = wp_get_attachment_image_url( $att_id, 'medium' );
+					$out .= '<div class="esi-thumb-wrap"><img class="esi-thumb" src="' . esc_url( $thumb_url ) . '" alt="" /></div>';
 					$out .= '<input type="hidden" name="esi_media_grid[]" value="' . esc_attr( $att_id ) . '" />';
 					$out .= '<button class="esi-remove-media button" type="button">&times;</button>';
 				} else {
