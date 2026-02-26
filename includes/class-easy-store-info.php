@@ -607,6 +607,7 @@ final class Easy_Store_Info {
 			$style_row_sep_color = isset( $_POST['esi_style_row_sep_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_row_sep_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 			$style_row_sep_op = isset( $_POST['esi_style_row_sep_opacity'] ) ? intval( $_POST['esi_style_row_sep_opacity'] ) : intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 			$style_row_sep_weight = isset( $_POST['esi_style_row_sep_weight'] ) ? intval( $_POST['esi_style_row_sep_weight'] ) : intval( get_option( 'esi_style_row_sep_weight', 1 ) );
+			$style_row_sep_style = isset( $_POST['esi_style_row_sep_style'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_row_sep_style'] ) ) : sanitize_text_field( get_option( 'esi_style_row_sep_style', 'solid' ) );
 			$style_text_odd = isset( $_POST['esi_style_text_odd_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_text_odd_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_text_odd_color', '#222222' ) );
 			$style_text_odd_op = isset( $_POST['esi_style_text_odd_opacity'] ) ? intval( $_POST['esi_style_text_odd_opacity'] ) : intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
 			$style_text_even = isset( $_POST['esi_style_text_even_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_text_even_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_text_even_color', '#222222' ) );
@@ -626,6 +627,7 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_row_sep_color', $style_row_sep_color );
 			update_option( 'esi_style_row_sep_opacity', $style_row_sep_op );
 			update_option( 'esi_style_row_sep_weight', $style_row_sep_weight );
+			update_option( 'esi_style_row_sep_style', $style_row_sep_style );
 			update_option( 'esi_style_text_odd_color', $style_text_odd );
 			update_option( 'esi_style_text_odd_opacity', $style_text_odd_op );
 			update_option( 'esi_style_text_even_color', $style_text_even );
