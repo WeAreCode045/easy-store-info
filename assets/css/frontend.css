@@ -19,12 +19,8 @@
 	min-height:80px;
 	position:relative;
 }
-.esi-media-item img{
-	width:100%;
-	height:auto;
-	display:block;
-	border-radius:20px;
-}
+.esi-thumb-wrap{width:100%;height:100%;display:block}
+.esi-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 .esi-media-empty{
 	width:100%;
 	height:100%;
