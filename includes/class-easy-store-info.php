@@ -34,6 +34,7 @@ final class Easy_Store_Info {
 		$this->load_plugin_textdomain();
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
 		add_action( 'wp_ajax_esi_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_esi_save_grid', array( $this, 'ajax_save_grid' ) );
 	}
 
 	/**
@@ -674,6 +675,33 @@ final class Easy_Store_Info {
 		}
 
 		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
+	}
+
+	/**
+	 * AJAX endpoint for frontend grid saves (only updates media grid and layout)
+	 */
+	public function ajax_save_grid() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'not_logged_in', 403 );
+		}
+		check_ajax_referer( 'esi-save-grid', 'nonce' );
+		$user = wp_get_current_user();
+		$frontend_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
+		if ( $user && is_array( $user->roles ) && array_intersect( $frontend_roles, (array) $user->roles ) ) {
+			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			// normalize to sensible number of slots based on submitted grid
+			$grid = array_values( $grid );
+			update_option( 'esi_media_grid', $grid );
+			if ( isset( $_POST['esi_grid_layout'] ) ) {
+				$allowed_layouts = array( '2x3','2x4','2x5','3x3','3x4','3x5' );
+				$layout = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
+				if ( in_array( $layout, $allowed_layouts, true ) ) {
+					update_option( 'esi_grid_layout', $layout );
+				}
+			}
+			wp_send_json_success();
+		}
+		wp_send_json_error( 'forbidden', 403 );
 	}
 
 

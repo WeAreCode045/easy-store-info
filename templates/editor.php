@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
-<div class="esi-settings-wrap esi-frontend-editor"><form id="esi-settings-form">
+<div class="esi-settings-wrap esi-frontend-editor"><form id="esi-editor-form">
     <div class="esi-editor-panel">
         <div class="esi-editor-left">
             <?php
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </select>
             </div>
             <div class="esi-dropzone-placeholder"></div>
-            <div class="esi-sidebar-actions">
+                <div class="esi-sidebar-actions">
                 <button class="button button-primary esi-save-button" type="submit">Save Grid</button>
             </div>
         </aside>

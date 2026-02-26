@@ -288,11 +288,11 @@ jQuery(function ($) {
         });
         var data = [];
         for (var i = 0; i < grid.length; i++) { data.push({ name: 'esi_media_grid[]', value: grid[i] }); }
-        data.push({ name: 'action', value: 'esi_save_settings' });
+        data.push({ name: 'action', value: 'esi_save_grid' });
         var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
         if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
         if (typeof esiSettings !== 'undefined') {
-            data.push({ name: 'nonce', value: esiSettings.nonce });
+            data.push({ name: 'nonce', value: esiSettings.grid_nonce });
             return $.post(esiSettings.ajax_url, data).done(function (res) {
                 if (res && res.success && res.data && res.data.opening_hours_html) {
                     $('#esi-opening-hours-placeholder').html(res.data.opening_hours_html);
@@ -359,7 +359,7 @@ jQuery(function ($) {
 
     var debouncedPersist = debounce(function () { persistGridOrder(); }, 700);
 
-    $('#esi-settings-form').on('submit', function (e) {
+    $('#esi-editor-form').on('submit', function (e) {
         e.preventDefault();
         var grid = [];
         $('.esi-media-item').each(function () {
@@ -371,10 +371,10 @@ jQuery(function ($) {
         for (var i = 0; i < grid.length; i++) {
             data.push({ name: 'esi_media_grid[]', value: grid[i] });
         }
-        data.push({ name: 'action', value: 'esi_save_settings' });
+        data.push({ name: 'action', value: 'esi_save_grid' });
         var layoutVal2 = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
         if (layoutVal2) { data.push({ name: 'esi_grid_layout', value: layoutVal2 }); }
-        data.push({ name: 'nonce', value: esiSettings.nonce });
+        data.push({ name: 'nonce', value: esiSettings.grid_nonce });
 
         $.post(esiSettings.ajax_url, data, function (res) {
             if (res.success) {

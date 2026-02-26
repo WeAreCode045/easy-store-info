@@ -45,6 +45,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce' => wp_create_nonce( 'esi-save-settings' ),
                 'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+                'grid_nonce' => wp_create_nonce( 'esi-save-grid' ),
             );
             wp_localize_script( 'easy-store-info-frontend', 'esiSettings', $local );
             wp_localize_script( 'easy-store-info-editor', 'esiSettings', $local );
