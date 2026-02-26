@@ -147,6 +147,21 @@ final class Easy_Store_Info {
 		// check today's ranges
 		if ( isset( $hours[ $today_index ] ) ) {
 			$ranges = $parse_ranges( $hours[ $today_index ] );
+			// if parsing failed, try to find today's entry by day name inside any provided strings
+			if ( empty( $ranges ) && isset( $weekdays[ $today_index ] ) ) {
+				$needle = $weekdays[ $today_index ];
+				foreach ( $hours as $h ) {
+					if ( is_string( $h ) && false !== stripos( $h, $needle ) ) {
+						// attempt to extract portion after colon if present
+						$parts = explode( ':', $h, 2 );
+						$line_to_parse = count( $parts ) === 2 ? trim( $parts[1] ) : $h;
+						$ranges = $parse_ranges( $line_to_parse );
+						if ( ! empty( $ranges ) ) {
+							break;
+						}
+					}
+				}
+			}
 			foreach ( $ranges as $r ) {
 				$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['open'], $tz );
 				$close_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['close'], $tz );
