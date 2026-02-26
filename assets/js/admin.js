@@ -63,10 +63,6 @@ jQuery(function ($) {
         var rowSepOp = parseInt($('#esi_style_row_sep_opacity').val() || 100, 10);
         var rowSepWeight = parseInt($('#esi_style_row_sep_weight').val() || 1, 10);
         var rowSepStyle = $('#esi_style_row_sep_style').val() || 'solid';
-        var openColor = $('#esi_style_open_color').val() || '#222222';
-        var openColorOp = parseInt($('#esi_style_open_color_opacity').val() || 100, 10);
-        var closedColor = $('#esi_style_closed_color').val() || '#999999';
-        var closedColorOp = parseInt($('#esi_style_closed_color_opacity').val() || 100, 10);
         var textOdd = $('#esi_style_text_odd_color').val() || '#222222';
         var textOddOp = parseInt($('#esi_style_text_odd_opacity').val() || 100, 10);
         var textEven = $('#esi_style_text_even_color').val() || '#222222';
@@ -75,8 +71,7 @@ jQuery(function ($) {
         var bgOddRgba = hexToRgba(bgOdd, bgOddOp);
         var bgEvenRgba = hexToRgba(bgEven, bgEvenOp);
         var rowSepRgba = hexToRgba(rowSep, rowSepOp);
-        var openRgba = hexToRgba(openColor, openColorOp);
-        var closedRgba = hexToRgba(closedColor, closedColorOp);
+        
         var textOddRgba = hexToRgba(textOdd, textOddOp);
         var textEvenRgba = hexToRgba(textEven, textEvenOp);
 
@@ -92,8 +87,6 @@ jQuery(function ($) {
             el.style.setProperty('--esi-row-sep-color', rowSepRgba);
             el.style.setProperty('--esi-row-sep-weight', rowSepWeight + 'px');
             el.style.setProperty('--esi-row-sep-style', rowSepStyle);
-            el.style.setProperty('--esi-open-color', openRgba);
-            el.style.setProperty('--esi-closed-color', closedRgba);
             el.style.setProperty('--esi-text-odd', textOddRgba);
             el.style.setProperty('--esi-text-even', textEvenRgba);
         } catch (e) {
@@ -104,8 +97,8 @@ jQuery(function ($) {
         $('#esi_style_bg_odd').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', bgOddRgba);
         $('#esi_style_bg_even').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', bgEvenRgba);
         $('#esi_style_row_sep_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', rowSepRgba);
-        $('#esi_style_closed_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', closedRgba);
-        $('#esi_style_open_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', openRgba);
+        $('#esi_style_text_odd_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', textOddRgba);
+        $('#esi_style_text_even_color').closest('.esi-alpha-picker').find('.esi-color-swatch').first().css('background', textEvenRgba);
     }
 
     // Bind change listeners for live updates

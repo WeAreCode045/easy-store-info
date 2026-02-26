@@ -117,7 +117,107 @@ final class Easy_Store_Info {
 		);
 
 		$order = array( 1, 2, 3, 4, 5, 6, 0 );
-		$out = '<div class="esi-opening-hours"><ul>';
+
+		// Compute open/closed state message based on current site time
+		$now_ts = current_time( 'timestamp' );
+		$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( wp_timezone() );
+		$today_index = intval( date( 'w', $now_ts ) );
+		$state_html = '';
+		$date_str = date_i18n( 'Y-m-d', $now_ts );
+
+		// helper: parse ranges from a day string into array of [open,close]
+		$parse_ranges = function( $line ) {
+			$out = array();
+			if ( empty( $line ) ) return $out;
+			if ( 'Geschlossen' === $line ) return $out;
+			$parts = preg_split('/\s*,\s*/u', $line);
+			foreach ( $parts as $p ) {
+				if ( preg_match('/(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/', $p, $m ) ) {
+					$out[] = array( 'open' => $m[1], 'close' => $m[2] );
+				}
+			}
+			return $out;
+		};
+
+		$is_open = false;
+		$closing_time = '';
+		// check today's ranges
+		if ( isset( $hours[ $today_index ] ) ) {
+			$ranges = $parse_ranges( $hours[ $today_index ] );
+			foreach ( $ranges as $r ) {
+				$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['open'], $tz );
+				$close_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['close'], $tz );
+				if ( $open_dt && $close_dt ) {
+					$open_ts = $open_dt->getTimestamp();
+					$close_ts = $close_dt->getTimestamp();
+					if ( $now_ts >= $open_ts && $now_ts <= $close_ts ) {
+						$is_open = true;
+						$closing_time = $close_dt->format( 'H:i' );
+						break;
+					}
+				}
+			}
+		}
+
+		if ( $is_open ) {
+			$state_html = '<p class="esi-open-state">wir sind heute geöffnet bis: ' . esc_html( $closing_time ) . '</p>';
+		} else {
+			// find next opening (today later or next days)
+			$found = false;
+			// check remaining ranges today for future openings
+			if ( isset( $hours[ $today_index ] ) ) {
+				$ranges = $parse_ranges( $hours[ $today_index ] );
+				foreach ( $ranges as $r ) {
+					$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['open'], $tz );
+					if ( $open_dt && $open_dt->getTimestamp() > $now_ts ) {
+						$found = true;
+						$when_text = 'heute';
+						$next_open_time = $open_dt->format( 'H:i' );
+						break;
+					}
+				}
+			}
+			// search next days
+			if ( ! $found ) {
+				for ( $i = 1; $i <= 7; $i++ ) {
+					$idx = ( $today_index + $i ) % 7;
+					if ( isset( $hours[ $idx ] ) && 'Geschlossen' !== $hours[ $idx ] ) {
+						$parts = $parse_ranges( $hours[ $idx ] );
+						if ( ! empty( $parts ) ) {
+							$target_date = date_i18n( 'Y-m-d', $now_ts + ( $i * DAY_IN_SECONDS ) );
+							$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $target_date . ' ' . $parts[0]['open'], $tz );
+							if ( $open_dt ) {
+								$found = true;
+								if ( $i === 1 ) {
+									$when_text = 'morgen';
+								} else {
+									$weekdays = array(
+										0 => 'Sonntag',
+										1 => 'Montag',
+										2 => 'Dienstag',
+										3 => 'Mittwoch',
+										4 => 'Donnerstag',
+										5 => 'Freitag',
+										6 => 'Samstag',
+									);
+									$when_text = isset( $weekdays[ $idx ] ) ? $weekdays[ $idx ] : $target_date;
+								}
+								$next_open_time = $open_dt->format( 'H:i' );
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if ( $found ) {
+				$state_html = '<p class="esi-open-state">wir sind zur zeit geschlossen und öffnen ' . esc_html( $when_text ) . ' wieder um ' . esc_html( $next_open_time ) . '</p>';
+			} else {
+				$state_html = '<p class="esi-open-state">Keine Öffnungszeiten verfügbar.</p>';
+			}
+		}
+
+		// (style_attr computed below) -- ensure we append state_html when rendering
 
 		// Build CSS variable style attribute from options
 		$font_size = intval( get_option( 'esi_style_font_size', 14 ) );
@@ -131,31 +231,32 @@ final class Easy_Store_Info {
 		$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 		$row_sep_op = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 		$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
-		$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
-		$closed_color_op = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
-		$open_color = esc_attr( get_option( 'esi_style_open_color', '#222222' ) );
-		$open_color_op = intval( get_option( 'esi_style_open_color_opacity', 100 ) );
+		$text_odd = esc_attr( get_option( 'esi_style_text_odd_color', '#222222' ) );
+		$text_odd_op = intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
+		$text_even = esc_attr( get_option( 'esi_style_text_even_color', '#222222' ) );
+		$text_even_op = intval( get_option( 'esi_style_text_even_opacity', 100 ) );
 
 		$bg_odd_rgba = $this->hex_to_rgba( $bg_odd, $bg_odd_op );
 		$bg_even_rgba = $this->hex_to_rgba( $bg_even, $bg_even_op );
 		$row_sep_rgba = $this->hex_to_rgba( $row_sep_color, $row_sep_op );
-		$open_color_rgba = $this->hex_to_rgba( $open_color, $open_color_op );
-		$closed_color_rgba = $this->hex_to_rgba( $closed_color, $closed_color_op );
+		$text_odd_rgba = $this->hex_to_rgba( $text_odd, $text_odd_op );
+		$text_even_rgba = $this->hex_to_rgba( $text_even, $text_even_op );
 
 		$style_attr = sprintf(
-			'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-open-color:%s;--esi-closed-color:%s',
+			'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s',
 			$font_size,
 			$font_weight,
 			$day_align,
 			$time_align,
 			$bg_odd_rgba,
 			$bg_even_rgba,
+			$text_odd_rgba,
+			$text_even_rgba,
 			$row_sep_rgba,
 			$row_sep_weight,
-			$open_color_rgba,
-			$closed_color_rgba
+			esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) )
 		);
-		$out = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '"><ul>';
+		$out = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '">' . $state_html . '<ul>';
 		foreach ( $order as $day_index ) {
 			$label = isset( $weekdays[ $day_index ] ) ? $weekdays[ $day_index ] : $day_index;
 			$line = isset( $hours[ $day_index ] ) ? $hours[ $day_index ] : 'Geschlossen';
@@ -399,10 +500,10 @@ final class Easy_Store_Info {
 			$style_row_sep_color = isset( $_POST['esi_style_row_sep_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_row_sep_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 			$style_row_sep_op = isset( $_POST['esi_style_row_sep_opacity'] ) ? intval( $_POST['esi_style_row_sep_opacity'] ) : intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 			$style_row_sep_weight = isset( $_POST['esi_style_row_sep_weight'] ) ? intval( $_POST['esi_style_row_sep_weight'] ) : intval( get_option( 'esi_style_row_sep_weight', 1 ) );
-			$style_closed_color = isset( $_POST['esi_style_closed_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_closed_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_closed_color', '#999999' ) );
-			$style_closed_color_op = isset( $_POST['esi_style_closed_color_opacity'] ) ? intval( $_POST['esi_style_closed_color_opacity'] ) : intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
-			$style_open_color = isset( $_POST['esi_style_open_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_open_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_open_color', '#222222' ) );
-			$style_open_color_op = isset( $_POST['esi_style_open_color_opacity'] ) ? intval( $_POST['esi_style_open_color_opacity'] ) : intval( get_option( 'esi_style_open_color_opacity', 100 ) );
+			$style_text_odd = isset( $_POST['esi_style_text_odd_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_text_odd_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_text_odd_color', '#222222' ) );
+			$style_text_odd_op = isset( $_POST['esi_style_text_odd_opacity'] ) ? intval( $_POST['esi_style_text_odd_opacity'] ) : intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
+			$style_text_even = isset( $_POST['esi_style_text_even_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_text_even_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_text_even_color', '#222222' ) );
+			$style_text_even_op = isset( $_POST['esi_style_text_even_opacity'] ) ? intval( $_POST['esi_style_text_even_opacity'] ) : intval( get_option( 'esi_style_text_even_opacity', 100 ) );
 			update_option( 'esi_google_api_key', $api_key );
 			update_option( 'esi_place_id', $place_id );
 			update_option( 'esi_media_grid', $grid );
@@ -418,10 +519,10 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_row_sep_color', $style_row_sep_color );
 			update_option( 'esi_style_row_sep_opacity', $style_row_sep_op );
 			update_option( 'esi_style_row_sep_weight', $style_row_sep_weight );
-			update_option( 'esi_style_closed_color', $style_closed_color );
-			update_option( 'esi_style_closed_color_opacity', $style_closed_color_op );
-			update_option( 'esi_style_open_color', $style_open_color );
-			update_option( 'esi_style_open_color_opacity', $style_open_color_op );
+			update_option( 'esi_style_text_odd_color', $style_text_odd );
+			update_option( 'esi_style_text_odd_opacity', $style_text_odd_op );
+			update_option( 'esi_style_text_even_color', $style_text_even );
+			update_option( 'esi_style_text_even_opacity', $style_text_even_op );
 		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
 			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();

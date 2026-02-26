@@ -14,6 +14,9 @@
 .preview-bg{background:#b40909;padding:12px;border-radius:8px}
 .preview-bg #esi-opening-hours-placeholder{width:400px;padding:10px;background:transparent;border:none;border-radius:6px;margin:0}
 
+/* Admin preview status styling */
+.esi-open-state{margin:0 0 8px;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.03);font-size:0.95rem;color:var(--esi-text-odd,inherit)}
+
 .esi-color-swatch{display:inline-block;width:20px;height:20px;border:1px solid #ddd;margin-left:8px;vertical-align:middle;border-radius:4px}
 .esi-admin-left .form-table th{width:220px}
 

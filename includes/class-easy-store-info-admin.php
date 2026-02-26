@@ -84,27 +84,21 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$bg_odd_op_val = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
 			$bg_even_val = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
 			$bg_even_op_val = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
-				$text_odd_val = esc_attr( get_option( 'esi_style_text_odd_color', '#222222' ) );
-				$text_odd_op_val = intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
-				$text_even_val = esc_attr( get_option( 'esi_style_text_even_color', '#222222' ) );
-				$text_even_op_val = intval( get_option( 'esi_style_text_even_opacity', 100 ) );
+			$text_odd_val = esc_attr( get_option( 'esi_style_text_odd_color', '#222222' ) );
+			$text_odd_op_val = intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
+			$text_even_val = esc_attr( get_option( 'esi_style_text_even_color', '#222222' ) );
+			$text_even_op_val = intval( get_option( 'esi_style_text_even_opacity', 100 ) );
 			$row_sep_val = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 			$row_sep_op_val = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
-			$closed_val = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
-			$closed_op_val = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
-			$open_val = esc_attr( get_option( 'esi_style_open_color', '#222222' ) );
-			$open_op_val = intval( get_option( 'esi_style_open_color_opacity', 100 ) );
-			$bg_odd_swatch = $bg_even_swatch = $row_sep_swatch = $closed_swatch = $open_swatch = 'rgba(0,0,0,1)';
+			$bg_odd_swatch = $bg_even_swatch = $row_sep_swatch = 'rgba(0,0,0,1)';
 			if ( class_exists( 'Easy_Store_Info' ) ) {
 				$main = Easy_Store_Info::instance();
 				if ( method_exists( $main, 'hex_to_rgba' ) ) {
 					$bg_odd_swatch = $main->hex_to_rgba( $bg_odd_val, $bg_odd_op_val );
 					$bg_even_swatch = $main->hex_to_rgba( $bg_even_val, $bg_even_op_val );
-						$text_odd_swatch = $main->hex_to_rgba( $text_odd_val, $text_odd_op_val );
-						$text_even_swatch = $main->hex_to_rgba( $text_even_val, $text_even_op_val );
+					$text_odd_swatch = $main->hex_to_rgba( $text_odd_val, $text_odd_op_val );
+					$text_even_swatch = $main->hex_to_rgba( $text_even_val, $text_even_op_val );
 					$row_sep_swatch = $main->hex_to_rgba( $row_sep_val, $row_sep_op_val );
-					$closed_swatch = $main->hex_to_rgba( $closed_val, $closed_op_val );
-					$open_swatch = $main->hex_to_rgba( $open_val, $open_op_val );
 				}
 			}
 			// Try to fetch opening hours for display if API key/place ID present
@@ -138,17 +132,14 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 					$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 					$row_sep_op = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 					$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
-					$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
-					$closed_color_op = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
-					$open_color = esc_attr( get_option( 'esi_style_open_color', '#222222' ) );
-					$open_color_op = intval( get_option( 'esi_style_open_color_opacity', 100 ) );
 
 					// use main helper to convert hex to rgba if available, otherwise do simple conversion
 					if ( method_exists( $main, 'hex_to_rgba' ) ) {
 						$bg_odd_rgba = $main->hex_to_rgba( $bg_odd, $bg_odd_op );
 						$bg_even_rgba = $main->hex_to_rgba( $bg_even, $bg_even_op );
 						$row_sep_rgba = $main->hex_to_rgba( $row_sep_color, $row_sep_op );
-						$closed_color_rgba = $main->hex_to_rgba( $closed_color, $closed_color_op );
+						$text_odd_rgba = $main->hex_to_rgba( $text_odd_val, $text_odd_op_val );
+						$text_even_rgba = $main->hex_to_rgba( $text_even_val, $text_even_op_val );
 					} else {
 						// fallback simple conversion
 						$convert = function( $hex, $op ) {
@@ -164,12 +155,12 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						$bg_odd_rgba = $convert( $bg_odd, $bg_odd_op );
 						$bg_even_rgba = $convert( $bg_even, $bg_even_op );
 						$row_sep_rgba = $convert( $row_sep_color, $row_sep_op );
-						$closed_color_rgba = $convert( $closed_color, $closed_color_op );
-						$open_color_rgba = $convert( $open_color, $open_color_op );
+						$text_odd_rgba = $convert( $text_odd_val, $text_odd_op_val );
+						$text_even_rgba = $convert( $text_even_val, $text_even_op_val );
 					}
 
 					$style_attr = sprintf(
-						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-open-color:%s;--esi-closed-color:%s',
+						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s',
 						$font_size,
 						$font_weight,
 						$day_align,
@@ -177,13 +168,11 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						$bg_odd_rgba,
 						$bg_even_rgba,
 						// text colors
-						$main->hex_to_rgba( $text_odd_val, $text_odd_op_val ),
-						$main->hex_to_rgba( $text_even_val, $text_even_op_val ),
+						$text_odd_rgba,
+						$text_even_rgba,
 						$row_sep_rgba,
 						$row_sep_weight,
-						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) ),
-						$open_color_rgba,
-						$closed_color_rgba
+						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) )
 					);
 
 					$opening_hours_html = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '"><ul>';
@@ -325,28 +314,7 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 								</select>
 							</td>
 						</tr>
-						<tr>
-							<th scope="row"><label for="esi_style_closed_color">Closed day font color</label></th>
-							<td>
-								<div class="esi-alpha-picker">
-									<input name="esi_style_closed_color" id="esi_style_closed_color" class="esi-alpha-color" type="color" value="<?php echo $closed_val; ?>" />
-									<input name="esi_style_closed_color_opacity" id="esi_style_closed_color_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>" />
-									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>%</span>
-									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $closed_swatch ); ?>"></span>
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="esi_style_open_color">Open day font color</label></th>
-							<td>
-								<div class="esi-alpha-picker">
-									<input name="esi_style_open_color" id="esi_style_open_color" class="esi-alpha-color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_open_color', '#222222' ) ); ?>" />
-									<input name="esi_style_open_color_opacity" id="esi_style_open_color_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_open_color_opacity', 100 ) ); ?>" />
-									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_open_color_opacity', 100 ) ); ?>%</span>
-									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $open_swatch ); ?>"></span>
-								</div>
-							</td>
-						</tr>
+                        
 								</table>
 								<p class="submit"><button class="button button-primary" type="submit">Save Settings</button></p>
 							</div>
