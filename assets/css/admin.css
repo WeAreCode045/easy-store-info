@@ -1,4 +1,22 @@
-/**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
- */
+/* Admin styles for settings layout and preview */
+.esi-admin-panel{margin:0;padding:18px 0;background:transparent}
+
+.wrapper{max-width:100%;margin:18px auto;background:#fff;border:1px solid #e6e6e6;border-radius:8px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,0.04)}
+/* avoid WP admin footer overlapping our panel */
+.wrapper{margin-bottom:100px;position:relative;z-index:1}
+
+.keys{width:50%;margin-bottom:14px;padding-bottom:8px;border-bottom:1px dashed #eee}
+.keys .form-table input.regular-text{width:100%;max-width:none}
+
+.styling{display:flex;gap:16px;align-items:flex-start}
+.settings{width:50%;padding-right:12px}
+.preview{width:50%;display:flex;flex-direction:column;align-items:flex-start}
+.preview-bg{background:#b40909;padding:12px;border-radius:8px}
+.preview-bg #esi-opening-hours-placeholder{width:400px;padding:10px;background:transparent;border:none;border-radius:6px;margin:0}
+
+.esi-color-swatch{display:inline-block;width:20px;height:20px;border:1px solid #ddd;margin-left:8px;vertical-align:middle;border-radius:4px}
+.esi-admin-left .form-table th{width:220px}
+
+.esi-alpha-picker{display:inline-flex;align-items:center;gap:8px}
+.esi-alpha-picker .esi-alpha-opacity{width:110px}
+.esi-alpha-picker .esi-alpha-value{min-width:36px;text-align:right;font-size:12px;color:#666}

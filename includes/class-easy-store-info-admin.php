@@ -55,7 +55,11 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 		 * Register the JavaScript for the admin area.
 		 */
 		public function enqueue_scripts() {
-			wp_enqueue_script( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/js/admin.js', array( 'jquery' ), '1.0.0', true );
+			// Load upstream BraadMartin alpha-color-picker from jsDelivr (full UI)
+			wp_enqueue_style( 'alpha-color-picker-css', 'https://cdn.jsdelivr.net/gh/BraadMartin/components@master/alpha-color-picker/alpha-color-picker.css', array(), null );
+			wp_enqueue_script( 'alpha-color-picker-js', 'https://cdn.jsdelivr.net/gh/BraadMartin/components@master/alpha-color-picker/alpha-color-picker.min.js', array( 'jquery' ), null, true );
+			$base = untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) );
+			wp_enqueue_script( 'easy-store-info-admin', $base . '/assets/js/admin.js', array( 'jquery', 'alpha-color-picker-js' ), '1.0.0', true );
 			wp_localize_script( 'easy-store-info-admin', 'esiAdmin', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce' => wp_create_nonce( 'esi-save-settings' ),
@@ -74,6 +78,29 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$place_id = esc_attr( get_option( 'esi_place_id', '' ) );
 			$grid = get_option( 'esi_media_grid', array() );
 			$grid = array_pad( $grid, 8, 0 );
+
+			// Prepare color swatches for inputs (use main helper if available)
+			$bg_odd_val = esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+			$bg_odd_op_val = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
+			$bg_even_val = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+			$bg_even_op_val = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
+			$row_sep_val = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+			$row_sep_op_val = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
+			$closed_val = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
+			$closed_op_val = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
+			$open_val = esc_attr( get_option( 'esi_style_open_color', '#222222' ) );
+			$open_op_val = intval( get_option( 'esi_style_open_color_opacity', 100 ) );
+			$bg_odd_swatch = $bg_even_swatch = $row_sep_swatch = $closed_swatch = $open_swatch = 'rgba(0,0,0,1)';
+			if ( class_exists( 'Easy_Store_Info' ) ) {
+				$main = Easy_Store_Info::instance();
+				if ( method_exists( $main, 'hex_to_rgba' ) ) {
+					$bg_odd_swatch = $main->hex_to_rgba( $bg_odd_val, $bg_odd_op_val );
+					$bg_even_swatch = $main->hex_to_rgba( $bg_even_val, $bg_even_op_val );
+					$row_sep_swatch = $main->hex_to_rgba( $row_sep_val, $row_sep_op_val );
+					$closed_swatch = $main->hex_to_rgba( $closed_val, $closed_op_val );
+					$open_swatch = $main->hex_to_rgba( $open_val, $open_op_val );
+				}
+			}
 			// Try to fetch opening hours for display if API key/place ID present
 			$opening_hours_html = '';
 			if ( ! empty( $api_key ) && ! empty( $place_id ) && class_exists( 'Easy_Store_Info' ) ) {
@@ -107,6 +134,8 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 					$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
 					$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
 					$closed_color_op = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
+					$open_color = esc_attr( get_option( 'esi_style_open_color', '#222222' ) );
+					$open_color_op = intval( get_option( 'esi_style_open_color_opacity', 100 ) );
 
 					// use main helper to convert hex to rgba if available, otherwise do simple conversion
 					if ( method_exists( $main, 'hex_to_rgba' ) ) {
@@ -130,10 +159,11 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						$bg_even_rgba = $convert( $bg_even, $bg_even_op );
 						$row_sep_rgba = $convert( $row_sep_color, $row_sep_op );
 						$closed_color_rgba = $convert( $closed_color, $closed_color_op );
+						$open_color_rgba = $convert( $open_color, $open_color_op );
 					}
 
 					$style_attr = sprintf(
-						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-closed-color:%s',
+						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-open-color:%s;--esi-closed-color:%s',
 						$font_size,
 						$font_weight,
 						$day_align,
@@ -142,6 +172,8 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						$bg_even_rgba,
 						$row_sep_rgba,
 						$row_sep_weight,
+						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) ),
+						$open_color_rgba,
 						$closed_color_rgba
 					);
 
@@ -160,20 +192,24 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			<div class="wrap">
 				<h1>Store Info Settings</h1>
 				<form id="esi-settings-form">
-					<h2>Google Places</h2>
-					<table class="form-table">
-						<tr>
-							<th scope="row"><label for="esi_google_api_key">API Key</label></th>
-							<td><input name="esi_google_api_key" id="esi_google_api_key" type="text" value="<?php echo $api_key; ?>" class="regular-text"/></td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="esi_place_id">Place ID</label></th>
-							<td><input name="esi_place_id" id="esi_place_id" type="text" value="<?php echo $place_id; ?>" class="regular-text"/></td>
-						</tr>
-					</table>
-
-					<h2>Display Styles</h2>
-					<table class="form-table">
+					<div class="esi-admin-panel wrapper">
+						<div class="keys">
+							<h2>Google Places</h2>
+							<table class="form-table">
+								<tr>
+									<th scope="row"><label for="esi_google_api_key">API Key</label></th>
+									<td><input name="esi_google_api_key" id="esi_google_api_key" type="text" value="<?php echo $api_key; ?>" class="regular-text"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><label for="esi_place_id">Place ID</label></th>
+									<td><input name="esi_place_id" id="esi_place_id" type="text" value="<?php echo $place_id; ?>" class="regular-text"/></td>
+								</tr>
+							</table>
+						</div>
+						<div class="styling">
+							<div class="settings esi-admin-left">
+								<h2>Display Styles</h2>
+								<table class="form-table">
 						<tr>
 							<th scope="row"><label for="esi_style_font_size">Font size (px)</label></th>
 							<td><input name="esi_style_font_size" id="esi_style_font_size" type="number" min="8" max="72" value="<?php echo esc_attr( get_option( 'esi_style_font_size', 14 ) ); ?>" class="small-text"/> px</td>
@@ -211,22 +247,34 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						<tr>
 							<th scope="row"><label for="esi_style_bg_odd">Background odd rows</label></th>
 							<td>
-								<input name="esi_style_bg_odd" id="esi_style_bg_odd" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) ); ?>" />
-								<input name="esi_style_bg_odd_opacity" id="esi_style_bg_odd_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd_opacity', 100 ) ); ?>" class="small-text" /> %
+								<div class="esi-alpha-picker">
+									<input name="esi_style_bg_odd" id="esi_style_bg_odd" class="esi-alpha-color" type="color" value="<?php echo $bg_odd_val; ?>" />
+									<input name="esi_style_bg_odd_opacity" id="esi_style_bg_odd_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_bg_odd_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $bg_odd_swatch ); ?>"></span>
+								</div>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_bg_even">Background even rows</label></th>
 							<td>
-								<input name="esi_style_bg_even" id="esi_style_bg_even" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) ); ?>" />
-								<input name="esi_style_bg_even_opacity" id="esi_style_bg_even_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>" class="small-text" /> %
+								<div class="esi-alpha-picker">
+									<input name="esi_style_bg_even" id="esi_style_bg_even" class="esi-alpha-color" type="color" value="<?php echo $bg_even_val; ?>" />
+									<input name="esi_style_bg_even_opacity" id="esi_style_bg_even_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $bg_even_swatch ); ?>"></span>
+								</div>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_row_sep_color">Row separator color</label></th>
 							<td>
-								<input name="esi_style_row_sep_color" id="esi_style_row_sep_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) ); ?>" />
-								<input name="esi_style_row_sep_opacity" id="esi_style_row_sep_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_opacity', 100 ) ); ?>" class="small-text" /> %
+								<div class="esi-alpha-picker">
+									<input name="esi_style_row_sep_color" id="esi_style_row_sep_color" class="esi-alpha-color" type="color" value="<?php echo $row_sep_val; ?>" />
+									<input name="esi_style_row_sep_opacity" id="esi_style_row_sep_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_row_sep_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $row_sep_swatch ); ?>"></span>
+								</div>
 							</td>
 						</tr>
 						<tr>
@@ -234,18 +282,54 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 							<td><input name="esi_style_row_sep_weight" id="esi_style_row_sep_weight" type="number" min="0" max="10" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_weight', 1 ) ); ?>" class="small-text" /> px</td>
 						</tr>
 						<tr>
-							<th scope="row"><label for="esi_style_closed_color">Closed day font color</label></th>
+							<th scope="row"><label for="esi_style_row_sep_style">Row separator style</label></th>
 							<td>
-								<input name="esi_style_closed_color" id="esi_style_closed_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_closed_color', '#999999' ) ); ?>" />
-								<input name="esi_style_closed_color_opacity" id="esi_style_closed_color_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>" class="small-text" /> %
+								<select name="esi_style_row_sep_style" id="esi_style_row_sep_style">
+									<?php $rss = get_option( 'esi_style_row_sep_style', 'solid' ); ?>
+									<option value="solid" <?php selected( $rss, 'solid' ); ?>>Solid</option>
+									<option value="dashed" <?php selected( $rss, 'dashed' ); ?>>Dashed</option>
+									<option value="dotted" <?php selected( $rss, 'dotted' ); ?>>Dotted</option>
+									<option value="double" <?php selected( $rss, 'double' ); ?>>Double</option>
+									<option value="none" <?php selected( $rss, 'none' ); ?>>None</option>
+								</select>
 							</td>
 						</tr>
-					</table>
-
-					<div id="esi-opening-hours-placeholder">
-						<?php echo $opening_hours_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<tr>
+							<th scope="row"><label for="esi_style_closed_color">Closed day font color</label></th>
+							<td>
+								<div class="esi-alpha-picker">
+									<input name="esi_style_closed_color" id="esi_style_closed_color" class="esi-alpha-color" type="color" value="<?php echo $closed_val; ?>" />
+									<input name="esi_style_closed_color_opacity" id="esi_style_closed_color_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $closed_swatch ); ?>"></span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_open_color">Open day font color</label></th>
+							<td>
+								<div class="esi-alpha-picker">
+									<input name="esi_style_open_color" id="esi_style_open_color" class="esi-alpha-color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_open_color', '#222222' ) ); ?>" />
+									<input name="esi_style_open_color_opacity" id="esi_style_open_color_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_open_color_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_open_color_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $open_swatch ); ?>"></span>
+								</div>
+							</td>
+						</tr>
+								</table>
+								<p class="submit"><button class="button button-primary" type="submit">Save Settings</button></p>
+							</div>
+							<div class="preview esi-admin-right">
+								<h2>Preview</h2>
+								<div class="preview-bg">
+									<div id="esi-opening-hours-placeholder">
+										<?php echo $opening_hours_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</div>
+								</div>
+							</div>
+						</div>
+						</div>
 					</div>
-					<p class="submit"><button class="button button-primary" type="submit">Save Settings</button></p>
 				</form>
 			</div>
 			<?php
