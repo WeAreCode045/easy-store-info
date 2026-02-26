@@ -130,7 +130,7 @@ jQuery(function ($) {
         show(idx);
         $(document).on('keydown', keyHandler);
     });
-
+});
     // Settings page: media modal and save
     if ($('.esi-settings-wrap').length) {
         var frame;
@@ -441,6 +441,9 @@ jQuery(function ($) {
             var data = [];
             for (var i = 0; i < grid.length; i++) { data.push({ name: 'esi_media_grid[]', value: grid[i] }); }
             data.push({ name: 'action', value: 'esi_save_settings' });
+            // include grid layout if present in sidebar
+            var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
+            if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
             // use esiSettings (localized by frontend handler)
             if (typeof esiSettings !== 'undefined') {
                 data.push({ name: 'nonce', value: esiSettings.nonce });
@@ -484,6 +487,9 @@ jQuery(function ($) {
                 data.push({ name: 'esi_media_grid[]', value: grid[i] });
             }
             data.push({ name: 'action', value: 'esi_save_settings' });
+            // include frontend layout setting when present
+            var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
+            if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
             data.push({ name: 'nonce', value: esiSettings.nonce });
 
             $.post(esiSettings.ajax_url, data, function (res) {

@@ -61,14 +61,16 @@ final class Easy_Store_Info {
 	 */
 	public function includes() {
 		if ( $this->is_request( 'admin' ) ) {
-			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-admin.php';
+			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-settings.php';
 		}
 		if ( $this->is_request( 'frontend' ) ) {
-			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-frontend.php';
+			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-editor.php';
 		}
 		if ( $this->is_request( 'ajax' ) ) {
 			include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-ajax.php';
 		}
+		// shortcodes shim (future split)
+		include_once EASY_STORE_INFO_ABSPATH . 'includes/class-easy-store-info-shortcodes.php';
 	}
 
 	/**
@@ -531,23 +533,10 @@ final class Easy_Store_Info {
 		$cols = intval( $cols );
 		$slots = max( 1, $rows * $cols );
 		$grid = array_pad( $grid, $slots, 0 );
-		$out = '<div class="esi-media-grid esi-grid-' . esc_attr( $layout ) . '">';
-		foreach ( $grid as $idx => $att_id ) {
-			$out .= '<div class="esi-media-item" data-index="' . esc_attr( $idx ) . '">';
-			if ( $att_id && $attachment = get_post( $att_id ) ) {
-				$mime = get_post_mime_type( $att_id );
-				$url = wp_get_attachment_url( $att_id );
-				$thumb_url = $url; // use full-size image for thumb src to preserve aspect/quality
-				$out .= '<a class="esi-lightbox" href="' . esc_url( $url ) . '" data-mime="' . esc_attr( $mime ) . '">';
-				$out .= '<img class="esi-thumb" src="' . esc_url( $thumb_url ) . '" alt="" />';
-				$out .= '</a>';
-			} else {
-				$out .= '<div class="esi-media-empty"></div>';
-			}
-			$out .= '</div>';
-		}
-		$out .= '</div>';
-		return $out;
+		// Use template for rendering media grid
+		ob_start();
+		$this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout ) );
+		return (string) ob_get_clean();
 	}
 
 	/**
@@ -560,10 +549,11 @@ final class Easy_Store_Info {
 		$can_edit_frontend = is_user_logged_in() && $user && array_intersect( $allowed_roles, (array) $user->roles );
 
 		if ( $can_edit_frontend ) {
-			// Enqueue media scripts and ensure frontend script localized
+			// Enqueue media scripts and ensure editor assets are available
 			wp_enqueue_media();
-			// frontend script and localization are enqueued via the frontend handler
-			wp_enqueue_script( 'easy-store-info-frontend' );
+			// enqueue the editor-only JS & CSS (registered by frontend loader)
+			wp_enqueue_style( 'easy-store-info-editor' );
+			wp_enqueue_script( 'easy-store-info-editor' );
 
 			$grid = get_option( 'esi_media_grid', array() );
 			$layout = get_option( 'esi_grid_layout', '2x4' );
@@ -572,41 +562,10 @@ final class Easy_Store_Info {
 			$cols = intval( $cols );
 			$slots = max( 1, $rows * $cols );
 			$grid = array_pad( $grid, $slots, 0 );
-			$out = '<div class="esi-settings-wrap esi-frontend-editor"><form id="esi-settings-form">';
-			// two-column editor: left = grid, right = sidebar with instructions and dropzone
-			$out .= '<div class="esi-editor-panel">';
-			$out .= '<div class="esi-editor-left">';
-			$out .= '<div class="esi-media-grid esi-admin-grid esi-grid-' . esc_attr( $layout ) . '">';
-			foreach ( $grid as $i => $att_id ) {
-				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
-				// small drag handle for reordering
-				$out .= '<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>';
-				if ( $att_id && get_post( $att_id ) ) {
-					$url = wp_get_attachment_url( $att_id );
-					$thumb_url = $url; // use full-size image for thumb src
-					$out .= '<div class="esi-thumb-wrap"><img class="esi-thumb" src="' . esc_url( $thumb_url ) . '" alt="" /></div>';
-					$out .= '<input type="hidden" name="esi_media_grid[]" value="' . esc_attr( $att_id ) . '" />';
-					$out .= '<button class="esi-remove-media button" type="button" aria-label="Remove image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
-				} else {
-					$out .= '<div class="esi-media-empty"></div>';
-					$out .= '<input type="hidden" name="esi_media_grid[]" value="0" />';
-					$out .= '<button class="esi-add-media button" type="button" aria-label="Add image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
-				}
-				$out .= '</div>';
-			}
-			$out .= '</div>'; // close .esi-media-grid
-			$out .= '</div>'; // close .esi-editor-left
-			// sidebar
-			$out .= '<aside class="esi-editor-sidebar">';
-			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
-			$out .= '<div class="esi-dropzone-placeholder"></div>';
-			$out .= '<div class="esi-sidebar-actions">';
-			$out .= '<button class="button button-primary esi-save-button" type="submit">Save Grid</button>';
-			$out .= '</div>';
-			$out .= '</aside>';
-			$out .= '</div>'; // .esi-editor-panel
-			$out .= '</form></div>';
-			return $out;
+
+			ob_start();
+			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout ) );
+			return (string) ob_get_clean();
 		}
 
 		// Default: prompt to login or use admin
@@ -696,6 +655,14 @@ final class Easy_Store_Info {
 			// Normalize/pad to 8 slots to make per-item operations predictable
 			$grid = array_pad( $grid, 8, 0 );
 			update_option( 'esi_media_grid', $grid );
+			// Allow frontend editors to update grid layout as well
+			if ( isset( $_POST['esi_grid_layout'] ) ) {
+				$allowed_layouts = array( '2x3','2x4','2x5','3x3','3x4','3x5' );
+				$layout = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
+				if ( in_array( $layout, $allowed_layouts, true ) ) {
+					update_option( 'esi_grid_layout', $layout );
+				}
+			}
 		} else {
 			wp_send_json_error( 'forbidden', 403 );
 		}
