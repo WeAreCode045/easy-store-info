@@ -105,15 +105,15 @@ final class Easy_Store_Info {
 			return '<p>Keine Öffnungszeiten verfügbar.</p>';
 		}
 
-		// German weekday names with Monday first
+		// German weekday names (0=Sunday..6=Saturday)
 		$weekdays = array(
+			0 => 'Sonntag',
 			1 => 'Montag',
 			2 => 'Dienstag',
 			3 => 'Mittwoch',
 			4 => 'Donnerstag',
 			5 => 'Freitag',
 			6 => 'Samstag',
-			0 => 'Sonntag',
 		);
 
 		$order = array( 1, 2, 3, 4, 5, 6, 0 );
@@ -375,8 +375,8 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_row_sep_color', $style_row_sep_color );
 			update_option( 'esi_style_row_sep_weight', $style_row_sep_weight );
 			update_option( 'esi_style_closed_color', $style_closed_color );
-		} elseif ( $user && array_intersect( $frontend_roles, (array) $user->roles ) ) {
-			// Frontend role: only allow updating the media grid
+		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
+			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
 			update_option( 'esi_media_grid', $grid );
 		} else {

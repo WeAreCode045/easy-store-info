@@ -55,6 +55,13 @@ function esi_plugin_activate() {
 	add_role( 'esi_manager', 'ESI Manager', array( 'read' => true, 'upload_files' => true, 'edit_posts' => true ) );
 	// New role: Store Info Editor
 	add_role( 'store_info_editor', 'Store Info Editor', array( 'read' => true, 'upload_files' => true, 'edit_posts' => true ) );
+	// Grant capability to roles and administrator
+	$r = get_role( 'esi_manager' );
+	if ( $r ) { $r->add_cap( 'edit_store_info' ); }
+	$r2 = get_role( 'store_info_editor' );
+	if ( $r2 ) { $r2->add_cap( 'edit_store_info' ); }
+	$admin = get_role( 'administrator' );
+	if ( $admin ) { $admin->add_cap( 'edit_store_info' ); }
 }
 
 /**
@@ -63,6 +70,9 @@ function esi_plugin_activate() {
 function esi_plugin_deactivate() {
 	remove_role( 'esi_manager' );
 	remove_role( 'store_info_editor' );
+	// remove capability from administrator
+	$admin = get_role( 'administrator' );
+	if ( $admin ) { $admin->remove_cap( 'edit_store_info' ); }
 }
 
 register_activation_hook( __FILE__, 'esi_plugin_activate' );
@@ -74,7 +84,8 @@ register_deactivation_hook( __FILE__, 'esi_plugin_deactivate' );
 function esi_block_admin_for_esi_manager() {
 	if ( is_admin() ) {
 		$user = wp_get_current_user();
-		if ( $user && array_intersect( array( 'esi_manager', 'store_info_editor' ), (array) $user->roles ) ) {
+		// Block wp-admin for users who can edit store info but are not administrators
+		if ( $user && user_can( $user, 'edit_store_info' ) && ! user_can( $user, 'manage_options' ) ) {
 			// Allow AJAX and REST
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				return;
