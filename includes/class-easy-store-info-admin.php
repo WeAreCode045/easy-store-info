@@ -355,6 +355,21 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 							<th scope="row"><label for="esi_style_state_padding">Status padding (px)</label></th>
 							<td><input name="esi_style_state_padding" id="esi_style_state_padding" type="number" min="0" max="40" value="<?php echo esc_attr( $state_padding ); ?>" class="small-text"/> px</td>
 						</tr>
+						<tr>
+							<th scope="row"><label for="esi_grid_layout">Media grid layout</label></th>
+							<td>
+								<select name="esi_grid_layout" id="esi_grid_layout">
+									<?php $gl = get_option( 'esi_grid_layout', '2x4' ); ?>
+									<option value="2x3" <?php selected( $gl, '2x3' ); ?>>2 × 3</option>
+									<option value="2x4" <?php selected( $gl, '2x4' ); ?>>2 × 4</option>
+									<option value="2x5" <?php selected( $gl, '2x5' ); ?>>2 × 5</option>
+									<option value="3x3" <?php selected( $gl, '3x3' ); ?>>3 × 3</option>
+									<option value="3x4" <?php selected( $gl, '3x4' ); ?>>3 × 4</option>
+									<option value="3x5" <?php selected( $gl, '3x5' ); ?>>3 × 5</option>
+								</select>
+								<p class="description">Choose rows × columns for the media grid.</p>
+							</td>
+						</tr>
                         
 								</table>
 								<p class="submit"><button class="button button-primary" type="submit">Save Settings</button></p>

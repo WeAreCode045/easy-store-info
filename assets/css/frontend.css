@@ -3,12 +3,12 @@
  * included in this file.
  */
 .esi-media-grid{
-	display:flex;
-	flex-wrap:wrap;
+	display:grid;
+	grid-template-columns: repeat(4, 1fr);
 	gap:10px;
 }
 .esi-media-item{
-	width:calc(25% - 7.5px);
+	/* grid items are square via aspect-ratio */
 	box-sizing:border-box;
 	border-radius:20px;
 	overflow:hidden;
@@ -42,6 +42,12 @@
 	height:100%;
 }
 .esi-admin-grid .esi-media-item{min-height:100px}
+.esi-media-grid.esi-grid-2x3{grid-template-columns:repeat(3,1fr)}
+.esi-media-grid.esi-grid-2x4{grid-template-columns:repeat(4,1fr)}
+.esi-media-grid.esi-grid-2x5{grid-template-columns:repeat(5,1fr)}
+.esi-media-grid.esi-grid-3x3{grid-template-columns:repeat(3,1fr)}
+.esi-media-grid.esi-grid-3x4{grid-template-columns:repeat(4,1fr)}
+.esi-media-grid.esi-grid-3x5{grid-template-columns:repeat(5,1fr)}
 .esi-admin-grid .button{position:absolute;right:8px;top:8px}
 
 /* Drag & drop feedback for media grid editor */

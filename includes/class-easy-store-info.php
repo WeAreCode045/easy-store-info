@@ -524,8 +524,14 @@ final class Easy_Store_Info {
 	 */
 	public function shortcode_media_grid( $atts = array() ) {
 		$grid = get_option( 'esi_media_grid', array() );
-		$grid = array_pad( $grid, 8, 0 );
-		$out = '<div class="esi-media-grid">';
+		// layout option controls the number of slots shown
+		$layout = get_option( 'esi_grid_layout', '2x4' );
+		list( $rows, $cols ) = explode( 'x', $layout ) + array( 2, 4 );
+		$rows = intval( $rows );
+		$cols = intval( $cols );
+		$slots = max( 1, $rows * $cols );
+		$grid = array_pad( $grid, $slots, 0 );
+		$out = '<div class="esi-media-grid esi-grid-' . esc_attr( $layout ) . '">';
 		foreach ( $grid as $idx => $att_id ) {
 			$out .= '<div class="esi-media-item" data-index="' . esc_attr( $idx ) . '">';
 			if ( $att_id && $attachment = get_post( $att_id ) ) {
@@ -560,9 +566,14 @@ final class Easy_Store_Info {
 			wp_enqueue_script( 'easy-store-info-frontend' );
 
 			$grid = get_option( 'esi_media_grid', array() );
-			$grid = array_pad( $grid, 8, 0 );
+			$layout = get_option( 'esi_grid_layout', '2x4' );
+			list( $rows, $cols ) = explode( 'x', $layout ) + array( 2, 4 );
+			$rows = intval( $rows );
+			$cols = intval( $cols );
+			$slots = max( 1, $rows * $cols );
+			$grid = array_pad( $grid, $slots, 0 );
 			$out = '<div class="esi-settings-wrap"><form id="esi-settings-form">';
-			$out .= '<div class="esi-media-grid esi-admin-grid">';
+			$out .= '<div class="esi-media-grid esi-admin-grid esi-grid-' . esc_attr( $layout ) . '">';
 			foreach ( $grid as $i => $att_id ) {
 				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
 				if ( $att_id && get_post( $att_id ) ) {
@@ -631,6 +642,12 @@ final class Easy_Store_Info {
 			$style_state_font_size = isset( $_POST['esi_style_state_font_size'] ) ? intval( $_POST['esi_style_state_font_size'] ) : intval( get_option( 'esi_style_state_font_size', get_option( 'esi_style_font_size', 14 ) ) );
 			$style_state_align = isset( $_POST['esi_style_state_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_state_align'] ) ) : sanitize_text_field( get_option( 'esi_style_state_align', 'left' ) );
 			$style_state_padding = isset( $_POST['esi_style_state_padding'] ) ? intval( $_POST['esi_style_state_padding'] ) : intval( get_option( 'esi_style_state_padding', 0 ) );
+			// grid layout option
+			$allowed_layouts = array( '2x3','2x4','2x5','3x3','3x4','3x5' );
+			$style_grid_layout = isset( $_POST['esi_grid_layout'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) ) : get_option( 'esi_grid_layout', '2x4' );
+			if ( ! in_array( $style_grid_layout, $allowed_layouts, true ) ) {
+				$style_grid_layout = '2x4';
+			}
 			update_option( 'esi_google_api_key', $api_key );
 			update_option( 'esi_place_id', $place_id );
 			update_option( 'esi_media_grid', $grid );
@@ -657,6 +674,8 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_state_font_size', $style_state_font_size );
 			update_option( 'esi_style_state_align', $style_state_align );
 			update_option( 'esi_style_state_padding', $style_state_padding );
+			// persist grid layout
+			update_option( 'esi_grid_layout', $style_grid_layout );
 		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
 			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
