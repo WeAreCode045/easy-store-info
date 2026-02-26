@@ -177,51 +177,217 @@ jQuery(function ($) {
 
         // Make media items draggable to reorder the grid
         function initMediaDragSort() {
-            $('.esi-media-item').attr('draggable', 'true');
+            // Only the handle is draggable; keep items non-draggable
+            $('.esi-drag-handle').each(function () { this.setAttribute('draggable', 'true'); });
+            $('.esi-media-item').removeAttr('draggable');
             var dragSrcEl = null;
+            var pointerDragging = false;
 
-            $(document).on('dragstart', '.esi-media-item', function (e) {
-                dragSrcEl = this;
+            // Desktop / native drag via handle
+            $(document).off('dragstart.handle').on('dragstart.handle', '.esi-drag-handle', function (e) {
+                var $item = $(this).closest('.esi-media-item');
+                dragSrcEl = $item.get(0);
                 e.originalEvent.dataTransfer.effectAllowed = 'move';
-                try { e.originalEvent.dataTransfer.setData('text/html', this.outerHTML); } catch (err) {}
-                $(this).addClass('dragging');
+                try { e.originalEvent.dataTransfer.setData('text/html', dragSrcEl.outerHTML); } catch (err) {}
+                $item.addClass('dragging');
             });
 
-            $(document).on('dragover', '.esi-media-item', function (e) {
+            $(document).off('dragover.item').on('dragover.item', '.esi-media-item', function (e) {
                 e.preventDefault();
                 e.originalEvent.dataTransfer.dropEffect = 'move';
                 $(this).addClass('drag-over');
                 return false;
             });
 
-            $(document).on('dragleave', '.esi-media-item', function (e) {
+            $(document).off('dragleave.item').on('dragleave.item', '.esi-media-item', function (e) {
                 $(this).removeClass('drag-over');
             });
 
-            $(document).on('drop', '.esi-media-item', function (e) {
+            $(document).off('drop.item').on('drop.item', '.esi-media-item', function (e) {
                 e.preventDefault();
                 var $target = $(this);
                 $target.removeClass('drag-over');
                 var $dragging = $(dragSrcEl);
-                if ($dragging.length && $dragging[0] !== $target[0]) {
-                    // Insert before or after depending on positions
-                    if ($target.index() > $dragging.index()) {
-                        $target.after($dragging);
-                    } else {
-                        $target.before($dragging);
-                    }
+                    if ($dragging.length && $dragging[0] !== $target[0]) {
+                    if ($target.index() > $dragging.index()) { $target.after($dragging); }
+                    else { $target.before($dragging); }
+                    // immediate save on drop
+                    persistGridOrder();
                 }
                 return false;
             });
 
-            $(document).on('dragend', '.esi-media-item', function () {
-                $(this).removeClass('dragging');
+            $(document).off('dragend.item').on('dragend.item', '.esi-drag-handle', function (e) {
                 $('.esi-media-item').removeClass('drag-over');
+                if (dragSrcEl) $(dragSrcEl).removeClass('dragging');
+                dragSrcEl = null;
+            });
+
+            // Pointer-based fallback for touch devices: handle pointerdown on handle
+            $(document).off('pointerdown.handle').on('pointerdown.handle', '.esi-drag-handle', function (ev) {
+                // only respond to primary button / touch
+                if (ev.originalEvent && ev.originalEvent.button && ev.originalEvent.button !== 0) return;
+                pointerDragging = true;
+                var $handle = $(this);
+                dragSrcEl = $handle.closest('.esi-media-item').get(0);
+                $(dragSrcEl).addClass('dragging');
+                $handle.get(0).setPointerCapture(ev.originalEvent.pointerId);
+            });
+
+            $(document).off('pointermove.handle').on('pointermove.handle', function (ev) {
+                if (!pointerDragging || !dragSrcEl) return;
+                ev.preventDefault();
+                var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
+                if (!targetEl) return;
+                var $targetItem = $(targetEl).closest('.esi-media-item');
+                $('.esi-media-item').removeClass('drag-over');
+                if ($targetItem.length && $targetItem.get(0) !== dragSrcEl) {
+                    $targetItem.addClass('drag-over');
+                }
+            });
+
+            $(document).off('pointerup.handle pointercancel.handle').on('pointerup.handle pointercancel.handle', function (ev) {
+                if (!pointerDragging) return;
+                pointerDragging = false;
+                var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
+                var $targetItem = targetEl ? $(targetEl).closest('.esi-media-item') : $();
+                var $dragging = $(dragSrcEl);
+                $('.esi-media-item').removeClass('drag-over');
+                if ($targetItem.length && $dragging.length && $targetItem.get(0) !== $dragging.get(0)) {
+                    if ($targetItem.index() > $dragging.index()) { $targetItem.after($dragging); }
+                    else { $targetItem.before($dragging); }
+                    // on pointer-based interaction use debounced save to avoid many rapid requests
+                    debouncedPersist();
+                }
+                if (dragSrcEl) $(dragSrcEl).removeClass('dragging');
+                dragSrcEl = null;
             });
         }
 
         // init drag sort on load
         initMediaDragSort();
+
+        // Insert dropzone into editor wrapper (bulk upload)
+        var $editorWrap = $('.esi-editor-wrapper');
+        if ($editorWrap.length) {
+            var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
+            $editorWrap.prepend($dz);
+
+            // Click to open file picker
+            $dz.on('click', function () {
+                var $input = $('<input type="file" accept="image/*" multiple style="display:none">');
+                $input.on('change', function () { handleFiles(this.files); $input.remove(); });
+                $(document.body).append($input);
+                $input.trigger('click');
+            });
+
+            $dz.on('dragover', function (e) { e.preventDefault(); e.stopPropagation(); $dz.addClass('dragover'); });
+            $dz.on('dragleave drop', function (e) { e.preventDefault(); e.stopPropagation(); $dz.removeClass('dragover'); });
+            $dz.on('drop', function (e) {
+                var dt = e.originalEvent.dataTransfer;
+                if (!dt || !dt.files) return;
+                handleFiles(dt.files);
+            });
+        }
+
+        // Handle file list and upload via WP REST API
+        function handleFiles(fileList) {
+            if (!fileList || !fileList.length) return;
+            var files = Array.prototype.slice.call(fileList);
+            var emptyInputs = $('.esi-media-item').find('input[type=hidden]').filter(function () { return !this.value || this.value === '0'; });
+            if (emptyInputs.length === 0) {
+                alert('Keine freien Slots verfügbar. Leeren Sie einen Slot oder ändern Sie das Grid-Layout.');
+                return;
+            }
+            var maxUploads = Math.min(files.length, emptyInputs.length);
+            $dz.addClass('uploading');
+            var uploadCount = 0;
+            files.slice(0, maxUploads).forEach(function (file, i) {
+                // only images
+                if (!file.type.match('image.*')) { return; }
+                uploadFile(file).done(function (res) {
+                    // res should be attachment object
+                    var attId = res.id || 0;
+                    var src = res.source_url || res.source_url || '';
+                    if (!attId || !src) return;
+                    // assign to next empty slot
+                    var $input = $(emptyInputs.get(uploadCount));
+                    var $item = $input.closest('.esi-media-item');
+                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
+                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                    $item.find('.esi-media-empty').replaceWith($thumb);
+                    $input.val(attId);
+                    // replace add button with remove if present
+                    var $btn = $item.find('.esi-add-media');
+                    if ($btn.length) { $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>'); }
+                    uploadCount++;
+                    // save state after each successful upload (debounced behavior already applied elsewhere)
+                    debouncedPersist();
+                }).fail(function () {
+                    // ignore single failure
+                }).always(function () {
+                    if (--maxUploads <= 0) { $dz.removeClass('uploading'); }
+                });
+            });
+        }
+
+        // Upload file to WP media via REST API
+        function uploadFile(file) {
+            var url = window.location.origin + '/wp-json/wp/v2/media';
+            var fd = new FormData();
+            fd.append('file', file, file.name);
+            // jQuery deferred
+            return $.ajax({
+                url: url,
+                method: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                beforeSend: function (xhr) {
+                    if (typeof esiSettings !== 'undefined' && esiSettings.rest_nonce) {
+                        xhr.setRequestHeader('X-WP-Nonce', esiSettings.rest_nonce);
+                    }
+                }
+            });
+        }
+
+        // Persist current grid order via AJAX (auto-save)
+        function persistGridOrder() {
+            var grid = [];
+            $('.esi-media-item').each(function () {
+                var val = $(this).find('input[type=hidden]').val() || 0;
+                grid.push(parseInt(val, 10) || 0);
+            });
+            var data = [];
+            for (var i = 0; i < grid.length; i++) { data.push({ name: 'esi_media_grid[]', value: grid[i] }); }
+            data.push({ name: 'action', value: 'esi_save_settings' });
+            // use esiSettings (localized by frontend handler)
+            if (typeof esiSettings !== 'undefined') {
+                data.push({ name: 'nonce', value: esiSettings.nonce });
+                return $.post(esiSettings.ajax_url, data).done(function (res) {
+                    // optionally update preview returned by server for admin users
+                    if (res && res.success && res.data && res.data.opening_hours_html) {
+                        $('#esi-opening-hours-placeholder').html(res.data.opening_hours_html);
+                    }
+                }).fail(function () {
+                    // ignore failures silently for now
+                });
+            }
+            return $.Deferred().resolve();
+        }
+
+        // Simple debounce helper
+        function debounce(fn, wait) {
+            var t;
+            return function () {
+                var ctx = this, args = arguments;
+                clearTimeout(t);
+                t = setTimeout(function () { fn.apply(ctx, args); }, wait);
+            };
+        }
+
+        // Debounced wrapper to reduce rapid requests
+        var debouncedPersist = debounce(function () { persistGridOrder(); }, 700);
 
         $('#esi-settings-form').on('submit', function (e) {
             e.preventDefault();

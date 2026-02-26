@@ -573,9 +573,14 @@ final class Easy_Store_Info {
 			$slots = max( 1, $rows * $cols );
 			$grid = array_pad( $grid, $slots, 0 );
 			$out = '<div class="esi-settings-wrap"><form id="esi-settings-form">';
+			$out .= '<div class="esi-editor-wrapper">';
+			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
+			$out .= '</div>';
 			$out .= '<div class="esi-media-grid esi-admin-grid esi-grid-' . esc_attr( $layout ) . '">';
 			foreach ( $grid as $i => $att_id ) {
 				$out .= '<div class="esi-media-item" data-index="' . esc_attr( $i ) . '">';
+				// small drag handle for reordering
+				$out .= '<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>';
 				if ( $att_id && get_post( $att_id ) ) {
 					$url = wp_get_attachment_url( $att_id );
 					$thumb_url = $url; // use full-size image for thumb src

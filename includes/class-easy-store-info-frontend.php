@@ -36,6 +36,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
 			wp_localize_script( 'easy-store-info-frontend', 'esiSettings', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce' => wp_create_nonce( 'esi-save-settings' ),
+				'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			) );
 		}
 	}
