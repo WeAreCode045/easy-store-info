@@ -101,8 +101,11 @@ final class Easy_Store_Info {
 			return '<p>Please configure the store Place ID and API key.</p>';
 		}
 		$hours = $this->fetch_place_opening_hours( $api_key, $place_id );
+		$no_hours_available = false;
 		if ( false === $hours || empty( $hours ) ) {
-			return '<p>Keine Öffnungszeiten verfügbar.</p>';
+			// Continue but mark that no hours were available so we can render a styled message
+			$hours = array_fill( 0, 7, 'Geschlossen' );
+			$no_hours_available = true;
 		}
 
 		// German weekday names (0=Sunday..6=Saturday)
@@ -120,7 +123,7 @@ final class Easy_Store_Info {
 
 		// Compute open/closed state message based on current site time
 		$now_ts = current_time( 'timestamp' );
-		$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( wp_timezone() );
+		$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( date_default_timezone_get() );
 		$today_index = intval( date( 'w', $now_ts ) );
 		$state_html = '';
 		$date_str = date_i18n( 'Y-m-d', $now_ts );
@@ -148,6 +151,10 @@ final class Easy_Store_Info {
 				$open_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['open'], $tz );
 				$close_dt = DateTime::createFromFormat( 'Y-m-d H:i', $date_str . ' ' . $r['close'], $tz );
 				if ( $open_dt && $close_dt ) {
+					// handle overnight ranges where close is past midnight (close time <= open time)
+					if ( $close_dt->getTimestamp() <= $open_dt->getTimestamp() ) {
+						$close_dt->modify('+1 day');
+					}
 					$open_ts = $open_dt->getTimestamp();
 					$close_ts = $close_dt->getTimestamp();
 					if ( $now_ts >= $open_ts && $now_ts <= $close_ts ) {
@@ -160,7 +167,7 @@ final class Easy_Store_Info {
 		}
 
 		if ( $is_open ) {
-			$state_html = '<p class="esi-open-state">wir sind heute geöffnet bis: ' . esc_html( $closing_time ) . '</p>';
+			$state_html = '<p class="esi-open-state">Wir sind heute geöffnet bis ' . esc_html( $closing_time ) . '.</p>';
 		} else {
 			// find next opening (today later or next days)
 			$found = false;
@@ -211,7 +218,15 @@ final class Easy_Store_Info {
 			}
 
 			if ( $found ) {
-				$state_html = '<p class="esi-open-state">wir sind zur zeit geschlossen und öffnen ' . esc_html( $when_text ) . ' wieder um ' . esc_html( $next_open_time ) . '</p>';
+				// build natural phrase: 'heute um HH:MM', 'morgen um HH:MM', or 'am <Wochentag> um HH:MM'
+				if ( isset( $when_text ) && 'heute' === $when_text ) {
+					$when_phrase = 'heute um ' . $next_open_time;
+				} elseif ( isset( $when_text ) && 'morgen' === $when_text ) {
+					$when_phrase = 'morgen um ' . $next_open_time;
+				} else {
+					$when_phrase = 'am ' . ( isset( $when_text ) ? $when_text : '' ) . ' um ' . $next_open_time;
+				}
+				$state_html = '<p class="esi-open-state">Zurzeit geschlossen — wir öffnen ' . esc_html( $when_phrase ) . '.</p>';
 			} else {
 				$state_html = '<p class="esi-open-state">Keine Öffnungszeiten verfügbar.</p>';
 			}
