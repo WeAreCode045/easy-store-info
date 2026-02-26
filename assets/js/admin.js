@@ -67,12 +67,18 @@ jQuery(function ($) {
         var openColorOp = parseInt($('#esi_style_open_color_opacity').val() || 100, 10);
         var closedColor = $('#esi_style_closed_color').val() || '#999999';
         var closedColorOp = parseInt($('#esi_style_closed_color_opacity').val() || 100, 10);
+        var textOdd = $('#esi_style_text_odd_color').val() || '#222222';
+        var textOddOp = parseInt($('#esi_style_text_odd_opacity').val() || 100, 10);
+        var textEven = $('#esi_style_text_even_color').val() || '#222222';
+        var textEvenOp = parseInt($('#esi_style_text_even_opacity').val() || 100, 10);
 
         var bgOddRgba = hexToRgba(bgOdd, bgOddOp);
         var bgEvenRgba = hexToRgba(bgEven, bgEvenOp);
         var rowSepRgba = hexToRgba(rowSep, rowSepOp);
         var openRgba = hexToRgba(openColor, openColorOp);
         var closedRgba = hexToRgba(closedColor, closedColorOp);
+        var textOddRgba = hexToRgba(textOdd, textOddOp);
+        var textEvenRgba = hexToRgba(textEven, textEvenOp);
 
         // set CSS variables on preview element
         var el = $preview.get(0);
@@ -88,6 +94,8 @@ jQuery(function ($) {
             el.style.setProperty('--esi-row-sep-style', rowSepStyle);
             el.style.setProperty('--esi-open-color', openRgba);
             el.style.setProperty('--esi-closed-color', closedRgba);
+            el.style.setProperty('--esi-text-odd', textOddRgba);
+            el.style.setProperty('--esi-text-even', textEvenRgba);
         } catch (e) {
             // ignore
         }

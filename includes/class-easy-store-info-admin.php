@@ -84,6 +84,10 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$bg_odd_op_val = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
 			$bg_even_val = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
 			$bg_even_op_val = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
+				$text_odd_val = esc_attr( get_option( 'esi_style_text_odd_color', '#222222' ) );
+				$text_odd_op_val = intval( get_option( 'esi_style_text_odd_opacity', 100 ) );
+				$text_even_val = esc_attr( get_option( 'esi_style_text_even_color', '#222222' ) );
+				$text_even_op_val = intval( get_option( 'esi_style_text_even_opacity', 100 ) );
 			$row_sep_val = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
 			$row_sep_op_val = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 			$closed_val = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
@@ -96,6 +100,8 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 				if ( method_exists( $main, 'hex_to_rgba' ) ) {
 					$bg_odd_swatch = $main->hex_to_rgba( $bg_odd_val, $bg_odd_op_val );
 					$bg_even_swatch = $main->hex_to_rgba( $bg_even_val, $bg_even_op_val );
+						$text_odd_swatch = $main->hex_to_rgba( $text_odd_val, $text_odd_op_val );
+						$text_even_swatch = $main->hex_to_rgba( $text_even_val, $text_even_op_val );
 					$row_sep_swatch = $main->hex_to_rgba( $row_sep_val, $row_sep_op_val );
 					$closed_swatch = $main->hex_to_rgba( $closed_val, $closed_op_val );
 					$open_swatch = $main->hex_to_rgba( $open_val, $open_op_val );
@@ -163,13 +169,16 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 					}
 
 					$style_attr = sprintf(
-						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-open-color:%s;--esi-closed-color:%s',
+						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-text-odd:%s;--esi-text-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-row-sep-style:%s;--esi-open-color:%s;--esi-closed-color:%s',
 						$font_size,
 						$font_weight,
 						$day_align,
 						$time_align,
 						$bg_odd_rgba,
 						$bg_even_rgba,
+						// text colors
+						$main->hex_to_rgba( $text_odd_val, $text_odd_op_val ),
+						$main->hex_to_rgba( $text_even_val, $text_even_op_val ),
 						$row_sep_rgba,
 						$row_sep_weight,
 						esc_attr( get_option( 'esi_style_row_sep_style', 'solid' ) ),
@@ -263,6 +272,28 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 									<input name="esi_style_bg_even_opacity" id="esi_style_bg_even_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>" />
 									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>%</span>
 									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $bg_even_swatch ); ?>"></span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_text_odd_color">Odd row text color</label></th>
+							<td>
+								<div class="esi-alpha-picker">
+									<input name="esi_style_text_odd_color" id="esi_style_text_odd_color" class="esi-alpha-color" type="color" value="<?php echo $text_odd_val; ?>" />
+									<input name="esi_style_text_odd_opacity" id="esi_style_text_odd_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_text_odd_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_text_odd_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $text_odd_swatch ); ?>"></span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="esi_style_text_even_color">Even row text color</label></th>
+							<td>
+								<div class="esi-alpha-picker">
+									<input name="esi_style_text_even_color" id="esi_style_text_even_color" class="esi-alpha-color" type="color" value="<?php echo $text_even_val; ?>" />
+									<input name="esi_style_text_even_opacity" id="esi_style_text_even_opacity" class="esi-alpha-opacity" type="range" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_text_even_opacity', 100 ) ); ?>" />
+									<span class="esi-alpha-value"><?php echo esc_attr( get_option( 'esi_style_text_even_opacity', 100 ) ); ?>%</span>
+									<span class="esi-color-swatch" style="background: <?php echo esc_attr( $text_even_swatch ); ?>"></span>
 								</div>
 							</td>
 						</tr>
