@@ -130,7 +130,6 @@ jQuery(function ($) {
         show(idx);
         $(document).on('keydown', keyHandler);
     });
-});
     // Settings page: media modal and save
     if ($('.esi-settings-wrap').length) {
         var frame;

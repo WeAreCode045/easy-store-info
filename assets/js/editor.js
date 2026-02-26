@@ -191,8 +191,8 @@ jQuery(function ($) {
             if (!file.type.match('image.*')) { uploadIdx++; nextUpload(); return; }
             var $target = $($targets.get(uploadIdx));
             if (!$target || !$target.length) { uploadIdx++; nextUpload(); return; }
-            var $overlay = ("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
-            $target.append($overlay);
+                var $overlay = $("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
+                $target.append($overlay);
 
             uploadFile(file, function (pct) {
                 $overlay.find('.esi-upload-percent').text(Math.round(pct) + '%');
@@ -223,8 +223,8 @@ jQuery(function ($) {
 
     function showUploadError($overlay, msg) {
         $overlay.empty();
-        var $err = ("<div class='esi-upload-error'></div>").text(msg);
-        var $retry = ("<button class='button' type='button'>Retry</button>");
+        var $err = $("<div class='esi-upload-error'></div>").text(msg);
+        var $retry = $("<button class='button' type='button'>Retry</button>");
         $retry.on('click', function () {
             var $parent = $overlay.closest('.esi-media-item');
             $overlay.remove();
@@ -236,7 +236,7 @@ jQuery(function ($) {
     function createEmptySlot() {
         var $grid = $('.esi-media-grid');
         var idx = $grid.find('.esi-media-item').length;
-        var $item = ("<div class='esi-media-item' data-index='" + idx + "'>");
+        var $item = $("<div class='esi-media-item' data-index='" + idx + "'></div>");
         $item.append('<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>');
         $item.append('<div class="esi-media-empty"></div>');
         $item.append('<input type="hidden" name="esi_media_grid[]" value="0" />');
