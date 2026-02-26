@@ -533,7 +533,15 @@ final class Easy_Store_Info {
 		$rows = intval( $rows );
 		$cols = intval( $cols );
 		$slots = max( 1, $rows * $cols );
-		$grid = array_pad( $grid, $slots, 0 );
+		// Ensure stored grid matches the configured number of slots: trim or pad as necessary
+		if ( is_array( $grid ) ) {
+			$grid = array_slice( $grid, 0, $slots );
+			if ( count( $grid ) < $slots ) {
+				$grid = array_pad( $grid, $slots, 0 );
+			}
+		} else {
+			$grid = array_pad( array(), $slots, 0 );
+		}
 		// Use template for rendering media grid
 		ob_start();
 		$this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout ) );
@@ -562,7 +570,14 @@ final class Easy_Store_Info {
 			$rows = intval( $rows );
 			$cols = intval( $cols );
 			$slots = max( 1, $rows * $cols );
-			$grid = array_pad( $grid, $slots, 0 );
+			if ( is_array( $grid ) ) {
+				$grid = array_slice( $grid, 0, $slots );
+				if ( count( $grid ) < $slots ) {
+					$grid = array_pad( $grid, $slots, 0 );
+				}
+			} else {
+				$grid = array_pad( array(), $slots, 0 );
+			}
 
 			ob_start();
 			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout ) );
