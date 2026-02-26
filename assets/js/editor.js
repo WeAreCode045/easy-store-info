@@ -140,11 +140,11 @@ jQuery(function ($) {
 
     var $dzPlaceholder = $('.esi-dropzone-placeholder');
     if ($dzPlaceholder.length) {
-        var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
+        var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder oder Videos hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF, MP4)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
         $dzPlaceholder.append($dz);
 
         $dz.on('click', function () {
-            var $input = $('<input type="file" accept="image/*" multiple style="display:none">');
+            var $input = $('<input type="file" accept="image/*,video/*" multiple style="display:none">');
             $input.on('change', function () { handleFiles(this.files); $input.remove(); });
             $(document.body).append($input);
             $input.trigger('click');
@@ -246,11 +246,33 @@ jQuery(function ($) {
         function nextUpload() {
             if (uploadIdx >= files.length) { $dz.removeClass('uploading'); return; }
             var file = files[uploadIdx];
-            if (!file.type.match('image.*')) { uploadIdx++; nextUpload(); return; }
+                // Allow images and videos
+                if (!file.type.match('image.*') && !file.type.match('video.*')) { uploadIdx++; nextUpload(); return; }
             var $target = $($targets.get(uploadIdx));
             if (!$target || !$target.length) { uploadIdx++; nextUpload(); return; }
-                var $overlay = $("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
-                $target.append($overlay);
+                    var $overlay = $("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
+                    $target.append($overlay);
+
+                // Show immediate preview for images/videos using local object URL
+                try {
+                    var localSrc = null;
+                    if (file.type.match('image.*')) {
+                        localSrc = URL.createObjectURL(file);
+                        var $empty = $target.find('.esi-media-empty');
+                        if ($empty.length) {
+                            var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + localSrc + '" alt="" /></div>');
+                            $empty.replaceWith($thumb);
+                        }
+                    } else if (file.type.match('video.*')) {
+                        localSrc = URL.createObjectURL(file);
+                        var $emptyV = $target.find('.esi-media-empty');
+                        if ($emptyV.length) {
+                            generateVideoThumbnail($emptyV, localSrc);
+                        }
+                    }
+                    // revoke after a short delay (poster preserved in DOM as data URL)
+                    (function (url) { if (url && url.indexOf('blob:') === 0) { setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 5000); } })(localSrc);
+                } catch (err) {}
 
             uploadFile(file, function (pct) {
                 $overlay.find('.esi-upload-percent').text(Math.round(pct) + '%');
@@ -425,6 +447,36 @@ jQuery(function ($) {
     }
 
     var debouncedPersist = debounce(function () { persistGridOrder(); }, 700);
+
+    // When layout select changes, immediately adjust DOM grid to match new slot count
+    $(document).on('change', '#esi_grid_layout', function () {
+        var layout = $(this).val() || '2x4';
+        var parts = layout.split('x');
+        var rows = parseInt(parts[0], 10) || 2;
+        var cols = parseInt(parts[1], 10) || 4;
+        var slots = Math.max(1, rows * cols);
+        var $grid = $('.esi-media-grid');
+        if (!$grid.length) return;
+        // update grid class (remove previous esi-grid-* classes)
+        $grid.removeClass(function (index, className) {
+            return (className.match(/(^|\s)esi-grid-\S+/g) || []).join(' ');
+        }).addClass('esi-grid-' + layout);
+
+        var $items = $grid.find('.esi-media-item');
+        var current = $items.length;
+        if (current < slots) {
+            var need = slots - current;
+            for (var i = 0; i < need; i++) { createEmptySlot(); }
+        } else if (current > slots) {
+            // remove extra items from the end
+            for (var r = current - 1; r >= slots; r--) {
+                var $rem = $($grid.find('.esi-media-item').get(r));
+                if ($rem && $rem.length) { $rem.remove(); }
+            }
+        }
+        // persist new layout and grid state
+        debouncedPersist();
+    });
 
     $('#esi-editor-form').on('submit', function (e) {
         e.preventDefault();
