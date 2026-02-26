@@ -134,6 +134,12 @@ jQuery(function ($) {
     // Settings page: media modal and save
     if ($('.esi-settings-wrap').length) {
         var frame;
+        var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="Add image">' +
+            '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</button>';
+        var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="Remove image">' +
+            '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</button>';
         $(document).on('click', '.esi-add-media', function (e) {
             e.preventDefault();
             var $btn = $(this);
@@ -148,7 +154,7 @@ jQuery(function ($) {
                         var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
                         $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
                         $item.find('.esi-media-empty').replaceWith($thumb);
-                        $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
+                        $btn.replaceWith(removeBtnHtml);
                     });
                     frame.open();
                     return;
@@ -161,7 +167,7 @@ jQuery(function ($) {
                         var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
                     $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
                     $item.find('.esi-media-empty').replaceWith($thumb);
-                    $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>');
+                    $btn.replaceWith(removeBtnHtml);
                 });
                 frame.open();
         });
@@ -172,7 +178,7 @@ jQuery(function ($) {
             var $item = $btn.closest('.esi-media-item');
             $item.find('input[type=hidden]').val(0);
                 $item.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
-            $btn.replaceWith('<button class="esi-add-media button" type="button">+</button>');
+                $btn.replaceWith(addBtnHtml);
         });
 
         // Make media items draggable to reorder the grid
@@ -351,7 +357,7 @@ jQuery(function ($) {
                         $target.find('.esi-media-empty').replaceWith($thumb);
                         $target.find('input[type=hidden]').val(attId);
                         var $btn = $target.find('.esi-add-media');
-                        if ($btn.length) { $btn.replaceWith('<button class="esi-remove-media button" type="button">&times;</button>'); }
+                        if ($btn.length) { $btn.replaceWith(removeBtnHtml); }
                         $overlay.remove();
                         debouncedPersist();
                     } else {
@@ -386,7 +392,7 @@ jQuery(function ($) {
             $item.append('<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>');
             $item.append('<div class="esi-media-empty"></div>');
             $item.append('<input type="hidden" name="esi_media_grid[]" value="0" />');
-            $item.append('<button class="esi-add-media button" type="button">+</button>');
+            $item.append(addBtnHtml);
             $grid.append($item);
             // re-init drag handles
             initMediaDragSort();

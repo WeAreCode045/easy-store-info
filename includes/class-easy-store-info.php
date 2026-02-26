@@ -586,11 +586,11 @@ final class Easy_Store_Info {
 					$thumb_url = $url; // use full-size image for thumb src
 					$out .= '<div class="esi-thumb-wrap"><img class="esi-thumb" src="' . esc_url( $thumb_url ) . '" alt="" /></div>';
 					$out .= '<input type="hidden" name="esi_media_grid[]" value="' . esc_attr( $att_id ) . '" />';
-					$out .= '<button class="esi-remove-media button" type="button">&times;</button>';
+					$out .= '<button class="esi-remove-media button" type="button" aria-label="Remove image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 				} else {
 					$out .= '<div class="esi-media-empty"></div>';
 					$out .= '<input type="hidden" name="esi_media_grid[]" value="0" />';
-					$out .= '<button class="esi-add-media button" type="button">+</button>';
+					$out .= '<button class="esi-add-media button" type="button" aria-label="Add image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 				}
 				$out .= '</div>';
 			}
