@@ -3,25 +3,77 @@
  * included in this file.
  */
 jQuery(function ($) {
-    // Lightbox handler
+    // Slider lightbox handler (supports previous/next)
     $(document).on('click', '.esi-lightbox', function (e) {
         e.preventDefault();
-        var href = $(this).attr('href');
-        var mime = $(this).data('mime') || '';
+        var $clicked = $(this);
+        var $all = $('.esi-lightbox');
+        if (!$all.length) return;
+
+        // Build items array
+        var items = $all.map(function () {
+            return {
+                href: $(this).attr('href'),
+                mime: $(this).data('mime') || ''
+            };
+        }).get();
+
+        var idx = $all.index($clicked);
+
         var $overlay = $('<div class="esi-lightbox-overlay" />');
+        var $container = $('<div class="esi-lightbox-wrap" />');
         var $content = $('<div class="esi-lightbox-content" />');
-        if (mime.indexOf('image') !== -1 || href.match(/\.(jpg|jpeg|png|gif)(\?.*)?$/i)) {
-            $content.append('<img src="' + href + '" alt="" />');
-        } else if (mime.indexOf('video') !== -1 || href.match(/\.(mp4|webm|mov)(\?.*)?$/i)) {
-            $content.append('<video controls src="' + href + '"></video>');
-        } else if (mime.indexOf('audio') !== -1 || href.match(/\.(mp3|wav)(\?.*)?$/i)) {
-            $content.append('<audio controls src="' + href + '"></audio>');
-        } else {
-            $content.append('<a href="' + href + '" target="_blank" rel="noopener">Open file</a>');
+        var $prev = $('<button class="esi-lb-nav esi-lb-prev" aria-label="Previous">‹</button>');
+        var $next = $('<button class="esi-lb-nav esi-lb-next" aria-label="Next">›</button>');
+
+        function render(i) {
+            $content.empty();
+            var it = items[i];
+            if (!it) return;
+            var href = it.href;
+            var mime = it.mime;
+            if (mime.indexOf('image') !== -1 || href.match(/\.(jpg|jpeg|png|gif)(\?.*)?$/i)) {
+                $content.append('<img src="' + href + '" alt="" class="esi-lb-media" />');
+            } else if (mime.indexOf('video') !== -1 || href.match(/\.(mp4|webm|mov)(\?.*)?$/i)) {
+                $content.append('<video controls class="esi-lb-media" src="' + href + '"></video>');
+            } else if (mime.indexOf('audio') !== -1 || href.match(/\.(mp3|wav)(\?.*)?$/i)) {
+                $content.append('<audio controls class="esi-lb-media" src="' + href + '"></audio>');
+            } else {
+                $content.append('<a href="' + href + '" target="_blank" rel="noopener">Open file</a>');
+            }
         }
-        $overlay.append($content).appendTo('body').on('click', function (ev) {
-            if (ev.target === this) { $(this).remove(); }
+
+        function show(index) {
+            if (index < 0) index = items.length - 1;
+            if (index >= items.length) index = 0;
+            idx = index;
+            render(idx);
+        }
+
+        $prev.on('click', function (ev) { ev.stopPropagation(); show(idx - 1); });
+        $next.on('click', function (ev) { ev.stopPropagation(); show(idx + 1); });
+
+        // Close handler
+        $overlay.on('click', function (ev) {
+            if (ev.target === this) { close(); }
         });
+
+        function keyHandler(ev) {
+            if (ev.key === 'Escape') { close(); }
+            if (ev.key === 'ArrowLeft') { show(idx - 1); }
+            if (ev.key === 'ArrowRight') { show(idx + 1); }
+        }
+
+        function close() {
+            $(document).off('keydown', keyHandler);
+            $overlay.remove();
+        }
+
+        // Assemble and open
+        $container.append($prev, $content, $next);
+        $overlay.append($container).appendTo('body');
+        show(idx);
+        $(document).on('keydown', keyHandler);
     });
 
     // Settings page: media modal and save
