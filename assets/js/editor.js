@@ -161,11 +161,65 @@ jQuery(function ($) {
 
     var $selectedSlot = null;
 
+    // Generate a thumbnail image from a video URL and replace the empty slot.
+    function generateVideoThumbnail($empty, src) {
+        if (!$empty || !src) return;
+        try {
+            var video = document.createElement('video');
+            video.crossOrigin = 'anonymous';
+            video.preload = 'metadata';
+            video.muted = true;
+            video.src = src;
+            // choose a small seek time (0.1s) after load
+            var seeked = function () {
+                try {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth || 320;
+                    canvas.height = video.videoHeight || 180;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    var dataURL = canvas.toDataURL('image/jpeg');
+                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + dataURL + '" alt="" /></div>');
+                    $empty.replaceWith($thumb);
+                } catch (err) {
+                    // fallback: leave as empty
+                }
+                // cleanup
+                video.removeEventListener('seeked', seeked);
+                video.src = '';
+            };
+            var loaded = function () {
+                try {
+                    // clamp to within duration
+                    var t = 0.1;
+                    if (video.duration && video.duration < t) t = Math.max(0, video.duration / 2);
+                    video.currentTime = t;
+                } catch (e) {
+                    // if seeking fails, still try to draw on loadeddata
+                    seeked();
+                }
+            };
+            video.addEventListener('loadeddata', loaded);
+            video.addEventListener('seeked', seeked);
+            // load
+            video.load();
+        } catch (err) {
+            // ignore
+        }
+    }
+
     $(document).on('click', '.esi-media-item', function (e) {
         if ($(e.target).is('button') || $(e.target).is('input') || $(e.target).closest('button').length) return;
         $('.esi-media-item').removeClass('selected');
         $selectedSlot = $(this);
         $selectedSlot.addClass('selected');
+    });
+
+    // On init: generate thumbnails for video slots that exposed data-video-src
+    $('.esi-media-empty[data-video-src]').each(function () {
+        var $el = $(this);
+        var src = $el.attr('data-video-src');
+        if (src) generateVideoThumbnail($el, src);
     });
 
     function handleFiles(fileList) {
@@ -202,12 +256,25 @@ jQuery(function ($) {
                 $overlay.find('.esi-upload-percent').text(Math.round(pct) + '%');
                 $overlay.find('.esi-upload-progress > i').css('width', Math.round(pct) + '%');
             }).done(function (res) {
-                var attId = res.id || 0;
-                var src = res.source_url || res.source_url || '';
+                var attId = (res && res.id) ? res.id : 0;
+                var src = (res && (res.source_url || res.source_url)) ? (res.source_url || res.source_url) : '';
+                var mime = (res && res.mime_type) ? res.mime_type : (res && res.mime) ? res.mime : '';
                 if (attId && src) {
-                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
-                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
-                    $target.find('.esi-media-empty').replaceWith($thumb);
+                    // if video, attempt to generate a thumbnail from the uploaded video file
+                    if (mime && mime.indexOf && mime.indexOf('video') === 0) {
+                        // ensure we have an empty slot element to replace
+                        var $empty = $target.find('.esi-media-empty');
+                        if ($empty.length) {
+                            generateVideoThumbnail($empty, src);
+                        } else {
+                            var $thumb = $('<div class="esi-thumb-wrap"><video class="esi-thumb" src="' + src + '" muted preload="metadata"></video>');
+                            $target.find('.esi-media-empty').replaceWith($thumb);
+                        }
+                    } else {
+                        var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
+                        $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+                        $target.find('.esi-media-empty').replaceWith($thumb);
+                    }
                     $target.find('input[type=hidden]').val(attId);
                     var $btn = $target.find('.esi-add-media');
                     if ($btn.length) { $btn.replaceWith(removeBtnHtml); }
