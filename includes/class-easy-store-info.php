@@ -594,7 +594,8 @@ final class Easy_Store_Info {
 				}
 				$out .= '</div>';
 			}
-			$out .= '</div>'; // .esi-editor-left
+			$out .= '</div>'; // close .esi-media-grid
+			$out .= '</div>'; // close .esi-editor-left
 			// sidebar
 			$out .= '<aside class="esi-editor-sidebar">';
 			$out .= '<p class="esi-editor-instructions">Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.</p>';
