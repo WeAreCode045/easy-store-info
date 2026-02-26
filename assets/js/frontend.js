@@ -54,15 +54,29 @@ jQuery(function ($) {
 
         $('#esi-settings-form').on('submit', function (e) {
             e.preventDefault();
-            var data = $(this).serializeArray();
+            // Build ordered grid array from each media item input to ensure correct indexing
+            var grid = [];
+            $('.esi-media-item').each(function () {
+                var val = $(this).find('input[type=hidden]').val() || 0;
+                grid.push(parseInt(val, 10) || 0);
+            });
+
+            // Build POST payload with explicit esi_media_grid[] entries
+            var data = [];
+            for (var i = 0; i < grid.length; i++) {
+                data.push({ name: 'esi_media_grid[]', value: grid[i] });
+            }
             data.push({ name: 'action', value: 'esi_save_settings' });
             data.push({ name: 'nonce', value: esiSettings.nonce });
+
             $.post(esiSettings.ajax_url, data, function (res) {
                 if (res.success) {
                     alert('Settings saved');
                 } else {
                     alert('Error saving settings');
                 }
+            }).fail(function () {
+                alert('AJAX error');
             });
         });
     }

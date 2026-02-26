@@ -74,32 +74,82 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$grid = array_pad( $grid, 8, 0 );
 			// Try to fetch opening hours for display if API key/place ID present
 			$opening_hours_html = '';
-			if ( ! empty( $api_key ) && ! empty( $place_id ) ) {
-				$transient_key = 'esi_place_hours_' . md5( $place_id );
-				$data = get_transient( $transient_key );
-				if ( false === $data ) {
-					$url = add_query_arg(
-						array(
-							'place_id' => rawurlencode( $place_id ),
-							'fields' => 'opening_hours',
-							'key' => rawurlencode( $api_key ),
-						),
-						'https://maps.googleapis.com/maps/api/place/details/json'
+			if ( ! empty( $api_key ) && ! empty( $place_id ) && class_exists( 'Easy_Store_Info' ) ) {
+				$main = Easy_Store_Info::instance();
+				$hours = $main->fetch_place_opening_hours( $api_key, $place_id );
+
+				if ( is_array( $hours ) ) {
+					// German weekday names (0=Sunday..6=Saturday)
+					$weekdays = array(
+						0 => 'Sonntag',
+						1 => 'Montag',
+						2 => 'Dienstag',
+						3 => 'Mittwoch',
+						4 => 'Donnerstag',
+						5 => 'Freitag',
+						6 => 'Samstag',
 					);
-					$response = wp_remote_get( $url );
-					if ( ! is_wp_error( $response ) ) {
-						$body = wp_remote_retrieve_body( $response );
-						$json = json_decode( $body );
-						if ( isset( $json->result->opening_hours ) ) {
-							$data = $json->result->opening_hours;
-							set_transient( $transient_key, $data, HOUR_IN_SECONDS );
-						}
+					$order = array( 1, 2, 3, 4, 5, 6, 0 );
+
+					// Build CSS variable style attribute for preview from saved options
+					$font_size = intval( get_option( 'esi_style_font_size', 14 ) );
+					$font_weight = esc_attr( get_option( 'esi_style_font_weight', '400' ) );
+					$day_align = esc_attr( get_option( 'esi_style_day_align', 'left' ) );
+					$time_align = esc_attr( get_option( 'esi_style_time_align', 'right' ) );
+					$bg_odd = esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+					$bg_odd_op = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
+					$bg_even = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+					$bg_even_op = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
+					$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+					$row_sep_op = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
+					$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
+					$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
+					$closed_color_op = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
+
+					// use main helper to convert hex to rgba if available, otherwise do simple conversion
+					if ( method_exists( $main, 'hex_to_rgba' ) ) {
+						$bg_odd_rgba = $main->hex_to_rgba( $bg_odd, $bg_odd_op );
+						$bg_even_rgba = $main->hex_to_rgba( $bg_even, $bg_even_op );
+						$row_sep_rgba = $main->hex_to_rgba( $row_sep_color, $row_sep_op );
+						$closed_color_rgba = $main->hex_to_rgba( $closed_color, $closed_color_op );
+					} else {
+						// fallback simple conversion
+						$convert = function( $hex, $op ) {
+							$h = ltrim( $hex, '#' );
+							if ( strlen( $h ) === 3 ) { $h = $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2]; }
+							if ( strlen( $h ) !== 6 ) { return 'rgba(0,0,0,' . ( max(0, min(100, intval($op)) ) / 100 ) . ')'; }
+							$r = hexdec( substr( $h, 0, 2 ) );
+							$g = hexdec( substr( $h, 2, 2 ) );
+							$b = hexdec( substr( $h, 4, 2 ) );
+							$a = max( 0, min( 100, intval( $op ) ) ) / 100;
+							return "rgba({$r},{$g},{$b},{$a})";
+						};
+						$bg_odd_rgba = $convert( $bg_odd, $bg_odd_op );
+						$bg_even_rgba = $convert( $bg_even, $bg_even_op );
+						$row_sep_rgba = $convert( $row_sep_color, $row_sep_op );
+						$closed_color_rgba = $convert( $closed_color, $closed_color_op );
 					}
-				}
-				if ( ! empty( $data ) && ! empty( $data->weekday_text ) ) {
-					$opening_hours_html = '<div class="esi-opening-hours"><h3>Fetched Opening Hours</h3><ul>';
-					foreach ( $data->weekday_text as $line ) {
-						$opening_hours_html .= '<li>' . esc_html( $line ) . '</li>';
+
+					$style_attr = sprintf(
+						'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-closed-color:%s',
+						$font_size,
+						$font_weight,
+						$day_align,
+						$time_align,
+						$bg_odd_rgba,
+						$bg_even_rgba,
+						$row_sep_rgba,
+						$row_sep_weight,
+						$closed_color_rgba
+					);
+
+					$opening_hours_html = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '"><ul>';
+					foreach ( $order as $day_index ) {
+						$label = isset( $weekdays[ $day_index ] ) ? $weekdays[ $day_index ] : $day_index;
+						$line = isset( $hours[ $day_index ] ) ? $hours[ $day_index ] : 'Geschlossen';
+						$closed = ( 'Geschlossen' === $line || empty( $line ) );
+						$li_class = $closed ? ' class="esi-closed"' : '';
+						$opening_hours_html .= '<li' . $li_class . '><span class="esi-day">' . esc_html( $label ) . '</span><span class="esi-time">' . esc_html( $line ) . '</span></li>';
 					}
 					$opening_hours_html .= '</ul></div>';
 				}
@@ -158,15 +208,24 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_bg_odd">Background odd rows</label></th>
-							<td><input name="esi_style_bg_odd" id="esi_style_bg_odd" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) ); ?>" /></td>
+							<td>
+								<input name="esi_style_bg_odd" id="esi_style_bg_odd" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) ); ?>" />
+								<input name="esi_style_bg_odd_opacity" id="esi_style_bg_odd_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_odd_opacity', 100 ) ); ?>" class="small-text" /> %
+							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_bg_even">Background even rows</label></th>
-							<td><input name="esi_style_bg_even" id="esi_style_bg_even" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) ); ?>" /></td>
+							<td>
+								<input name="esi_style_bg_even" id="esi_style_bg_even" type="color" value="<?php echo esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) ); ?>" />
+								<input name="esi_style_bg_even_opacity" id="esi_style_bg_even_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_bg_even_opacity', 100 ) ); ?>" class="small-text" /> %
+							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_row_sep_color">Row separator color</label></th>
-							<td><input name="esi_style_row_sep_color" id="esi_style_row_sep_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) ); ?>" /></td>
+							<td>
+								<input name="esi_style_row_sep_color" id="esi_style_row_sep_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) ); ?>" />
+								<input name="esi_style_row_sep_opacity" id="esi_style_row_sep_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_row_sep_opacity', 100 ) ); ?>" class="small-text" /> %
+							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_row_sep_weight">Row separator weight (px)</label></th>
@@ -174,7 +233,10 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						</tr>
 						<tr>
 							<th scope="row"><label for="esi_style_closed_color">Closed day font color</label></th>
-							<td><input name="esi_style_closed_color" id="esi_style_closed_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_closed_color', '#999999' ) ); ?>" /></td>
+							<td>
+								<input name="esi_style_closed_color" id="esi_style_closed_color" type="color" value="<?php echo esc_attr( get_option( 'esi_style_closed_color', '#999999' ) ); ?>" />
+								<input name="esi_style_closed_color_opacity" id="esi_style_closed_color_opacity" type="number" min="0" max="100" value="<?php echo esc_attr( get_option( 'esi_style_closed_color_opacity', 100 ) ); ?>" class="small-text" /> %
+							</td>
 						</tr>
 					</table>
 

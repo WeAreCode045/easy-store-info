@@ -33,6 +33,10 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
 		 */
 		public function enqueue_scripts() {
 			wp_enqueue_script( 'easy-store-info-frontend', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/js/frontend.js', array( 'jquery' ), '1.0.0', false );
+			wp_localize_script( 'easy-store-info-frontend', 'esiSettings', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce' => wp_create_nonce( 'esi-save-settings' ),
+			) );
 		}
 	}
 }

@@ -119,27 +119,39 @@ final class Easy_Store_Info {
 		$order = array( 1, 2, 3, 4, 5, 6, 0 );
 		$out = '<div class="esi-opening-hours"><ul>';
 
-		// Build inline CSS from options
+		// Build CSS variable style attribute from options
 		$font_size = intval( get_option( 'esi_style_font_size', 14 ) );
 		$font_weight = esc_attr( get_option( 'esi_style_font_weight', '400' ) );
 		$day_align = esc_attr( get_option( 'esi_style_day_align', 'left' ) );
 		$time_align = esc_attr( get_option( 'esi_style_time_align', 'right' ) );
 		$bg_odd = esc_attr( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+		$bg_odd_op = intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
 		$bg_even = esc_attr( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+		$bg_even_op = intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
 		$row_sep_color = esc_attr( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+		$row_sep_op = intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 		$row_sep_weight = intval( get_option( 'esi_style_row_sep_weight', 1 ) );
 		$closed_color = esc_attr( get_option( 'esi_style_closed_color', '#999999' ) );
+		$closed_color_op = intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
 
-		$inline_css = "<style>
-.esi-opening-hours ul{list-style:none;margin:0;padding:0;font-size:{$font_size}px;font-weight:{$font_weight}}
-.esi-opening-hours li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:{$row_sep_weight}px solid {$row_sep_color}}
-.esi-opening-hours li:nth-child(odd){background:{$bg_odd}}
-.esi-opening-hours li:nth-child(even){background:{$bg_even}}
-.esi-opening-hours .esi-day{flex:1;text-align:{$day_align}}
-.esi-opening-hours .esi-time{flex:1;text-align:{$time_align}}
-.esi-opening-hours .esi-closed{color:{$closed_color}}
-</style>";
-		$out = $inline_css . $out;
+		$bg_odd_rgba = $this->hex_to_rgba( $bg_odd, $bg_odd_op );
+		$bg_even_rgba = $this->hex_to_rgba( $bg_even, $bg_even_op );
+		$row_sep_rgba = $this->hex_to_rgba( $row_sep_color, $row_sep_op );
+		$closed_color_rgba = $this->hex_to_rgba( $closed_color, $closed_color_op );
+
+		$style_attr = sprintf(
+			'--esi-font-size:%spx;--esi-font-weight:%s;--esi-day-align:%s;--esi-time-align:%s;--esi-bg-odd:%s;--esi-bg-even:%s;--esi-row-sep-color:%s;--esi-row-sep-weight:%spx;--esi-closed-color:%s',
+			$font_size,
+			$font_weight,
+			$day_align,
+			$time_align,
+			$bg_odd_rgba,
+			$bg_even_rgba,
+			$row_sep_rgba,
+			$row_sep_weight,
+			$closed_color_rgba
+		);
+		$out = '<div class="esi-opening-hours" style="' . esc_attr( $style_attr ) . '"><ul>';
 		foreach ( $order as $day_index ) {
 			$label = isset( $weekdays[ $day_index ] ) ? $weekdays[ $day_index ] : $day_index;
 			$line = isset( $hours[ $day_index ] ) ? $hours[ $day_index ] : 'Geschlossen';
@@ -158,7 +170,7 @@ final class Easy_Store_Info {
 	 * @param string $place_id
 	 * @return array|false Array with keys 0-6 mapping to time strings or false on error
 	 */
-	private function fetch_place_opening_hours( $api_key, $place_id ) {
+	public function fetch_place_opening_hours( $api_key, $place_id ) {
 		$transient_key = 'esi_place_hours_' . md5( $place_id );
 		$data = get_transient( $transient_key );
 		if ( false === $data ) {
@@ -262,6 +274,28 @@ final class Easy_Store_Info {
 	}
 
 	/**
+	 * Convert hex color (with or without #) and opacity percent to rgba(...) string.
+	 *
+	 * @param string $hex
+	 * @param int $opacity_percent 0-100
+	 * @return string
+	 */
+	private function hex_to_rgba( $hex, $opacity_percent = 100 ) {
+		$hex = ltrim( $hex, '#' );
+		if ( strlen( $hex ) === 3 ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+		if ( strlen( $hex ) !== 6 ) {
+			return 'rgba(0,0,0,' . ( max(0, min(100, intval($opacity_percent)) ) / 100 ) . ')';
+		}
+		$r = hexdec( substr( $hex, 0, 2 ) );
+		$g = hexdec( substr( $hex, 2, 2 ) );
+		$b = hexdec( substr( $hex, 4, 2 ) );
+		$a = max( 0, min( 100, intval( $opacity_percent ) ) ) / 100;
+		return 'rgba(' . intval( $r ) . ',' . intval( $g ) . ',' . intval( $b ) . ',' . $a . ')';
+	}
+
+	/**
 	 * Shortcode: media grid
 	 */
 	public function shortcode_media_grid( $atts = array() ) {
@@ -298,11 +332,8 @@ final class Easy_Store_Info {
 		if ( $can_edit_frontend ) {
 			// Enqueue media scripts and ensure frontend script localized
 			wp_enqueue_media();
+			// frontend script and localization are enqueued via the frontend handler
 			wp_enqueue_script( 'easy-store-info-frontend' );
-			wp_localize_script( 'easy-store-info-frontend', 'esiSettings', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce' => wp_create_nonce( 'esi-save-settings' ),
-			) );
 
 			$grid = get_option( 'esi_media_grid', array() );
 			$grid = array_pad( $grid, 8, 0 );
@@ -358,10 +389,14 @@ final class Easy_Store_Info {
 			$style_day_align = isset( $_POST['esi_style_day_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_day_align'] ) ) : sanitize_text_field( get_option( 'esi_style_day_align', 'left' ) );
 			$style_time_align = isset( $_POST['esi_style_time_align'] ) ? sanitize_text_field( wp_unslash( $_POST['esi_style_time_align'] ) ) : sanitize_text_field( get_option( 'esi_style_time_align', 'right' ) );
 			$style_bg_odd = isset( $_POST['esi_style_bg_odd'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_bg_odd'] ) ) : sanitize_hex_color( get_option( 'esi_style_bg_odd', '#ffffff' ) );
+			$style_bg_odd_op = isset( $_POST['esi_style_bg_odd_opacity'] ) ? intval( $_POST['esi_style_bg_odd_opacity'] ) : intval( get_option( 'esi_style_bg_odd_opacity', 100 ) );
 			$style_bg_even = isset( $_POST['esi_style_bg_even'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_bg_even'] ) ) : sanitize_hex_color( get_option( 'esi_style_bg_even', '#f7f7f7' ) );
+			$style_bg_even_op = isset( $_POST['esi_style_bg_even_opacity'] ) ? intval( $_POST['esi_style_bg_even_opacity'] ) : intval( get_option( 'esi_style_bg_even_opacity', 100 ) );
 			$style_row_sep_color = isset( $_POST['esi_style_row_sep_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_row_sep_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_row_sep_color', '#e5e5e5' ) );
+			$style_row_sep_op = isset( $_POST['esi_style_row_sep_opacity'] ) ? intval( $_POST['esi_style_row_sep_opacity'] ) : intval( get_option( 'esi_style_row_sep_opacity', 100 ) );
 			$style_row_sep_weight = isset( $_POST['esi_style_row_sep_weight'] ) ? intval( $_POST['esi_style_row_sep_weight'] ) : intval( get_option( 'esi_style_row_sep_weight', 1 ) );
 			$style_closed_color = isset( $_POST['esi_style_closed_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['esi_style_closed_color'] ) ) : sanitize_hex_color( get_option( 'esi_style_closed_color', '#999999' ) );
+			$style_closed_color_op = isset( $_POST['esi_style_closed_color_opacity'] ) ? intval( $_POST['esi_style_closed_color_opacity'] ) : intval( get_option( 'esi_style_closed_color_opacity', 100 ) );
 			update_option( 'esi_google_api_key', $api_key );
 			update_option( 'esi_place_id', $place_id );
 			update_option( 'esi_media_grid', $grid );
@@ -371,13 +406,19 @@ final class Easy_Store_Info {
 			update_option( 'esi_style_day_align', $style_day_align );
 			update_option( 'esi_style_time_align', $style_time_align );
 			update_option( 'esi_style_bg_odd', $style_bg_odd );
+			update_option( 'esi_style_bg_odd_opacity', $style_bg_odd_op );
 			update_option( 'esi_style_bg_even', $style_bg_even );
+			update_option( 'esi_style_bg_even_opacity', $style_bg_even_op );
 			update_option( 'esi_style_row_sep_color', $style_row_sep_color );
+			update_option( 'esi_style_row_sep_opacity', $style_row_sep_op );
 			update_option( 'esi_style_row_sep_weight', $style_row_sep_weight );
 			update_option( 'esi_style_closed_color', $style_closed_color );
+			update_option( 'esi_style_closed_color_opacity', $style_closed_color_op );
 		} elseif ( $user && user_can( $user, 'edit_store_info' ) ) {
 			// Frontend capability: only allow updating the media grid
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			// Normalize/pad to 8 slots to make per-item operations predictable
+			$grid = array_pad( $grid, 8, 0 );
 			update_option( 'esi_media_grid', $grid );
 		} else {
 			wp_send_json_error( 'forbidden', 403 );
