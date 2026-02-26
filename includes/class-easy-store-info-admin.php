@@ -39,8 +39,6 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 				return;
 			}
 			$this->enqueue_styles();
-			// enqueue WP media for image/video selection
-			wp_enqueue_media();
 			$this->enqueue_scripts();
 		}
 
@@ -74,6 +72,38 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 			$place_id = esc_attr( get_option( 'esi_place_id', '' ) );
 			$grid = get_option( 'esi_media_grid', array() );
 			$grid = array_pad( $grid, 8, 0 );
+			// Try to fetch opening hours for display if API key/place ID present
+			$opening_hours_html = '';
+			if ( ! empty( $api_key ) && ! empty( $place_id ) ) {
+				$transient_key = 'esi_place_hours_' . md5( $place_id );
+				$data = get_transient( $transient_key );
+				if ( false === $data ) {
+					$url = add_query_arg(
+						array(
+							'place_id' => rawurlencode( $place_id ),
+							'fields' => 'opening_hours',
+							'key' => rawurlencode( $api_key ),
+						),
+						'https://maps.googleapis.com/maps/api/place/details/json'
+					);
+					$response = wp_remote_get( $url );
+					if ( ! is_wp_error( $response ) ) {
+						$body = wp_remote_retrieve_body( $response );
+						$json = json_decode( $body );
+						if ( isset( $json->result->opening_hours ) ) {
+							$data = $json->result->opening_hours;
+							set_transient( $transient_key, $data, HOUR_IN_SECONDS );
+						}
+					}
+				}
+				if ( ! empty( $data ) && ! empty( $data->weekday_text ) ) {
+					$opening_hours_html = '<div class="esi-opening-hours"><h3>Fetched Opening Hours</h3><ul>';
+					foreach ( $data->weekday_text as $line ) {
+						$opening_hours_html .= '<li>' . esc_html( $line ) . '</li>';
+					}
+					$opening_hours_html .= '</ul></div>';
+				}
+			}
 			?>
 			<div class="wrap">
 				<h1>Store Info Settings</h1>
@@ -90,23 +120,8 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 						</tr>
 					</table>
 
-					<h2>Media Grid</h2>
-					<div class="esi-media-grid esi-admin-grid">
-						<?php foreach ( $grid as $i => $att_id ) : ?>
-							<div class="esi-media-item" data-index="<?php echo esc_attr( $i ); ?>">
-								<?php if ( $att_id && get_post( $att_id ) ) : $url = wp_get_attachment_url( $att_id ); $mime = get_post_mime_type( $att_id ); ?>
-									<div class="esi-thumb-wrap">
-										<?php echo wp_get_attachment_image( $att_id, 'medium' ); ?>
-									</div>
-									<input type="hidden" name="esi_media_grid[]" value="<?php echo esc_attr( $att_id ); ?>" />
-									<button class="esi-remove-media button" type="button" title="Remove">&times;</button>
-								<?php else: ?>
-									<div class="esi-media-empty"></div>
-									<input type="hidden" name="esi_media_grid[]" value="0" />
-									<button class="esi-add-media button" type="button" title="Add">+</button>
-								<?php endif; ?>
-							</div>
-						<?php endforeach; ?>
+					<div id="esi-opening-hours-placeholder">
+						<?php echo $opening_hours_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 					<p class="submit"><button class="button button-primary" type="submit">Save Settings</button></p>
 				</form>

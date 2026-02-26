@@ -188,7 +188,61 @@ final class Easy_Store_Info {
 		update_option( 'esi_google_api_key', $api_key );
 		update_option( 'esi_place_id', $place_id );
 		update_option( 'esi_media_grid', $grid );
-		wp_send_json_success();
+
+		// For admin saves, attempt to fetch opening hours and return them for verification.
+		$opening_hours_html = '';
+		if ( ! empty( $api_key ) && ! empty( $place_id ) ) {
+			$hours = $this->fetch_place_opening_hours( $api_key, $place_id );
+			if ( is_array( $hours ) && ! empty( $hours ) ) {
+				$opening_hours_html = '<div class="esi-opening-hours"><h3>Fetched Opening Hours</h3><ul>';
+				foreach ( $hours as $line ) {
+					$opening_hours_html .= '<li>' . esc_html( $line ) . '</li>';
+				}
+				$opening_hours_html .= '</ul></div>';
+			} else {
+				$opening_hours_html = '<p>Could not fetch opening hours. Please check API key and Place ID.</p>';
+			}
+		}
+
+		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
+	}
+
+	/**
+	 * Fetch place opening hours from Google Places API
+	 *
+	 * @param string $api_key
+	 * @param string $place_id
+	 * @return array|false
+	 */
+	private function fetch_place_opening_hours( $api_key, $place_id ) {
+		$transient_key = 'esi_place_hours_' . md5( $place_id );
+		$data = get_transient( $transient_key );
+		if ( false === $data ) {
+			$url = add_query_arg(
+				array(
+					'place_id' => rawurlencode( $place_id ),
+					'fields' => 'opening_hours',
+					'key' => rawurlencode( $api_key ),
+				),
+				'https://maps.googleapis.com/maps/api/place/details/json'
+			);
+			$response = wp_remote_get( $url );
+			if ( is_wp_error( $response ) ) {
+				return false;
+			}
+			$body = wp_remote_retrieve_body( $response );
+			$json = json_decode( $body );
+			if ( isset( $json->result->opening_hours ) ) {
+				$data = $json->result->opening_hours;
+				set_transient( $transient_key, $data, HOUR_IN_SECONDS );
+			} else {
+				return false;
+			}
+		}
+		if ( ! empty( $data ) && ! empty( $data->weekday_text ) ) {
+			return (array) $data->weekday_text;
+		}
+		return false;
 	}
 
 	/**
