@@ -424,19 +424,10 @@ final class Easy_Store_Info {
 			wp_send_json_error( 'forbidden', 403 );
 		}
 
-		// For admin saves, attempt to fetch opening hours and return them for verification.
+		// For admin saves: return the fully formatted, styled HTML using the shortcode
 		$opening_hours_html = '';
-		if ( ! empty( $api_key ) && ! empty( $place_id ) ) {
-			$hours = $this->fetch_place_opening_hours( $api_key, $place_id );
-			if ( is_array( $hours ) && ! empty( $hours ) ) {
-				$opening_hours_html = '<div class="esi-opening-hours"><h3>Fetched Opening Hours</h3><ul>';
-				foreach ( $hours as $line ) {
-					$opening_hours_html .= '<li>' . esc_html( $line ) . '</li>';
-				}
-				$opening_hours_html .= '</ul></div>';
-			} else {
-				$opening_hours_html = '<p>Could not fetch opening hours. Please check API key and Place ID.</p>';
-			}
+		if ( current_user_can( 'manage_options' ) ) {
+			$opening_hours_html = $this->shortcode_store_hours();
 		}
 
 		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );

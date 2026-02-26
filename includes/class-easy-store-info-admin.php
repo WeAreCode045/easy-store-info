@@ -47,6 +47,8 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
 		 */
 		public function enqueue_styles() {
 			wp_enqueue_style( 'easy-store-info-admin', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/css/admin.css', array(), '1.0.0', 'all' );
+			// also load frontend styles for preview parity on settings page
+			wp_enqueue_style( 'easy-store-info-frontend-preview', untrailingslashit( plugins_url( '/', EASY_STORE_INFO_PLUGIN_FILE ) ) . '/assets/css/frontend.css', array(), '1.0.0', 'all' );
 		}
 
 		/**
