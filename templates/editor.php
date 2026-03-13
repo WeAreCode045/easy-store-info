@@ -69,23 +69,6 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                         wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) );
                         ?>
                     </div>
-                    <div class="esi-form-section esi-social-links-wrap">
-                        <label><?php esc_html_e( 'Social media links', 'easy-store-info' ); ?></label>
-                        <div class="esi-social-links" id="esi-social-links">
-                            <?php foreach ( $social_links as $idx => $link ) : ?>
-                            <div class="esi-social-row">
-                                <input type="text" class="esi-social-icon" placeholder="<?php esc_attr_e( 'Icon (e.g. facebook, instagram)', 'easy-store-info' ); ?>" value="<?php echo esc_attr( $link['icon'] ?? '' ); ?>" />
-                                <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
-                                <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Remove', 'easy-store-info' ); ?>">−</button>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-                        <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Add link', 'easy-store-info' ); ?></button>
-                    </div>
-                    <div class="esi-form-section">
-                        <label for="esi_contact_email"><?php esc_html_e( 'Contact e-mail', 'easy-store-info' ); ?></label>
-                        <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
-                    </div>
                 </div>
                 <div class="esi-general-right">
                     <div class="esi-form-section">
@@ -127,10 +110,27 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                                         <span>–</span>
                                         <input type="time" class="esi-break-end" value="<?php echo $break_end; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
                                     </div>
-                                </div>
+                                    </div>
                             </div>
                             <?php endforeach; ?>
                         </div>
+                    </div>
+                    <div class="esi-form-section esi-social-links-wrap">
+                        <label><?php esc_html_e( 'Social media links', 'easy-store-info' ); ?></label>
+                        <div class="esi-social-links" id="esi-social-links">
+                            <?php foreach ( $social_links as $idx => $link ) : ?>
+                            <div class="esi-social-row">
+                                <input type="text" class="esi-social-icon" placeholder="<?php esc_attr_e( 'Icon (e.g. facebook, instagram)', 'easy-store-info' ); ?>" value="<?php echo esc_attr( $link['icon'] ?? '' ); ?>" />
+                                <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
+                                <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Remove', 'easy-store-info' ); ?>">−</button>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Add link', 'easy-store-info' ); ?></button>
+                    </div>
+                    <div class="esi-form-section">
+                        <label for="esi_contact_email"><?php esc_html_e( 'Contact e-mail', 'easy-store-info' ); ?></label>
+                        <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
                     </div>
                 </div>
             </div>
