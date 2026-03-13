@@ -121,6 +121,73 @@ jQuery(function ($) {
     // initial apply on page load
     applySettingsToPreview();
 
+    // Admin opening hours: toggle manual section
+    $('#esi_admin_use_google_hours').on('change', function () {
+        $('#esi-admin-manual-hours').toggle(!$(this).is(':checked'));
+    });
+
+    // Admin opening hours: closed/break handlers
+    $(document).on('change', '.esi-admin-day-row .esi-closed-cb', function () {
+        var $row = $(this).closest('.esi-admin-day-row');
+        var closed = $(this).is(':checked');
+        $row.find('.esi-time-row, .esi-break-wrap').toggleClass('is-disabled', closed);
+        $row.find('.esi-open-time, .esi-close-time, .esi-break-cb').prop('disabled', closed);
+        if (closed) {
+            $row.find('.esi-break-cb').prop('checked', false);
+            $row.find('.esi-break-times').addClass('is-hidden');
+        } else {
+            $row.find('.esi-break-times').toggleClass('is-hidden', !$row.find('.esi-break-cb').is(':checked'));
+        }
+    });
+    $(document).on('change', '.esi-admin-day-row .esi-break-cb', function () {
+        $(this).closest('.esi-admin-day-row').find('.esi-break-times').toggleClass('is-hidden', !$(this).is(':checked'));
+    });
+
+    // Admin: Save Opening Hours
+    function collectAdminOpeningHours() {
+        var hours = {};
+        $('.esi-admin-day-row').each(function () {
+            var $r = $(this);
+            var day = parseInt($r.data('day'), 10);
+            var closed = $r.find('.esi-closed-cb').is(':checked');
+            var openVal = $r.find('.esi-open-time').val() || '09:00';
+            var closeVal = $r.find('.esi-close-time').val() || '18:00';
+            var breakEnabled = $r.find('.esi-break-cb').is(':checked') && !closed;
+            var breakStart = $r.find('.esi-break-start').val() || '12:00';
+            var breakEnd = $r.find('.esi-break-end').val() || '13:00';
+            var toMin = function (t) { var p = (t || '00:00').split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); };
+            if (breakEnabled) {
+                var o = toMin(openVal), c = toMin(closeVal), bs = toMin(breakStart), be = toMin(breakEnd);
+                if (c <= o) c += 24 * 60;
+                if (be <= bs) be += 24 * 60;
+                if (o > bs || bs >= be || be > c) { breakEnabled = false; }
+            }
+            hours[day] = { closed: closed, open: openVal, close: closeVal, break_enabled: breakEnabled, break_start: breakStart, break_end: breakEnd };
+        });
+        return hours;
+    }
+    $('#esi-save-opening-hours-btn').on('click', function () {
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        var data = {
+            action: 'esi_save_opening_hours',
+            nonce: esiAdmin.opening_hours_nonce,
+            esi_use_google_hours: $('#esi_admin_use_google_hours').is(':checked') ? '1' : '0',
+            esi_manual_hours: JSON.stringify(collectAdminOpeningHours())
+        };
+        $.post(esiAdmin.ajax_url, data, function (res) {
+            if (res && res.success && res.data && res.data.opening_hours_html) {
+                $('#esi-opening-hours-placeholder').html(res.data.opening_hours_html);
+                applySettingsToPreview();
+            }
+            window.alert(res && res.success ? 'Opening hours saved' : 'Error saving');
+        }).fail(function () {
+            window.alert('AJAX error');
+        }).always(function () {
+            $btn.prop('disabled', false);
+        });
+    });
+
     // Attempt to initialize BraadMartin alpha-color-picker instances when available.
     function initExternalAlphaPicker() {
         // Wait for global to be available; handle multiple possible global names

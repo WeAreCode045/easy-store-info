@@ -35,6 +35,8 @@ final class Easy_Store_Info {
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
 		add_action( 'wp_ajax_esi_save_settings', array( $this, 'ajax_save_settings' ) );
 		add_action( 'wp_ajax_esi_save_grid', array( $this, 'ajax_save_grid' ) );
+		add_action( 'wp_ajax_esi_save_opening_hours', array( $this, 'ajax_save_opening_hours' ) );
+		add_action( 'wp_ajax_esi_change_password', array( $this, 'ajax_change_password' ) );
 	}
 
 	/**
@@ -671,8 +673,9 @@ final class Easy_Store_Info {
 				}
 			}
 
+			$display_name = $user->display_name ? $user->display_name : $user->user_login;
 			ob_start();
-			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays ) );
+			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays, 'user_display_name' => $display_name ) );
 			return (string) ob_get_clean();
 		}
 
@@ -785,7 +788,7 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * AJAX endpoint for frontend grid saves (updates media grid, layout, and opening hours)
+	 * AJAX endpoint for frontend grid saves (updates media grid and layout only)
 	 */
 	public function ajax_save_grid() {
 		if ( ! is_user_logged_in() ) {
@@ -805,46 +808,87 @@ final class Easy_Store_Info {
 					update_option( 'esi_grid_layout', $layout );
 				}
 			}
-			// Opening hours
-			if ( isset( $_POST['esi_use_google_hours'] ) ) {
-				$use_google = ( '1' === $_POST['esi_use_google_hours'] || 'true' === $_POST['esi_use_google_hours'] );
-				update_option( 'esi_use_google_hours', $use_google );
-			}
-			if ( isset( $_POST['esi_manual_hours'] ) ) {
-				$raw = $_POST['esi_manual_hours'];
-				if ( is_string( $raw ) ) {
-					$raw = json_decode( stripslashes( $raw ), true );
-				}
-				$manual = array();
-				if ( ! is_array( $raw ) ) {
-					$raw = array();
-				}
-				for ( $d = 0; $d <= 6; $d++ ) {
-					$day = isset( $raw[ $d ] ) && is_array( $raw[ $d ] ) ? $raw[ $d ] : array();
-					$manual[ $d ] = array(
-						'closed'        => ! empty( $day['closed'] ),
-						'open'          => isset( $day['open'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['open'] ) ? sanitize_text_field( $day['open'] ) : '09:00',
-						'close'         => isset( $day['close'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['close'] ) ? sanitize_text_field( $day['close'] ) : '18:00',
-						'break_enabled' => ! empty( $day['break_enabled'] ),
-						'break_start'   => isset( $day['break_start'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_start'] ) ? sanitize_text_field( $day['break_start'] ) : '12:00',
-						'break_end'     => isset( $day['break_end'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_end'] ) ? sanitize_text_field( $day['break_end'] ) : '13:00',
-					);
-				}
-				update_option( 'esi_manual_hours', $manual );
-			}
-			$opening_hours_html = '';
-			if ( class_exists( 'Easy_Store_Info' ) ) {
-				$main = Easy_Store_Info::instance();
-				if ( method_exists( $main, 'shortcode_store_hours' ) ) {
-					$opening_hours_html = $main->shortcode_store_hours();
-				}
-			}
-			wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
+			wp_send_json_success();
 		}
 		wp_send_json_error( 'forbidden', 403 );
 	}
 
+	/**
+	 * AJAX endpoint for saving opening hours (admin or frontend editors)
+	 */
+	public function ajax_save_opening_hours() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'not_logged_in', 403 );
+		}
+		check_ajax_referer( 'esi-save-opening-hours', 'nonce' );
+		$user = wp_get_current_user();
+		$allowed = current_user_can( 'manage_options' ) || ( $user && is_array( $user->roles ) && array_intersect( array( 'esi_manager', 'store_info_editor', 'administrator' ), (array) $user->roles ) );
+		if ( ! $allowed ) {
+			wp_send_json_error( 'forbidden', 403 );
+		}
+		if ( isset( $_POST['esi_use_google_hours'] ) ) {
+			$use_google = ( '1' === $_POST['esi_use_google_hours'] || 'true' === $_POST['esi_use_google_hours'] );
+			update_option( 'esi_use_google_hours', $use_google );
+		}
+		if ( isset( $_POST['esi_manual_hours'] ) ) {
+			$raw = $_POST['esi_manual_hours'];
+			if ( is_string( $raw ) ) {
+				$raw = json_decode( stripslashes( $raw ), true );
+			}
+			$manual = array();
+			if ( ! is_array( $raw ) ) {
+				$raw = array();
+			}
+			for ( $d = 0; $d <= 6; $d++ ) {
+				$day = isset( $raw[ $d ] ) && is_array( $raw[ $d ] ) ? $raw[ $d ] : array();
+				$manual[ $d ] = array(
+					'closed'        => ! empty( $day['closed'] ),
+					'open'          => isset( $day['open'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['open'] ) ? sanitize_text_field( $day['open'] ) : '09:00',
+					'close'         => isset( $day['close'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['close'] ) ? sanitize_text_field( $day['close'] ) : '18:00',
+					'break_enabled' => ! empty( $day['break_enabled'] ),
+					'break_start'   => isset( $day['break_start'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_start'] ) ? sanitize_text_field( $day['break_start'] ) : '12:00',
+					'break_end'     => isset( $day['break_end'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_end'] ) ? sanitize_text_field( $day['break_end'] ) : '13:00',
+				);
+			}
+			update_option( 'esi_manual_hours', $manual );
+		}
+		$opening_hours_html = '';
+		if ( class_exists( 'Easy_Store_Info' ) ) {
+			$main = Easy_Store_Info::instance();
+			if ( method_exists( $main, 'shortcode_store_hours' ) ) {
+				$opening_hours_html = $main->shortcode_store_hours();
+			}
+		}
+		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
+	}
 
+	/**
+	 * AJAX endpoint for changing the current user's password
+	 */
+	public function ajax_change_password() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'Not logged in' ), 403 );
+		}
+		check_ajax_referer( 'esi-change-password', 'nonce' );
+		$user = wp_get_current_user();
+		$allowed_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
+		if ( ! $user || ! array_intersect( $allowed_roles, (array) $user->roles ) ) {
+			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+		}
+		$current = isset( $_POST['current_password'] ) ? wp_unslash( $_POST['current_password'] ) : '';
+		$new     = isset( $_POST['new_password'] ) ? wp_unslash( $_POST['new_password'] ) : '';
+		if ( empty( $current ) || empty( $new ) ) {
+			wp_send_json_error( array( 'message' => __( 'Current password and new password are required.', 'easy-store-info' ) ) );
+		}
+		if ( ! wp_check_password( $current, $user->user_pass, $user->ID ) ) {
+			wp_send_json_error( array( 'message' => __( 'Current password is incorrect.', 'easy-store-info' ) ) );
+		}
+		if ( strlen( $new ) < 8 ) {
+			wp_send_json_error( array( 'message' => __( 'New password must be at least 8 characters long.', 'easy-store-info' ) ) );
+		}
+		wp_set_password( $new, $user->ID );
+		wp_send_json_success( array( 'message' => __( 'Password updated successfully.', 'easy-store-info' ) ) );
+	}
 
 	/**
 	 * Load template

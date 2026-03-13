@@ -7,6 +7,47 @@ jQuery(function ($) {
         return;
     }
 
+    // Tab switching (Store | Accounts)
+    $(document).on('click', '.esi-editor-tabs .esi-tab', function () {
+        var tab = $(this).data('tab');
+        $('.esi-editor-tabs .esi-tab').removeClass('esi-tab-active').attr('aria-selected', 'false');
+        $(this).addClass('esi-tab-active').attr('aria-selected', 'true');
+        $('.esi-tab-panel').prop('hidden', true);
+        $('#esi-panel-' + tab).prop('hidden', false);
+    });
+
+    // Password change form
+    $('#esi-password-form').on('submit', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $msg = $form.find('.esi-password-message');
+        var newPw = $('#esi_new_password').val();
+        var confirmPw = $('#esi_confirm_password').val();
+        if (newPw !== confirmPw) {
+            $msg.removeClass('success').addClass('error').text('Passwörter stimmen nicht überein.');
+            return;
+        }
+        $msg.removeClass('success error').text('');
+        $form.find('button[type=submit]').prop('disabled', true);
+        $.post(esiSettings.ajax_url, {
+            action: 'esi_change_password',
+            nonce: esiSettings.password_nonce,
+            current_password: $('#esi_current_password').val(),
+            new_password: newPw
+        }).done(function (res) {
+            if (res && res.success) {
+                $msg.removeClass('error').addClass('success').text(res.data && res.data.message ? res.data.message : 'Passwort gespeichert.');
+                $form[0].reset();
+            } else {
+                $msg.removeClass('success').addClass('error').text(res.data && res.data.message ? res.data.message : 'Fehler.');
+            }
+        }).fail(function () {
+            $msg.removeClass('success').addClass('error').text('Fehler beim Speichern.');
+        }).always(function () {
+            $form.find('button[type=submit]').prop('disabled', false);
+        });
+    });
+
     // Settings page: media modal and save
     var frame;
     var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="Add image">' +
@@ -138,14 +179,13 @@ jQuery(function ($) {
 
     initMediaDragSort();
 
-    // Opening hours editor
+    // Opening hours editor (no auto-save; use Save Opening Hours button)
     (function () {
         var $toggle = $('#esi_use_google_hours');
         var $manualWrap = $('.esi-manual-hours-wrap');
         if ($toggle.length) {
             $toggle.on('change', function () {
                 $manualWrap.toggle(!$(this).is(':checked'));
-                debouncedPersist();
             });
         }
         $(document).on('change', '.esi-closed-cb', function () {
@@ -160,16 +200,11 @@ jQuery(function ($) {
                 var showBreak = $row.find('.esi-break-cb').is(':checked');
                 $row.find('.esi-break-times').toggleClass('is-hidden', !showBreak);
             }
-            debouncedPersist();
         });
         $(document).on('change', '.esi-break-cb', function () {
             var $row = $(this).closest('.esi-day-row');
             var enabled = $(this).is(':checked');
             $row.find('.esi-break-times').toggleClass('is-hidden', !enabled);
-            debouncedPersist();
-        });
-        $(document).on('change input', '.esi-open-time, .esi-close-time, .esi-break-start, .esi-break-end', function () {
-            debouncedPersist();
         });
         function validateBreakInRange(openVal, closeVal, breakStartVal, breakEndVal) {
             if (!openVal || !closeVal || !breakStartVal || !breakEndVal) return true;
@@ -215,6 +250,21 @@ jQuery(function ($) {
                 manual_hours: collectManualHours()
             };
         };
+        $(document).on('click', '.esi-save-opening-hours-btn', function () {
+            var $btn = $(this);
+            $btn.prop('disabled', true);
+            var oh = window.esiCollectOpeningHours();
+            var data = {
+                action: 'esi_save_opening_hours',
+                nonce: typeof esiSettings !== 'undefined' ? esiSettings.opening_hours_nonce : '',
+                esi_use_google_hours: oh.use_google ? '1' : '0',
+                esi_manual_hours: JSON.stringify(oh.manual_hours)
+            };
+            $.post(typeof esiSettings !== 'undefined' ? esiSettings.ajax_url : '', data).done(function (res) {
+                if (res && res.success) { alert('Opening hours saved'); }
+                else { alert('Error saving'); }
+            }).fail(function () { alert('AJAX error'); }).always(function () { $btn.prop('disabled', false); });
+        });
     })();
 
     var $dzPlaceholder = $('.esi-dropzone-placeholder');
@@ -459,11 +509,6 @@ jQuery(function ($) {
         data.push({ name: 'action', value: 'esi_save_grid' });
         var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
         if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
-        if (typeof window.esiCollectOpeningHours === 'function') {
-            var oh = window.esiCollectOpeningHours();
-            data.push({ name: 'esi_use_google_hours', value: oh.use_google ? '1' : '0' });
-            data.push({ name: 'esi_manual_hours', value: JSON.stringify(oh.manual_hours) });
-        }
         if (typeof esiSettings !== 'undefined') {
             data.push({ name: 'nonce', value: esiSettings.grid_nonce });
         }
@@ -473,11 +518,7 @@ jQuery(function ($) {
     function persistGridOrder() {
         var data = collectFormData();
         if (typeof esiSettings !== 'undefined') {
-            return $.post(esiSettings.ajax_url, data).done(function (res) {
-                if (res && res.success && res.data && res.data.opening_hours_html) {
-                    $('#esi-opening-hours-placeholder').html(res.data.opening_hours_html);
-                }
-            }).fail(function () {});
+            return $.post(esiSettings.ajax_url, data).fail(function () {});
         }
         return $.Deferred().resolve();
     }

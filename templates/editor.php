@@ -14,8 +14,19 @@ $use_google = isset( $use_google_hours ) ? (bool) $use_google_hours : true;
 $manual = isset( $manual_hours ) && is_array( $manual_hours ) ? $manual_hours : array();
 $weekdays_list = isset( $weekdays ) && is_array( $weekdays ) ? $weekdays : array( 0 => 'Sonntag', 1 => 'Montag', 2 => 'Dienstag', 3 => 'Mittwoch', 4 => 'Donnerstag', 5 => 'Freitag', 6 => 'Samstag' );
 $order = array( 1, 2, 3, 4, 5, 6, 0 );
+$display_name = isset( $user_display_name ) ? esc_html( $user_display_name ) : '';
 ?>
-<div class="esi-settings-wrap esi-frontend-editor"><form id="esi-editor-form">
+<div class="esi-settings-wrap esi-frontend-editor">
+    <header class="esi-editor-header">
+        <p class="esi-welcome-msg"><?php echo esc_html( sprintf( __( 'Willkommen, %s', 'easy-store-info' ), $display_name ) ); ?></p>
+        <nav class="esi-editor-tabs" role="tablist">
+            <button type="button" class="esi-tab esi-tab-active" role="tab" data-tab="store" aria-selected="true"><?php esc_html_e( 'Store', 'easy-store-info' ); ?></button>
+            <button type="button" class="esi-tab" role="tab" data-tab="accounts" aria-selected="false"><?php esc_html_e( 'Accounts', 'easy-store-info' ); ?></button>
+        </nav>
+    </header>
+
+    <div class="esi-tab-panel esi-tab-store" role="tabpanel" id="esi-panel-store">
+    <form id="esi-editor-form">
     <div class="esi-editor-panel">
         <div class="esi-editor-left">
             <?php
@@ -86,7 +97,35 @@ $order = array( 1, 2, 3, 4, 5, 6, 0 );
             <div class="esi-dropzone-placeholder"></div>
                 <div class="esi-sidebar-actions">
                 <button class="button button-primary esi-save-button" type="submit">Save Grid</button>
+                <button type="button" class="button button-secondary esi-save-opening-hours-btn esi-sidebar-oh-btn">Save Opening Hours</button>
             </div>
         </aside>
     </div>
-</form></div>
+</form>
+    </div>
+
+    <div class="esi-tab-panel esi-tab-accounts" role="tabpanel" id="esi-panel-accounts" hidden>
+        <div class="esi-accounts-panel">
+            <h3 class="esi-accounts-title"><?php esc_html_e( 'Passwort ändern', 'easy-store-info' ); ?></h3>
+            <form id="esi-password-form" class="esi-password-form">
+                <p class="esi-form-row">
+                    <label for="esi_current_password"><?php esc_html_e( 'Aktuelles Passwort', 'easy-store-info' ); ?></label>
+                    <input type="password" id="esi_current_password" name="current_password" autocomplete="current-password" required />
+                </p>
+                <p class="esi-form-row">
+                    <label for="esi_new_password"><?php esc_html_e( 'Neues Passwort', 'easy-store-info' ); ?></label>
+                    <input type="password" id="esi_new_password" name="new_password" autocomplete="new-password" minlength="8" required />
+                    <span class="esi-hint"><?php esc_html_e( 'Mindestens 8 Zeichen', 'easy-store-info' ); ?></span>
+                </p>
+                <p class="esi-form-row">
+                    <label for="esi_confirm_password"><?php esc_html_e( 'Passwort bestätigen', 'easy-store-info' ); ?></label>
+                    <input type="password" id="esi_confirm_password" name="confirm_password" autocomplete="new-password" required />
+                </p>
+                <p class="esi-form-actions">
+                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Passwort speichern', 'easy-store-info' ); ?></button>
+                </p>
+                <p class="esi-password-message" aria-live="polite"></p>
+            </form>
+        </div>
+    </div>
+</div>

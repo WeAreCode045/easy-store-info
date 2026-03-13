@@ -61,6 +61,7 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
             wp_localize_script( 'easy-store-info-admin', 'esiAdmin', array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce' => wp_create_nonce( 'esi-save-settings' ),
+                'opening_hours_nonce' => wp_create_nonce( 'esi-save-opening-hours' ),
             ) );
         }
 
@@ -108,9 +109,24 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
             }
             // Try to fetch opening hours for display if API key/place ID present
             $opening_hours_html = '';
-            if ( ! empty( $api_key ) && ! empty( $place_id ) && class_exists( 'Easy_Store_Info' ) ) {
+            $use_google_hours = get_option( 'esi_use_google_hours', true );
+            $manual_hours = get_option( 'esi_manual_hours', array() );
+            $weekdays_oh = array( 0 => 'Sonntag', 1 => 'Montag', 2 => 'Dienstag', 3 => 'Mittwoch', 4 => 'Donnerstag', 5 => 'Freitag', 6 => 'Samstag' );
+            for ( $d = 0; $d <= 6; $d++ ) {
+                if ( ! isset( $manual_hours[ $d ] ) || ! is_array( $manual_hours[ $d ] ) ) {
+                    $manual_hours[ $d ] = array(
+                        'closed'        => ( 0 === $d ),
+                        'open'          => '09:00',
+                        'close'         => '18:00',
+                        'break_enabled' => false,
+                        'break_start'   => '12:00',
+                        'break_end'     => '13:00',
+                    );
+                }
+            }
+            if ( class_exists( 'Easy_Store_Info' ) ) {
                 $main = Easy_Store_Info::instance();
-                $hours = $main->fetch_place_opening_hours( $api_key, $place_id );
+                $hours = $main->get_opening_hours();
 
                 if ( is_array( $hours ) ) {
                     // German weekday names (0=Sunday..6=Saturday)
@@ -214,6 +230,53 @@ if ( ! class_exists( 'Easy_Store_Info_Admin' ) ) {
                                 </tr>
                             </table>
                         </div>
+
+                        <div class="esi-admin-opening-hours">
+                            <h2>Opening Hours</h2>
+                            <div class="esi-opening-hours-editor esi-admin-oh">
+                                <div class="esi-oh-toggle-wrap">
+                                    <label class="esi-toggle-label">
+                                        <span class="esi-toggle-text">Use Google Places</span>
+                                        <input type="checkbox" id="esi_admin_use_google_hours" class="esi-toggle-input" <?php checked( $use_google_hours ); ?> />
+                                        <span class="esi-toggle-switch"></span>
+                                    </label>
+                                </div>
+                                <div class="esi-manual-hours-wrap" id="esi-admin-manual-hours" style="<?php echo $use_google_hours ? 'display:none' : ''; ?>">
+                                    <?php
+                                    $order_oh = array( 1, 2, 3, 4, 5, 6, 0 );
+                                    foreach ( $order_oh as $day_idx ) :
+                                        $d = $manual_hours[ $day_idx ] ?? array();
+                                        $closed = ! empty( $d['closed'] );
+                                        $open = isset( $d['open'] ) ? esc_attr( $d['open'] ) : '09:00';
+                                        $close = isset( $d['close'] ) ? esc_attr( $d['close'] ) : '18:00';
+                                        $break_enabled = ! empty( $d['break_enabled'] );
+                                        $break_start = isset( $d['break_start'] ) ? esc_attr( $d['break_start'] ) : '12:00';
+                                        $break_end = isset( $d['break_end'] ) ? esc_attr( $d['break_end'] ) : '13:00';
+                                        $label = isset( $weekdays_oh[ $day_idx ] ) ? $weekdays_oh[ $day_idx ] : $day_idx;
+                                    ?>
+                                    <div class="esi-day-row esi-admin-day-row" data-day="<?php echo (int) $day_idx; ?>">
+                                        <span class="esi-day-label"><?php echo esc_html( $label ); ?></span>
+                                        <div class="esi-day-fields">
+                                            <label class="esi-check-closed"><input type="checkbox" class="esi-closed-cb" <?php checked( $closed ); ?> /> Closed</label>
+                                            <div class="esi-time-row<?php echo $closed ? ' is-disabled' : ''; ?>">
+                                                <input type="time" class="esi-open-time" value="<?php echo $open; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
+                                                <span>–</span>
+                                                <input type="time" class="esi-close-time" value="<?php echo $close; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
+                                            </div>
+                                            <label class="esi-break-wrap"><input type="checkbox" class="esi-break-cb" <?php checked( $break_enabled ); ?> <?php echo $closed ? 'disabled' : ''; ?> /> Break</label>
+                                            <div class="esi-break-times<?php echo ( $break_enabled && ! $closed ) ? '' : ' is-hidden'; ?>">
+                                                <input type="time" class="esi-break-start" value="<?php echo $break_start; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
+                                                <span>–</span>
+                                                <input type="time" class="esi-break-end" value="<?php echo $break_end; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <p class="submit"><button type="button" class="button button-primary" id="esi-save-opening-hours-btn">Save Opening Hours</button></p>
+                            </div>
+                        </div>
+
                         <div class="styling">
                             <div class="settings esi-admin-left">
                                 <h2>Display Styles</h2>

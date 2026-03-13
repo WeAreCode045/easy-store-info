@@ -23,3 +23,20 @@
 .esi-alpha-picker{display:inline-flex;align-items:center;gap:8px}
 .esi-alpha-picker .esi-alpha-opacity{width:110px}
 .esi-alpha-picker .esi-alpha-value{min-width:36px;text-align:right;font-size:12px;color:#666}
+
+/* Admin opening hours editor */
+.esi-admin-opening-hours{margin:16px 0;padding:16px 0;border-top:1px solid #eee}
+.esi-admin-opening-hours h2{margin:0 0 12px}
+.esi-admin-oh .esi-toggle-label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.esi-admin-oh .esi-toggle-input{position:absolute;opacity:0;width:0;height:0}
+.esi-admin-oh .esi-toggle-switch{position:relative;display:inline-block;width:44px;height:24px;background:#ccc;border-radius:12px;transition:background .2s}
+.esi-admin-oh .esi-toggle-switch::after{content:"";position:absolute;left:2px;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.esi-admin-oh .esi-toggle-input:checked+.esi-toggle-switch{background:#2271b1}
+.esi-admin-oh .esi-toggle-input:checked+.esi-toggle-switch::after{transform:translateX(20px)}
+.esi-admin-manual-hours-wrap .esi-day-row{margin-bottom:8px;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.esi-admin-day-row .esi-day-label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.esi-admin-day-row .esi-day-fields{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.esi-admin-day-row .esi-time-row input{width:70px;padding:4px 6px}
+.esi-admin-day-row .esi-break-times input{width:60px;padding:4px 6px}
+.esi-admin-day-row .esi-break-times.is-hidden{display:none}
+.esi-admin-day-row .esi-time-row.is-disabled input{opacity:.5}
