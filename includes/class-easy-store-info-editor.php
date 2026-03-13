@@ -48,6 +48,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
                 'grid_nonce' => wp_create_nonce( 'esi-save-grid' ),
                 'opening_hours_nonce' => wp_create_nonce( 'esi-save-opening-hours' ),
                 'password_nonce' => wp_create_nonce( 'esi-change-password' ),
+                'general_info_nonce' => wp_create_nonce( 'esi-save-general-info' ),
             );
             wp_localize_script( 'easy-store-info-frontend', 'esiSettings', $local );
             wp_localize_script( 'easy-store-info-editor', 'esiSettings', $local );

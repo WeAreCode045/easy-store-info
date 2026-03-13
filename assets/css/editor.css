@@ -24,7 +24,28 @@
 .esi-break-times input{width:60px;padding:4px 6px;font-size:12px}
 .esi-break-times.is-hidden{display:none}
 .esi-sidebar-actions{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.esi-sidebar-actions .esi-save-button,.esi-sidebar-actions .esi-save-opening-hours-btn{width:100%;display:block}
+.esi-sidebar-actions .esi-save-button{width:100%;display:block}
+
+/* General info tab - two column layout */
+.esi-general-form .esi-general-two-col{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.esi-general-left{flex:1;min-width:280px}
+.esi-general-right{flex:1;min-width:280px;max-width:420px}
+.esi-general-form .esi-form-section{margin-bottom:20px}
+.esi-general-form .esi-form-section label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.esi-general-form .esi-input-wide{width:100%;max-width:100%;padding:8px 10px;font-size:14px}
+.esi-general-form textarea.esi-input-wide{min-height:100px;resize:vertical}
+.esi-general-form .esi-form-actions{margin-top:20px}
+.esi-general-message{margin:10px 0 0;font-size:13px}
+.esi-general-message.success{color:#0a7a0a}
+.esi-general-message.error{color:#b00}
+.esi-social-links-wrap .esi-social-links{margin-bottom:8px}
+.esi-social-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.esi-social-row .esi-social-icon{width:120px;padding:6px 8px;font-size:13px}
+.esi-social-row .esi-social-url{flex:1;min-width:0;padding:6px 8px;font-size:13px}
+.esi-social-row .esi-social-remove{flex-shrink:0;padding:4px 10px}
+.esi-social-add{margin-top:4px}
+.esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
+.esi-general-right .esi-opening-hours-editor{border:none;padding:0}
 
 /* Editor header & tabs */
 .esi-editor-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}

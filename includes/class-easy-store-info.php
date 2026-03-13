@@ -37,6 +37,7 @@ final class Easy_Store_Info {
 		add_action( 'wp_ajax_esi_save_grid', array( $this, 'ajax_save_grid' ) );
 		add_action( 'wp_ajax_esi_save_opening_hours', array( $this, 'ajax_save_opening_hours' ) );
 		add_action( 'wp_ajax_esi_change_password', array( $this, 'ajax_change_password' ) );
+		add_action( 'wp_ajax_esi_save_general_info', array( $this, 'ajax_save_general_info' ) );
 	}
 
 	/**
@@ -674,8 +675,20 @@ final class Easy_Store_Info {
 			}
 
 			$display_name = $user->display_name ? $user->display_name : $user->user_login;
+			wp_enqueue_editor();
+			wp_enqueue_style( 'editor-buttons' );
+			$general_info = array(
+				'title'            => get_option( 'esi_title', '' ),
+				'subtitle'         => get_option( 'esi_subtitle', '' ),
+				'about_text'       => get_option( 'esi_about_text', '' ),
+				'payment_details'  => get_option( 'esi_payment_details', '' ),
+				'footer_text'      => get_option( 'esi_footer_text', '' ),
+				'contact_email'    => get_option( 'esi_contact_email', '' ),
+				'store_address'    => get_option( 'esi_store_address', '' ),
+				'social_links'     => get_option( 'esi_social_links', array() ),
+			);
 			ob_start();
-			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays, 'user_display_name' => $display_name ) );
+			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays, 'user_display_name' => $display_name, 'general_info' => $general_info ) );
 			return (string) ob_get_clean();
 		}
 
@@ -888,6 +901,81 @@ final class Easy_Store_Info {
 		}
 		wp_set_password( $new, $user->ID );
 		wp_send_json_success( array( 'message' => __( 'Password updated successfully.', 'easy-store-info' ) ) );
+	}
+
+	/**
+	 * AJAX endpoint for saving general info (about, payment, footer, social, contact, address)
+	 */
+	public function ajax_save_general_info() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'Not logged in' ), 403 );
+		}
+		check_ajax_referer( 'esi-save-general-info', 'nonce' );
+		$user = wp_get_current_user();
+		$allowed_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
+		if ( ! $user || ! array_intersect( $allowed_roles, (array) $user->roles ) ) {
+			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+		}
+		if ( isset( $_POST['esi_title'] ) ) {
+			update_option( 'esi_title', sanitize_text_field( wp_unslash( $_POST['esi_title'] ) ) );
+		}
+		if ( isset( $_POST['esi_subtitle'] ) ) {
+			update_option( 'esi_subtitle', sanitize_text_field( wp_unslash( $_POST['esi_subtitle'] ) ) );
+		}
+		if ( isset( $_POST['esi_about_text'] ) ) {
+			update_option( 'esi_about_text', wp_kses_post( wp_unslash( $_POST['esi_about_text'] ) ) );
+		}
+		if ( isset( $_POST['esi_payment_details'] ) ) {
+			update_option( 'esi_payment_details', wp_kses_post( wp_unslash( $_POST['esi_payment_details'] ) ) );
+		}
+		if ( isset( $_POST['esi_footer_text'] ) ) {
+			update_option( 'esi_footer_text', wp_kses_post( wp_unslash( $_POST['esi_footer_text'] ) ) );
+		}
+		if ( isset( $_POST['esi_contact_email'] ) ) {
+			update_option( 'esi_contact_email', sanitize_email( wp_unslash( $_POST['esi_contact_email'] ) ) );
+		}
+		if ( isset( $_POST['esi_store_address'] ) ) {
+			update_option( 'esi_store_address', sanitize_textarea_field( wp_unslash( $_POST['esi_store_address'] ) ) );
+		}
+		if ( isset( $_POST['esi_social_links'] ) && is_string( $_POST['esi_social_links'] ) ) {
+			$raw = json_decode( stripslashes( $_POST['esi_social_links'] ), true );
+			$links = array();
+			if ( is_array( $raw ) ) {
+				foreach ( $raw as $item ) {
+					if ( isset( $item['icon'], $item['url'] ) && ! empty( trim( (string) $item['url'] ) ) ) {
+						$links[] = array(
+							'icon' => sanitize_text_field( $item['icon'] ),
+							'url'  => esc_url_raw( $item['url'] ),
+						);
+					}
+				}
+			}
+			update_option( 'esi_social_links', $links );
+		}
+		// Opening hours (also in General Info tab)
+		if ( isset( $_POST['esi_use_google_hours'] ) ) {
+			$use_google = ( '1' === $_POST['esi_use_google_hours'] || 'true' === $_POST['esi_use_google_hours'] );
+			update_option( 'esi_use_google_hours', $use_google );
+		}
+		if ( isset( $_POST['esi_manual_hours'] ) && is_string( $_POST['esi_manual_hours'] ) ) {
+			$raw = json_decode( stripslashes( $_POST['esi_manual_hours'] ), true );
+			$manual = array();
+			if ( is_array( $raw ) ) {
+				for ( $d = 0; $d <= 6; $d++ ) {
+					$day = isset( $raw[ $d ] ) && is_array( $raw[ $d ] ) ? $raw[ $d ] : array();
+					$manual[ $d ] = array(
+						'closed'        => ! empty( $day['closed'] ),
+						'open'          => ( isset( $day['open'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['open'] ) ) ? sanitize_text_field( $day['open'] ) : '09:00',
+						'close'         => ( isset( $day['close'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['close'] ) ) ? sanitize_text_field( $day['close'] ) : '18:00',
+						'break_enabled' => ! empty( $day['break_enabled'] ),
+						'break_start'   => ( isset( $day['break_start'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_start'] ) ) ? sanitize_text_field( $day['break_start'] ) : '12:00',
+						'break_end'     => ( isset( $day['break_end'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_end'] ) ) ? sanitize_text_field( $day['break_end'] ) : '13:00',
+					);
+				}
+			}
+			update_option( 'esi_manual_hours', $manual );
+		}
+		wp_send_json_success( array( 'message' => __( 'General info saved.', 'easy-store-info' ) ) );
 	}
 
 	/**

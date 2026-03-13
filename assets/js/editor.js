@@ -7,13 +7,76 @@ jQuery(function ($) {
         return;
     }
 
-    // Tab switching (Store | Accounts)
+    // Tab switching (General info | Media Gallery | Account)
     $(document).on('click', '.esi-editor-tabs .esi-tab', function () {
         var tab = $(this).data('tab');
         $('.esi-editor-tabs .esi-tab').removeClass('esi-tab-active').attr('aria-selected', 'false');
         $(this).addClass('esi-tab-active').attr('aria-selected', 'true');
         $('.esi-tab-panel').prop('hidden', true);
         $('#esi-panel-' + tab).prop('hidden', false);
+    });
+
+    // General info form
+    function getWysiwygContent(id) {
+        try {
+            if (typeof tinymce !== 'undefined' && tinymce.get(id)) {
+                return tinymce.get(id).getContent() || '';
+            }
+        } catch (e) {}
+        return $('#' + id).val() || '';
+    }
+    function collectSocialLinks() {
+        var links = [];
+        $('#esi-social-links .esi-social-row').each(function () {
+            var url = $(this).find('.esi-social-url').val();
+            if (url && url.trim()) {
+                links.push({ icon: $(this).find('.esi-social-icon').val() || '', url: url.trim() });
+            }
+        });
+        return links;
+    }
+    $(document).on('click', '.esi-social-add', function () {
+        var $row = $('<div class="esi-social-row"><input type="text" class="esi-social-icon" placeholder="Icon" /><input type="url" class="esi-social-url" placeholder="https://..." /><button type="button" class="esi-social-remove button">−</button></div>');
+        $('#esi-social-links').append($row);
+    });
+    $(document).on('click', '.esi-social-remove', function () {
+        var $container = $('#esi-social-links');
+        if ($container.find('.esi-social-row').length > 1) {
+            $(this).closest('.esi-social-row').remove();
+        }
+    });
+    $('#esi-general-info-form').on('submit', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $msg = $form.find('.esi-general-message');
+        $msg.removeClass('success error').text('');
+        $form.find('button[type=submit]').prop('disabled', true);
+        var oh = typeof window.esiCollectOpeningHours === 'function' ? window.esiCollectOpeningHours() : { use_google: true, manual_hours: {} };
+        var data = {
+            action: 'esi_save_general_info',
+            nonce: esiSettings.general_info_nonce,
+            esi_title: $('#esi_title').val() || '',
+            esi_subtitle: $('#esi_subtitle').val() || '',
+            esi_about_text: getWysiwygContent('esi_about_text'),
+            esi_payment_details: getWysiwygContent('esi_payment_details'),
+            esi_footer_text: getWysiwygContent('esi_footer_text'),
+            esi_contact_email: $('#esi_contact_email').val() || '',
+            esi_store_address: $('#esi_store_address').val() || '',
+            esi_social_links: JSON.stringify(collectSocialLinks()),
+            esi_use_google_hours: oh.use_google ? '1' : '0',
+            esi_manual_hours: JSON.stringify(oh.manual_hours)
+        };
+        $.post(esiSettings.ajax_url, data).done(function (res) {
+            if (res && res.success) {
+                $msg.removeClass('error').addClass('success').text(res.data && res.data.message ? res.data.message : 'Gespeichert.');
+            } else {
+                $msg.removeClass('success').addClass('error').text(res.data && res.data.message ? res.data.message : 'Fehler.');
+            }
+        }).fail(function () {
+            $msg.removeClass('success').addClass('error').text('Fehler beim Speichern.');
+        }).always(function () {
+            $form.find('button[type=submit]').prop('disabled', false);
+        });
     });
 
     // Password change form
@@ -250,21 +313,6 @@ jQuery(function ($) {
                 manual_hours: collectManualHours()
             };
         };
-        $(document).on('click', '.esi-save-opening-hours-btn', function () {
-            var $btn = $(this);
-            $btn.prop('disabled', true);
-            var oh = window.esiCollectOpeningHours();
-            var data = {
-                action: 'esi_save_opening_hours',
-                nonce: typeof esiSettings !== 'undefined' ? esiSettings.opening_hours_nonce : '',
-                esi_use_google_hours: oh.use_google ? '1' : '0',
-                esi_manual_hours: JSON.stringify(oh.manual_hours)
-            };
-            $.post(typeof esiSettings !== 'undefined' ? esiSettings.ajax_url : '', data).done(function (res) {
-                if (res && res.success) { alert('Opening hours saved'); }
-                else { alert('Error saving'); }
-            }).fail(function () { alert('AJAX error'); }).always(function () { $btn.prop('disabled', false); });
-        });
     })();
 
     var $dzPlaceholder = $('.esi-dropzone-placeholder');
