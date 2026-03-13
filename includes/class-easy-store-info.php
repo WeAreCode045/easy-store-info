@@ -192,39 +192,36 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * Shortcode: about text (HTML)
+	 * Shortcode: about text
 	 */
 	public function shortcode_about_text( $atts = array() ) {
 		$content = get_option( 'esi_about_text', '' );
-		if ( empty( $content ) ) {
+		if ( '' === (string) $content ) {
 			return '';
 		}
-		$content = wp_kses_post( $content );
-		return '<div class="esi-about-text">' . apply_filters( 'the_content', $content ) . '</div>';
+		return '<div class="esi-about-text">' . $content . '</div>';
 	}
 
 	/**
-	 * Shortcode: payment info (HTML)
+	 * Shortcode: payment info
 	 */
 	public function shortcode_payment_info( $atts = array() ) {
 		$content = get_option( 'esi_payment_details', '' );
-		if ( empty( $content ) ) {
+		if ( '' === (string) $content ) {
 			return '';
 		}
-		$content = wp_kses_post( $content );
-		return '<div class="esi-payment-info">' . apply_filters( 'the_content', $content ) . '</div>';
+		return '<div class="esi-payment-info">' . $content . '</div>';
 	}
 
 	/**
-	 * Shortcode: footer text (HTML)
+	 * Shortcode: footer text
 	 */
 	public function shortcode_footer_text( $atts = array() ) {
 		$content = get_option( 'esi_footer_text', '' );
-		if ( empty( $content ) ) {
+		if ( '' === (string) $content ) {
 			return '';
 		}
-		$content = wp_kses_post( $content );
-		return '<div class="esi-footer-text">' . apply_filters( 'the_content', $content ) . '</div>';
+		return '<div class="esi-footer-text">' . $content . '</div>';
 	}
 
 	/**
