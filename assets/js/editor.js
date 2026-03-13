@@ -45,21 +45,38 @@ jQuery(function ($) {
         $('#esi-social-links .esi-social-row').each(function () {
             var url = $(this).find('.esi-social-url').val();
             if (url && url.trim()) {
-                links.push({ icon: $(this).find('.esi-social-icon').val() || '', url: url.trim() });
+                links.push({ icon: $(this).find('.esi-social-icon-value').val() || '', url: url.trim() });
             }
         });
         return links;
     }
+    function buildIconList(opts, classes, selected) {
+        var $list = $('<div class="esi-social-icon-list" role="listbox" aria-label="Select platform icon"></div>');
+        $.each(opts || {}, function (key, label) {
+            var fa = (classes && classes[key]) ? classes[key] : 'fas fa-link';
+            var sel = selected === key;
+            var $btn = $('<button type="button" class="esi-social-icon-btn' + (sel ? ' is-selected' : '') + '" data-icon="' + key + '" title="' + label + '" aria-pressed="' + (sel ? 'true' : 'false') + '"><i class="' + fa + '" aria-hidden="true"></i></button>');
+            $list.append($btn);
+        });
+        return $list;
+    }
+    $(document).on('click', '.esi-social-icon-btn', function () {
+        var $row = $(this).closest('.esi-social-row');
+        $row.find('.esi-social-icon-btn').removeClass('is-selected').attr('aria-pressed', 'false');
+        $(this).addClass('is-selected').attr('aria-pressed', 'true');
+        $row.find('.esi-social-icon-value').val($(this).data('icon') || '');
+    });
     $(document).on('click', '.esi-social-add', function () {
         var opts = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_options) ? esiSettings.social_icon_options : {};
-        var $sel = $('<select class="esi-social-icon"><option value="">Select icon</option></select>');
-        $.each(opts, function (val, label) {
-            $sel.append($('<option></option>').attr('value', val).text(label));
-        });
+        var classes = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_classes) ? esiSettings.social_icon_classes : {};
+        var $list = buildIconList(opts, classes, '');
         var $row = $('<div class="esi-social-row"></div>');
-        $row.append($sel);
-        $row.append($('<input type="url" class="esi-social-url" placeholder="https://..." />'));
-        $row.append($('<button type="button" class="esi-social-remove button" aria-label="Remove">−</button>'));
+        var $top = $('<div class="esi-social-row-top"></div>');
+        $top.append($list);
+        $top.append($('<button type="button" class="esi-social-remove button" aria-label="Remove">−</button>'));
+        $row.append($top);
+        $row.append($('<input type="hidden" class="esi-social-icon-value" value="" />'));
+        $row.append($('<div class="esi-social-url-wrap"><input type="url" class="esi-social-url" placeholder="https://..." /></div>'));
         $('#esi-social-links').append($row);
     });
     $(document).on('click', '.esi-social-remove', function () {

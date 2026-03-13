@@ -767,6 +767,7 @@ final class Easy_Store_Info {
 			add_filter( 'show_admin_bar', '__return_false' );
 			wp_enqueue_media();
 			// enqueue the editor-only JS & CSS (registered by frontend loader)
+			wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
 			wp_enqueue_style( 'easy-store-info-editor' );
 			wp_enqueue_script( 'easy-store-info-editor' );
 

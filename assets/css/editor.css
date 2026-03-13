@@ -39,11 +39,19 @@
 .esi-general-message.success{color:#0a7a0a}
 .esi-general-message.error{color:#b00}
 .esi-social-links-wrap .esi-social-links{margin-bottom:8px}
-.esi-social-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-.esi-social-row .esi-social-icon{min-width:120px;padding:6px 8px;font-size:13px}
-.esi-social-row .esi-social-url{flex:1;min-width:0;padding:6px 8px;font-size:13px}
-.esi-social-row .esi-social-remove{flex-shrink:0;padding:4px 10px}
-.esi-social-add{margin-top:4px}
+.esi-social-row{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(0,0,0,.08)}
+.esi-social-row:last-of-type{border-bottom:none}
+.esi-social-row-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.esi-social-icon-list{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.esi-social-icon-btn{width:38px;height:38px;padding:0;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#333;transition:border-color .2s,background .2s}
+.esi-social-icon-btn:hover{border-color:#0b66b2;background:#f0f7ff}
+.esi-social-icon-btn.is-selected{border-color:#0b66b2;background:#0b66b2;color:#fff}
+.esi-social-icon-btn i{font-size:18px}
+.esi-social-icon-value{display:none}
+.esi-social-url-wrap{width:100%}
+.esi-social-row .esi-social-url{width:100%;box-sizing:border-box;padding:10px 14px;font-size:15px;min-height:44px}
+.esi-social-row .esi-social-remove{flex-shrink:0;padding:6px 12px;margin-left:auto}
+.esi-social-add{margin-top:8px}
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
 /* Content tabs (About / Payment / Footer) */
 .esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:10px}
