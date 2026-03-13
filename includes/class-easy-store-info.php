@@ -95,6 +95,136 @@ final class Easy_Store_Info {
 		add_shortcode( 'esi_store_hours', array( $this, 'shortcode_store_hours' ) );
 		add_shortcode( 'esi_media_grid', array( $this, 'shortcode_media_grid' ) );
 		add_shortcode( 'esi_settings', array( $this, 'shortcode_settings' ) );
+		add_shortcode( 'esi_social_contact', array( $this, 'shortcode_social_contact' ) );
+		add_shortcode( 'esi_title', array( $this, 'shortcode_title' ) );
+		add_shortcode( 'esi_subtitle', array( $this, 'shortcode_subtitle' ) );
+		add_shortcode( 'esi_about_text', array( $this, 'shortcode_about_text' ) );
+		add_shortcode( 'esi_payment_info', array( $this, 'shortcode_payment_info' ) );
+		add_shortcode( 'esi_footer_text', array( $this, 'shortcode_footer_text' ) );
+	}
+
+	/**
+	 * Get Font Awesome class for social/contact icon key.
+	 *
+	 * @param string $key Icon key (e.g. facebook, instagram, phone, email).
+	 * @return string Font Awesome classes.
+	 */
+	public static function get_social_icon_class( $key ) {
+		$map = array(
+			'facebook'   => 'fab fa-facebook-f',
+			'instagram'  => 'fab fa-instagram',
+			'twitter'    => 'fab fa-x-twitter',
+			'x-twitter'  => 'fab fa-x-twitter',
+			'linkedin'   => 'fab fa-linkedin-in',
+			'youtube'    => 'fab fa-youtube',
+			'tiktok'     => 'fab fa-tiktok',
+			'whatsapp'   => 'fab fa-whatsapp',
+			'pinterest'  => 'fab fa-pinterest',
+			'phone'      => 'fas fa-phone',
+			'email'      => 'fas fa-envelope',
+		);
+		$key = strtolower( trim( (string) $key ) );
+		return isset( $map[ $key ] ) ? $map[ $key ] : 'fas fa-link';
+	}
+
+	/**
+	 * Get available social icon options for editor (key => label).
+	 *
+	 * @return array
+	 */
+	public static function get_social_icon_options() {
+		return array(
+			'facebook'   => 'Facebook',
+			'instagram'  => 'Instagram',
+			'twitter'    => 'Twitter / X',
+			'linkedin'   => 'LinkedIn',
+			'youtube'    => 'YouTube',
+			'tiktok'     => 'TikTok',
+			'whatsapp'   => 'WhatsApp',
+			'pinterest'  => 'Pinterest',
+		);
+	}
+
+	/**
+	 * Shortcode: social media icons, phone, email (horizontal, Font Awesome).
+	 */
+	public function shortcode_social_contact( $atts = array() ) {
+		wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
+		$social_links = get_option( 'esi_social_links', array() );
+		$phone        = get_option( 'esi_contact_phone', '' );
+		$email        = get_option( 'esi_contact_email', '' );
+		$parts        = array();
+		foreach ( $social_links as $item ) {
+			if ( empty( $item['url'] ) ) {
+				continue;
+			}
+			$icon = isset( $item['icon'] ) ? $item['icon'] : '';
+			$fa   = self::get_social_icon_class( $icon );
+			$parts[] = '<a href="' . esc_url( $item['url'] ) . '" target="_blank" rel="noopener noreferrer" class="esi-social-contact-link" aria-label="' . esc_attr( $icon ?: 'Social' ) . '"><i class="' . esc_attr( $fa ) . '" aria-hidden="true"></i></a>';
+		}
+		if ( ! empty( $phone ) ) {
+			$tel = preg_replace( '/\s+/', '', $phone );
+			$parts[] = '<a href="tel:' . esc_attr( $tel ) . '" class="esi-social-contact-link" aria-label="' . esc_attr__( 'Phone', 'easy-store-info' ) . '"><i class="fas fa-phone" aria-hidden="true"></i></a>';
+		}
+		if ( ! empty( $email ) ) {
+			$parts[] = '<a href="mailto:' . esc_attr( $email ) . '" class="esi-social-contact-link" aria-label="' . esc_attr__( 'Email', 'easy-store-info' ) . '"><i class="fas fa-envelope" aria-hidden="true"></i></a>';
+		}
+		if ( empty( $parts ) ) {
+			return '';
+		}
+		return '<div class="esi-social-contact">' . implode( '', $parts ) . '</div>';
+	}
+
+	/**
+	 * Shortcode: title
+	 */
+	public function shortcode_title( $atts = array() ) {
+		$title = get_option( 'esi_title', '' );
+		return $title ? '<span class="esi-title">' . esc_html( $title ) . '</span>' : '';
+	}
+
+	/**
+	 * Shortcode: subtitle
+	 */
+	public function shortcode_subtitle( $atts = array() ) {
+		$subtitle = get_option( 'esi_subtitle', '' );
+		return $subtitle ? '<span class="esi-subtitle">' . esc_html( $subtitle ) . '</span>' : '';
+	}
+
+	/**
+	 * Shortcode: about text (HTML)
+	 */
+	public function shortcode_about_text( $atts = array() ) {
+		$content = get_option( 'esi_about_text', '' );
+		if ( empty( $content ) ) {
+			return '';
+		}
+		$content = wp_kses_post( $content );
+		return '<div class="esi-about-text">' . apply_filters( 'the_content', $content ) . '</div>';
+	}
+
+	/**
+	 * Shortcode: payment info (HTML)
+	 */
+	public function shortcode_payment_info( $atts = array() ) {
+		$content = get_option( 'esi_payment_details', '' );
+		if ( empty( $content ) ) {
+			return '';
+		}
+		$content = wp_kses_post( $content );
+		return '<div class="esi-payment-info">' . apply_filters( 'the_content', $content ) . '</div>';
+	}
+
+	/**
+	 * Shortcode: footer text (HTML)
+	 */
+	public function shortcode_footer_text( $atts = array() ) {
+		$content = get_option( 'esi_footer_text', '' );
+		if ( empty( $content ) ) {
+			return '';
+		}
+		$content = wp_kses_post( $content );
+		return '<div class="esi-footer-text">' . apply_filters( 'the_content', $content ) . '</div>';
 	}
 
 	/**
@@ -684,6 +814,7 @@ final class Easy_Store_Info {
 				'payment_details'  => get_option( 'esi_payment_details', '' ),
 				'footer_text'      => get_option( 'esi_footer_text', '' ),
 				'contact_email'    => get_option( 'esi_contact_email', '' ),
+				'contact_phone'    => get_option( 'esi_contact_phone', '' ),
 				'store_address'    => get_option( 'esi_store_address', '' ),
 				'social_links'     => get_option( 'esi_social_links', array() ),
 			);
@@ -933,6 +1064,9 @@ final class Easy_Store_Info {
 		}
 		if ( isset( $_POST['esi_contact_email'] ) ) {
 			update_option( 'esi_contact_email', sanitize_email( wp_unslash( $_POST['esi_contact_email'] ) ) );
+		}
+		if ( isset( $_POST['esi_contact_phone'] ) ) {
+			update_option( 'esi_contact_phone', sanitize_text_field( wp_unslash( $_POST['esi_contact_phone'] ) ) );
 		}
 		if ( isset( $_POST['esi_store_address'] ) ) {
 			update_option( 'esi_store_address', sanitize_textarea_field( wp_unslash( $_POST['esi_store_address'] ) ) );

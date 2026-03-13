@@ -8,12 +8,27 @@ jQuery(function ($) {
     }
 
     // Tab switching (General info | Media Gallery | Account)
-    $(document).on('click', '.esi-editor-tabs .esi-tab', function () {
-        var tab = $(this).data('tab');
+    function switchMainTab(tab) {
         $('.esi-editor-tabs .esi-tab').removeClass('esi-tab-active').attr('aria-selected', 'false');
-        $(this).addClass('esi-tab-active').attr('aria-selected', 'true');
+        $('.esi-editor-tabs .esi-tab[data-tab="' + tab + '"]').addClass('esi-tab-active').attr('aria-selected', 'true');
         $('.esi-tab-panel').prop('hidden', true);
         $('#esi-panel-' + tab).prop('hidden', false);
+    }
+    $(document).on('click', '.esi-editor-tabs .esi-tab', function () {
+        switchMainTab($(this).data('tab'));
+    });
+    $(document).on('click', '.esi-tab-link', function (e) {
+        e.preventDefault();
+        var tab = $(this).data('tab');
+        if (tab) { switchMainTab(tab); }
+    });
+    // Content tabs (About / Payment / Footer)
+    $(document).on('click', '.esi-content-tabs .esi-content-tab', function () {
+        var content = $(this).data('content');
+        $('.esi-content-tabs .esi-content-tab').removeClass('esi-content-tab-active').attr('aria-selected', 'false');
+        $(this).addClass('esi-content-tab-active').attr('aria-selected', 'true');
+        $('.esi-content-panel').prop('hidden', true);
+        $('.esi-content-' + content).prop('hidden', false);
     });
 
     // General info form
@@ -36,7 +51,15 @@ jQuery(function ($) {
         return links;
     }
     $(document).on('click', '.esi-social-add', function () {
-        var $row = $('<div class="esi-social-row"><input type="text" class="esi-social-icon" placeholder="Icon" /><input type="url" class="esi-social-url" placeholder="https://..." /><button type="button" class="esi-social-remove button">−</button></div>');
+        var opts = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_options) ? esiSettings.social_icon_options : {};
+        var $sel = $('<select class="esi-social-icon"><option value="">Select icon</option></select>');
+        $.each(opts, function (val, label) {
+            $sel.append($('<option></option>').attr('value', val).text(label));
+        });
+        var $row = $('<div class="esi-social-row"></div>');
+        $row.append($sel);
+        $row.append($('<input type="url" class="esi-social-url" placeholder="https://..." />'));
+        $row.append($('<button type="button" class="esi-social-remove button" aria-label="Remove">−</button>'));
         $('#esi-social-links').append($row);
     });
     $(document).on('click', '.esi-social-remove', function () {
@@ -61,6 +84,7 @@ jQuery(function ($) {
             esi_payment_details: getWysiwygContent('esi_payment_details'),
             esi_footer_text: getWysiwygContent('esi_footer_text'),
             esi_contact_email: $('#esi_contact_email').val() || '',
+            esi_contact_phone: $('#esi_contact_phone').val() || '',
             esi_store_address: $('#esi_store_address').val() || '',
             esi_social_links: JSON.stringify(collectSocialLinks()),
             esi_use_google_hours: oh.use_google ? '1' : '0',

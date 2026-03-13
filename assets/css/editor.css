@@ -40,16 +40,37 @@
 .esi-general-message.error{color:#b00}
 .esi-social-links-wrap .esi-social-links{margin-bottom:8px}
 .esi-social-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-.esi-social-row .esi-social-icon{width:120px;padding:6px 8px;font-size:13px}
+.esi-social-row .esi-social-icon{min-width:120px;padding:6px 8px;font-size:13px}
 .esi-social-row .esi-social-url{flex:1;min-width:0;padding:6px 8px;font-size:13px}
 .esi-social-row .esi-social-remove{flex-shrink:0;padding:4px 10px}
 .esi-social-add{margin-top:4px}
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
-.esi-general-right .esi-opening-hours-editor{border:none;padding:0}
+/* Content tabs (About / Payment / Footer) */
+.esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:10px}
+.esi-content-tabs .esi-content-tab{padding:6px 12px;border:1px solid rgba(0,0,0,.15);background:#f5f5f5;border-radius:6px;font-size:13px;cursor:pointer}
+.esi-content-tabs .esi-content-tab:hover{background:#eee}
+.esi-content-tabs .esi-content-tab-active{background:#0b66b2;border-color:#0b66b2;color:#fff}
+.esi-content-tabs .esi-content-tab-active:hover{background:#095a9e;border-color:#095a9e;color:#fff}
+.esi-content-panel{margin-top:0}
+/* Right column containers */
+.esi-general-right{display:flex;flex-direction:column;gap:16px}
+.esi-right-container{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
+.esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
+.esi-right-container .esi-form-section{margin-bottom:12px}
+.esi-right-container .esi-form-section:last-child{margin-bottom:0}
+.esi-right-container .esi-oh-title{margin:0 0 10px}
+.esi-right-container .esi-social-links-wrap .esi-form-section{margin:0}
+.esi-right-container .esi-opening-hours-editor{border:none;padding:0;background:transparent}
 
 /* Editor header & tabs */
-.esi-editor-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
-.esi-welcome-msg{margin:0;font-size:15px;font-weight:600}
+.esi-editor-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px}
+.esi-header-top{flex:1;min-width:200px}
+.esi-welcome-msg{margin:0 0 8px;font-size:15px;font-weight:600}
+.esi-intro-text{margin:0;font-size:13px;color:#555;line-height:1.5}
+.esi-intro-text p{margin:0 0 6px}
+.esi-intro-text p:last-child{margin-bottom:0}
+.esi-tab-link{color:#0b66b2;text-decoration:underline;cursor:pointer}
+.esi-tab-link:hover{color:#095a9e}
 .esi-editor-tabs{display:flex;gap:4px}
 .esi-tab{padding:6px 14px;border:1px solid rgba(0,0,0,.15);background:#f5f5f5;border-radius:6px;font-size:13px;cursor:pointer}
 .esi-tab:hover{background:#eee}

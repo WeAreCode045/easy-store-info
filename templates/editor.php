@@ -21,6 +21,7 @@ $about = isset( $general['about_text'] ) ? $general['about_text'] : '';
 $payment = isset( $general['payment_details'] ) ? $general['payment_details'] : '';
 $footer = isset( $general['footer_text'] ) ? $general['footer_text'] : '';
 $contact_email = isset( $general['contact_email'] ) ? $general['contact_email'] : '';
+$contact_phone = isset( $general['contact_phone'] ) ? $general['contact_phone'] : '';
 $store_address = isset( $general['store_address'] ) ? $general['store_address'] : '';
 $social_links = isset( $general['social_links'] ) && is_array( $general['social_links'] ) ? $general['social_links'] : array();
 if ( empty( $social_links ) ) {
@@ -30,7 +31,19 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
 ?>
 <div class="esi-settings-wrap esi-frontend-editor">
     <header class="esi-editor-header">
-        <p class="esi-welcome-msg"><?php echo esc_html( sprintf( __( 'Willkommen, %s', 'easy-store-info' ), $display_name ) ); ?></p>
+        <div class="esi-header-top">
+            <p class="esi-welcome-msg"><?php echo esc_html( sprintf( __( 'Willkommen, %s', 'easy-store-info' ), $display_name ) ); ?></p>
+            <div class="esi-intro-text">
+                <p><?php esc_html_e( 'Use this editor to manage all your store\'s website information:', 'easy-store-info' ); ?></p>
+                <p><?php esc_html_e( 'Manage your store info, payment info, opening hours, contact data and social media links from this page.', 'easy-store-info' ); ?></p>
+                <p><?php
+                printf(
+                    /* translators: %1$s = link to Media Gallery tab, %2$s = link to Account tab */
+                    wp_kses_post( __( 'Manage your media Gallery from <a href="#" class="esi-tab-link" data-tab="media">Media Gallery</a>. Want to manage your password? Check your <a href="#" class="esi-tab-link" data-tab="account">Account settings</a>.', 'easy-store-info' ) )
+                );
+                ?></p>
+            </div>
+        </div>
         <nav class="esi-editor-tabs" role="tablist">
             <button type="button" class="esi-tab esi-tab-active" role="tab" data-tab="general" aria-selected="true"><?php esc_html_e( 'General info', 'easy-store-info' ); ?></button>
             <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><?php esc_html_e( 'Media Gallery', 'easy-store-info' ); ?></button>
@@ -51,31 +64,29 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                         <label for="esi_subtitle"><?php esc_html_e( 'Subtitle', 'easy-store-info' ); ?></label>
                         <input type="text" id="esi_subtitle" name="esi_subtitle" value="<?php echo esc_attr( $subtitle_val ); ?>" class="esi-input-wide" />
                     </div>
-                    <div class="esi-form-section">
-                        <label><?php esc_html_e( 'About text', 'easy-store-info' ); ?></label>
-                        <?php
-                        wp_editor( $about, 'esi_about_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_about_text' ) ) );
-                        ?>
+                    <div class="esi-form-section esi-content-tabs-wrap">
+                        <nav class="esi-content-tabs" role="tablist">
+                            <button type="button" class="esi-content-tab esi-content-tab-active" data-content="about" aria-selected="true"><?php esc_html_e( 'About text', 'easy-store-info' ); ?></button>
+                            <button type="button" class="esi-content-tab" data-content="payment" aria-selected="false"><?php esc_html_e( 'Payment details', 'easy-store-info' ); ?></button>
+                            <button type="button" class="esi-content-tab" data-content="footer" aria-selected="false"><?php esc_html_e( 'Footer text', 'easy-store-info' ); ?></button>
+                        </nav>
+                        <div class="esi-content-panel esi-content-about" role="tabpanel">
+                            <?php wp_editor( $about, 'esi_about_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_about_text' ) ) ); ?>
+                        </div>
+                        <div class="esi-content-panel esi-content-payment" role="tabpanel" hidden>
+                            <?php wp_editor( $payment, 'esi_payment_details', array_merge( $editor_settings, array( 'textarea_name' => 'esi_payment_details' ) ) ); ?>
+                        </div>
+                        <div class="esi-content-panel esi-content-footer" role="tabpanel" hidden>
+                            <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
+                        </div>
                     </div>
                     <div class="esi-form-section">
-                        <label><?php esc_html_e( 'Payment details', 'easy-store-info' ); ?></label>
-                        <?php
-                        wp_editor( $payment, 'esi_payment_details', array_merge( $editor_settings, array( 'textarea_name' => 'esi_payment_details' ) ) );
-                        ?>
-                    </div>
-                    <div class="esi-form-section">
-                        <label><?php esc_html_e( 'Footer text', 'easy-store-info' ); ?></label>
-                        <?php
-                        wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) );
-                        ?>
+                        <label for="esi_store_address"><?php esc_html_e( 'Store address', 'easy-store-info' ); ?></label>
+                        <textarea id="esi_store_address" name="esi_store_address" rows="4" class="esi-input-wide"><?php echo esc_textarea( $store_address ); ?></textarea>
                     </div>
                 </div>
                 <div class="esi-general-right">
-                    <div class="esi-form-section">
-                        <label for="esi_store_address"><?php esc_html_e( 'Store address', 'easy-store-info' ); ?></label>
-                        <textarea id="esi_store_address" name="esi_store_address" rows="5" class="esi-input-wide"><?php echo esc_textarea( $store_address ); ?></textarea>
-                    </div>
-                    <div class="esi-form-section esi-opening-hours-editor">
+                    <div class="esi-right-container esi-container-opening-hours">
                         <h4 class="esi-oh-title"><?php esc_html_e( 'Öffnungszeiten', 'easy-store-info' ); ?></h4>
                         <div class="esi-oh-toggle-wrap">
                             <label class="esi-toggle-label">
@@ -115,22 +126,38 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <?php endforeach; ?>
                         </div>
                     </div>
-                    <div class="esi-form-section esi-social-links-wrap">
-                        <label><?php esc_html_e( 'Social media links', 'easy-store-info' ); ?></label>
+                    <div class="esi-right-container esi-container-contact-details">
+                        <h4 class="esi-container-title"><?php esc_html_e( 'Contact details', 'easy-store-info' ); ?></h4>
+                        <div class="esi-form-section">
+                            <label for="esi_contact_phone"><?php esc_html_e( 'Phone number', 'easy-store-info' ); ?></label>
+                            <input type="tel" id="esi_contact_phone" name="esi_contact_phone" value="<?php echo esc_attr( $contact_phone ); ?>" class="esi-input-wide" />
+                        </div>
+                        <div class="esi-form-section">
+                            <label for="esi_contact_email"><?php esc_html_e( 'Contact e-mail', 'easy-store-info' ); ?></label>
+                            <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
+                        </div>
+                    </div>
+                    <div class="esi-right-container esi-container-social-links">
+                        <h4 class="esi-container-title"><?php esc_html_e( 'Social media links', 'easy-store-info' ); ?></h4>
                         <div class="esi-social-links" id="esi-social-links">
-                            <?php foreach ( $social_links as $idx => $link ) : ?>
+                            <?php
+                            $icon_options = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_options() : array();
+                            foreach ( $social_links as $idx => $link ) :
+                                $icon_val = $link['icon'] ?? '';
+                            ?>
                             <div class="esi-social-row">
-                                <input type="text" class="esi-social-icon" placeholder="<?php esc_attr_e( 'Icon (e.g. facebook, instagram)', 'easy-store-info' ); ?>" value="<?php echo esc_attr( $link['icon'] ?? '' ); ?>" />
+                                <select class="esi-social-icon">
+                                    <option value=""><?php esc_html_e( 'Select icon', 'easy-store-info' ); ?></option>
+                                    <?php foreach ( $icon_options as $opt_key => $opt_label ) : ?>
+                                    <option value="<?php echo esc_attr( $opt_key ); ?>" <?php selected( $icon_val, $opt_key ); ?>><?php echo esc_html( $opt_label ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                                 <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
                                 <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Remove', 'easy-store-info' ); ?>">−</button>
                             </div>
                             <?php endforeach; ?>
                         </div>
                         <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Add link', 'easy-store-info' ); ?></button>
-                    </div>
-                    <div class="esi-form-section">
-                        <label for="esi_contact_email"><?php esc_html_e( 'Contact e-mail', 'easy-store-info' ); ?></label>
-                        <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
                     </div>
                 </div>
             </div>

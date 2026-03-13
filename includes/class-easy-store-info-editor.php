@@ -41,8 +41,13 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
             // register editor script (not enqueued globally)
             wp_register_script( 'easy-store-info-editor', $base . '/assets/js/editor.js', array( 'jquery' ), '1.0.0', false );
             // localize settings for both frontend and editor scripts
+            $icon_opts = array();
+            if ( class_exists( 'Easy_Store_Info' ) ) {
+                $icon_opts = Easy_Store_Info::get_social_icon_options();
+            }
             $local = array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'social_icon_options' => $icon_opts,
                 'nonce' => wp_create_nonce( 'esi-save-settings' ),
                 'rest_nonce' => wp_create_nonce( 'wp_rest' ),
                 'grid_nonce' => wp_create_nonce( 'esi-save-grid' ),
