@@ -95,15 +95,81 @@ final class Easy_Store_Info {
 	}
 
 	/**
+	 * Get opening hours array (either from Google Places or manual).
+	 * Returns array 0-6 => time string (e.g. "09:00–18:00" or "Geschlossen").
+	 *
+	 * @return array|false
+	 */
+	public function get_opening_hours() {
+		$use_google = get_option( 'esi_use_google_hours', true );
+		if ( $use_google ) {
+			$api_key = get_option( 'esi_google_api_key', '' );
+			$place_id = get_option( 'esi_place_id', '' );
+			if ( empty( $api_key ) || empty( $place_id ) ) {
+				return false;
+			}
+			return $this->fetch_place_opening_hours( $api_key, $place_id );
+		}
+		return $this->get_manual_hours_formatted();
+	}
+
+	/**
+	 * Convert stored manual hours to the same format as Google (0-6 => time string).
+	 *
+	 * @return array
+	 */
+	public function get_manual_hours_formatted() {
+		$manual = get_option( 'esi_manual_hours', array() );
+		$result = array_fill( 0, 7, 'Geschlossen' );
+		for ( $d = 0; $d <= 6; $d++ ) {
+			$day = isset( $manual[ $d ] ) && is_array( $manual[ $d ] ) ? $manual[ $d ] : array();
+			if ( ! empty( $day['closed'] ) ) {
+				continue; // Geschlossen
+			}
+			$open  = isset( $day['open'] ) ? sanitize_text_field( $day['open'] ) : '';
+			$close = isset( $day['close'] ) ? sanitize_text_field( $day['close'] ) : '';
+			if ( '' === $open || '' === $close || ! preg_match( '/^\d{1,2}:\d{2}$/', $open ) || ! preg_match( '/^\d{1,2}:\d{2}$/', $close ) ) {
+				continue;
+			}
+			$break_enabled = ! empty( $day['break_enabled'] );
+			$break_start   = isset( $day['break_start'] ) ? sanitize_text_field( $day['break_start'] ) : '';
+			$break_end     = isset( $day['break_end'] ) ? sanitize_text_field( $day['break_end'] ) : '';
+
+			if ( $break_enabled && preg_match( '/^\d{1,2}:\d{2}$/', $break_start ) && preg_match( '/^\d{1,2}:\d{2}$/', $break_end ) ) {
+				// Break must be inside opening hours: open <= break_start < break_end <= close
+				$open_ts  = strtotime( '2000-01-01 ' . $open );
+				$close_ts = strtotime( '2000-01-01 ' . $close );
+				if ( $close_ts <= $open_ts ) {
+					$close_ts += DAY_IN_SECONDS;
+				}
+				$b_start = strtotime( '2000-01-01 ' . $break_start );
+				$b_end   = strtotime( '2000-01-01 ' . $break_end );
+				if ( $b_end <= $b_start ) {
+					$b_end += DAY_IN_SECONDS;
+				}
+				if ( $open_ts <= $b_start && $b_start < $b_end && $b_end <= $close_ts ) {
+					$result[ $d ] = $open . '–' . $break_start . ', ' . $break_end . '–' . $close;
+					continue;
+				}
+			}
+			$result[ $d ] = $open . '–' . $close;
+		}
+		return $result;
+	}
+
+	/**
 	 * Shortcode: store hours
 	 */
 	public function shortcode_store_hours( $atts = array() ) {
-		$api_key = get_option( 'esi_google_api_key', '' );
-		$place_id = get_option( 'esi_place_id', '' );
-		if ( empty( $api_key ) || empty( $place_id ) ) {
-			return '<p>Please configure the store Place ID and API key.</p>';
+		$use_google = get_option( 'esi_use_google_hours', true );
+		if ( $use_google ) {
+			$api_key = get_option( 'esi_google_api_key', '' );
+			$place_id = get_option( 'esi_place_id', '' );
+			if ( empty( $api_key ) || empty( $place_id ) ) {
+				return '<p>Please configure the store Place ID and API key.</p>';
+			}
 		}
-		$hours = $this->fetch_place_opening_hours( $api_key, $place_id );
+		$hours = $this->get_opening_hours();
 		$no_hours_available = false;
 		if ( false === $hours || empty( $hours ) ) {
 			// Continue but mark that no hours were available so we can render a styled message
@@ -589,8 +655,24 @@ final class Easy_Store_Info {
 				$grid = array_pad( array(), $slots, 0 );
 			}
 
+			$use_google_hours = get_option( 'esi_use_google_hours', true );
+			$manual_hours = get_option( 'esi_manual_hours', array() );
+			$weekdays = array( 0 => 'Sonntag', 1 => 'Montag', 2 => 'Dienstag', 3 => 'Mittwoch', 4 => 'Donnerstag', 5 => 'Freitag', 6 => 'Samstag' );
+			for ( $d = 0; $d <= 6; $d++ ) {
+				if ( ! isset( $manual_hours[ $d ] ) || ! is_array( $manual_hours[ $d ] ) ) {
+					$manual_hours[ $d ] = array(
+						'closed'        => ( 0 === $d ),
+						'open'          => '09:00',
+						'close'         => '18:00',
+						'break_enabled' => false,
+						'break_start'   => '12:00',
+						'break_end'     => '13:00',
+					);
+				}
+			}
+
 			ob_start();
-			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout ) );
+			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays ) );
 			return (string) ob_get_clean();
 		}
 
@@ -703,7 +785,7 @@ final class Easy_Store_Info {
 	}
 
 	/**
-	 * AJAX endpoint for frontend grid saves (only updates media grid and layout)
+	 * AJAX endpoint for frontend grid saves (updates media grid, layout, and opening hours)
 	 */
 	public function ajax_save_grid() {
 		if ( ! is_user_logged_in() ) {
@@ -714,7 +796,6 @@ final class Easy_Store_Info {
 		$frontend_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
 		if ( $user && is_array( $user->roles ) && array_intersect( $frontend_roles, (array) $user->roles ) ) {
 			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
-			// normalize to sensible number of slots based on submitted grid
 			$grid = array_values( $grid );
 			update_option( 'esi_media_grid', $grid );
 			if ( isset( $_POST['esi_grid_layout'] ) ) {
@@ -724,7 +805,41 @@ final class Easy_Store_Info {
 					update_option( 'esi_grid_layout', $layout );
 				}
 			}
-			wp_send_json_success();
+			// Opening hours
+			if ( isset( $_POST['esi_use_google_hours'] ) ) {
+				$use_google = ( '1' === $_POST['esi_use_google_hours'] || 'true' === $_POST['esi_use_google_hours'] );
+				update_option( 'esi_use_google_hours', $use_google );
+			}
+			if ( isset( $_POST['esi_manual_hours'] ) ) {
+				$raw = $_POST['esi_manual_hours'];
+				if ( is_string( $raw ) ) {
+					$raw = json_decode( stripslashes( $raw ), true );
+				}
+				$manual = array();
+				if ( ! is_array( $raw ) ) {
+					$raw = array();
+				}
+				for ( $d = 0; $d <= 6; $d++ ) {
+					$day = isset( $raw[ $d ] ) && is_array( $raw[ $d ] ) ? $raw[ $d ] : array();
+					$manual[ $d ] = array(
+						'closed'        => ! empty( $day['closed'] ),
+						'open'          => isset( $day['open'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['open'] ) ? sanitize_text_field( $day['open'] ) : '09:00',
+						'close'         => isset( $day['close'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['close'] ) ? sanitize_text_field( $day['close'] ) : '18:00',
+						'break_enabled' => ! empty( $day['break_enabled'] ),
+						'break_start'   => isset( $day['break_start'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_start'] ) ? sanitize_text_field( $day['break_start'] ) : '12:00',
+						'break_end'     => isset( $day['break_end'] ) && preg_match( '/^\d{1,2}:\d{2}$/', $day['break_end'] ) ? sanitize_text_field( $day['break_end'] ) : '13:00',
+					);
+				}
+				update_option( 'esi_manual_hours', $manual );
+			}
+			$opening_hours_html = '';
+			if ( class_exists( 'Easy_Store_Info' ) ) {
+				$main = Easy_Store_Info::instance();
+				if ( method_exists( $main, 'shortcode_store_hours' ) ) {
+					$opening_hours_html = $main->shortcode_store_hours();
+				}
+			}
+			wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
 		}
 		wp_send_json_error( 'forbidden', 403 );
 	}

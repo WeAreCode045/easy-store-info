@@ -138,6 +138,85 @@ jQuery(function ($) {
 
     initMediaDragSort();
 
+    // Opening hours editor
+    (function () {
+        var $toggle = $('#esi_use_google_hours');
+        var $manualWrap = $('.esi-manual-hours-wrap');
+        if ($toggle.length) {
+            $toggle.on('change', function () {
+                $manualWrap.toggle(!$(this).is(':checked'));
+                debouncedPersist();
+            });
+        }
+        $(document).on('change', '.esi-closed-cb', function () {
+            var $row = $(this).closest('.esi-day-row');
+            var closed = $(this).is(':checked');
+            $row.find('.esi-time-row, .esi-break-wrap, .esi-break-times').toggleClass('is-disabled is-hidden', closed);
+            $row.find('.esi-open-time, .esi-close-time, .esi-break-cb, .esi-break-start, .esi-break-end').prop('disabled', closed);
+            if (closed) {
+                $row.find('.esi-break-cb').prop('checked', false);
+                $row.find('.esi-break-times').addClass('is-hidden');
+            } else {
+                var showBreak = $row.find('.esi-break-cb').is(':checked');
+                $row.find('.esi-break-times').toggleClass('is-hidden', !showBreak);
+            }
+            debouncedPersist();
+        });
+        $(document).on('change', '.esi-break-cb', function () {
+            var $row = $(this).closest('.esi-day-row');
+            var enabled = $(this).is(':checked');
+            $row.find('.esi-break-times').toggleClass('is-hidden', !enabled);
+            debouncedPersist();
+        });
+        $(document).on('change input', '.esi-open-time, .esi-close-time, .esi-break-start, .esi-break-end', function () {
+            debouncedPersist();
+        });
+        function validateBreakInRange(openVal, closeVal, breakStartVal, breakEndVal) {
+            if (!openVal || !closeVal || !breakStartVal || !breakEndVal) return true;
+            var toMin = function (t) {
+                var p = (t || '00:00').split(':');
+                return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+            };
+            var o = toMin(openVal), c = toMin(closeVal), bs = toMin(breakStartVal), be = toMin(breakEndVal);
+            if (c <= o) c += 24 * 60;
+            if (be <= bs) be += 24 * 60;
+            return o <= bs && bs < be && be <= c;
+        }
+        function collectManualHours() {
+            var hours = {};
+            $('.esi-day-row').each(function () {
+                var $r = $(this);
+                var day = parseInt($r.data('day'), 10);
+                var closed = $r.find('.esi-closed-cb').is(':checked');
+                var openVal = $r.find('.esi-open-time').val() || '09:00';
+                var closeVal = $r.find('.esi-close-time').val() || '18:00';
+                var breakEnabled = $r.find('.esi-break-cb').is(':checked') && !closed;
+                var breakStart = $r.find('.esi-break-start').val() || '12:00';
+                var breakEnd = $r.find('.esi-break-end').val() || '13:00';
+                if (breakEnabled && !validateBreakInRange(openVal, closeVal, breakStart, breakEnd)) {
+                    breakEnabled = false;
+                    $r.find('.esi-break-cb').prop('checked', false);
+                    $r.find('.esi-break-times').addClass('is-hidden');
+                }
+                hours[day] = {
+                    closed: closed,
+                    open: openVal,
+                    close: closeVal,
+                    break_enabled: breakEnabled,
+                    break_start: breakStart,
+                    break_end: breakEnd
+                };
+            });
+            return hours;
+        }
+        window.esiCollectOpeningHours = function () {
+            return {
+                use_google: $('#esi_use_google_hours').length ? $('#esi_use_google_hours').is(':checked') : true,
+                manual_hours: collectManualHours()
+            };
+        };
+    })();
+
     var $dzPlaceholder = $('.esi-dropzone-placeholder');
     if ($dzPlaceholder.length) {
         var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder oder Videos hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF, MP4)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
@@ -369,25 +448,36 @@ jQuery(function ($) {
         });
     }
 
-    function persistGridOrder() {
+    function collectFormData() {
+        var data = [];
         var grid = [];
         $('.esi-media-item').each(function () {
             var val = $(this).find('input[type=hidden]').val() || 0;
             grid.push(parseInt(val, 10) || 0);
         });
-        var data = [];
         for (var i = 0; i < grid.length; i++) { data.push({ name: 'esi_media_grid[]', value: grid[i] }); }
         data.push({ name: 'action', value: 'esi_save_grid' });
         var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
         if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
+        if (typeof window.esiCollectOpeningHours === 'function') {
+            var oh = window.esiCollectOpeningHours();
+            data.push({ name: 'esi_use_google_hours', value: oh.use_google ? '1' : '0' });
+            data.push({ name: 'esi_manual_hours', value: JSON.stringify(oh.manual_hours) });
+        }
         if (typeof esiSettings !== 'undefined') {
             data.push({ name: 'nonce', value: esiSettings.grid_nonce });
+        }
+        return data;
+    }
+
+    function persistGridOrder() {
+        var data = collectFormData();
+        if (typeof esiSettings !== 'undefined') {
             return $.post(esiSettings.ajax_url, data).done(function (res) {
                 if (res && res.success && res.data && res.data.opening_hours_html) {
                     $('#esi-opening-hours-placeholder').html(res.data.opening_hours_html);
                 }
-            }).fail(function () {
-            });
+            }).fail(function () {});
         }
         return $.Deferred().resolve();
     }
@@ -480,20 +570,7 @@ jQuery(function ($) {
 
     $('#esi-editor-form').on('submit', function (e) {
         e.preventDefault();
-        var grid = [];
-        $('.esi-media-item').each(function () {
-            var val = $(this).find('input[type=hidden]').val() || 0;
-            grid.push(parseInt(val, 10) || 0);
-        });
-
-        var data = [];
-        for (var i = 0; i < grid.length; i++) {
-            data.push({ name: 'esi_media_grid[]', value: grid[i] });
-        }
-        data.push({ name: 'action', value: 'esi_save_grid' });
-        var layoutVal2 = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
-        if (layoutVal2) { data.push({ name: 'esi_grid_layout', value: layoutVal2 }); }
-        data.push({ name: 'nonce', value: esiSettings.grid_nonce });
+        var data = collectFormData();
 
         $.post(esiSettings.ajax_url, data, function (res) {
             if (res.success) {

@@ -5,7 +5,7 @@
  * Description:easy-store-info Plugin.
  * Author: Code045
  * Author URI: https://code045.nl/
- * Version: 1.0.3
+ * Version: 1.1.0
  * Requires at least: 6.0
  * Tested up to: 6.7
  *
