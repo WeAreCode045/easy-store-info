@@ -50,7 +50,7 @@
 .esi-media-grid.esi-grid-3x5{grid-template-columns:repeat(5,1fr)}
 .esi-admin-grid .button{position:absolute;right:8px;top:8px}
 /* Position remove button left-center inside a media cell (editor mode) */
-.esi-media-item .esi-remove-media{position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:12}
+.esi-media-item .esi-remove-media{position:absolute;top:50%;transform:translateY(-50%);z-index:12}
 .esi-media-item .esi-add-media{position:absolute;right:8px;bottom:8px;z-index:11}
 
 /* Small drag handle shown on editable grids */

@@ -240,6 +240,7 @@ jQuery(function ($) {
         var dragSrcEl = null;
         var pointerDragging = false;
         var nativeDropHandled = false;
+        var lastDropTarget = null;
 
         $('.esi-media-item').each(function () {
             this.setAttribute('draggable', 'true');
@@ -291,12 +292,14 @@ jQuery(function ($) {
         $(document).off('dragend.item').on('dragend.item', '.esi-media-item', function (e) {
             $('.esi-media-item').removeClass('drag-over dragging');
             dragSrcEl = null;
+            lastDropTarget = null;
         });
 
         $(document).off('pointerdown.handle').on('pointerdown.handle', '.esi-media-item', function (ev) {
             if ($(ev.target).closest('button').length) return;
             if (ev.originalEvent && ev.originalEvent.button && ev.originalEvent.button !== 0) return;
             pointerDragging = true;
+            lastDropTarget = null;
             var $item = $(this);
             dragSrcEl = $item.get(0);
             $item.addClass('dragging');
@@ -307,11 +310,14 @@ jQuery(function ($) {
             if (!pointerDragging || !dragSrcEl) return;
             ev.preventDefault();
             var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
-            if (!targetEl) return;
+            if (!targetEl) { lastDropTarget = null; return; }
             var $targetItem = $(targetEl).closest('.esi-media-item');
             $('.esi-media-item').removeClass('drag-over');
             if ($targetItem.length && $targetItem.get(0) !== dragSrcEl) {
                 $targetItem.addClass('drag-over');
+                lastDropTarget = $targetItem.get(0);
+            } else {
+                lastDropTarget = null;
             }
         });
 
@@ -321,18 +327,23 @@ jQuery(function ($) {
             if (nativeDropHandled) {
                 nativeDropHandled = false;
                 dragSrcEl = null;
+                lastDropTarget = null;
                 $('.esi-media-item').removeClass('drag-over dragging');
                 return;
             }
             var $dragging = dragSrcEl ? $(dragSrcEl) : $();
-            var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
-            var $targetItem = targetEl ? $(targetEl).closest('.esi-media-item') : $();
+            var $targetItem = lastDropTarget ? $(lastDropTarget) : $();
+            if (!$targetItem.length) {
+                var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
+                $targetItem = targetEl ? $(targetEl).closest('.esi-media-item') : $();
+            }
             $('.esi-media-item').removeClass('drag-over dragging');
             if ($targetItem.length && $dragging.length && $targetItem.get(0) !== $dragging.get(0)) {
                 swapMediaItems($dragging, $targetItem);
                 debouncedPersist();
             }
             dragSrcEl = null;
+            lastDropTarget = null;
         });
     }
 
