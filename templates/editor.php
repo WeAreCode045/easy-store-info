@@ -133,26 +133,17 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                                 $closed = ! empty( $d['closed'] );
                                 $open = isset( $d['open'] ) ? esc_attr( $d['open'] ) : '09:00';
                                 $close = isset( $d['close'] ) ? esc_attr( $d['close'] ) : '18:00';
-                                $break_enabled = ! empty( $d['break_enabled'] );
-                                $break_start = isset( $d['break_start'] ) ? esc_attr( $d['break_start'] ) : '12:00';
-                                $break_end = isset( $d['break_end'] ) ? esc_attr( $d['break_end'] ) : '13:00';
                                 $label = isset( $weekdays_list[ $day_idx ] ) ? $weekdays_list[ $day_idx ] : $day_idx;
                             ?>
                             <div class="esi-day-row" data-day="<?php echo (int) $day_idx; ?>">
-                                <span class="esi-day-label"><?php echo esc_html( $label ); ?></span>
-                                <div class="esi-day-fields">
+                                <div class="esi-day-header">
+                                    <span class="esi-day-label"><?php echo esc_html( $label ); ?></span>
                                     <label class="esi-check-closed"><input type="checkbox" class="esi-closed-cb" <?php checked( $closed ); ?> /> <?php esc_html_e( 'Geschlossen', 'easy-store-info' ); ?></label>
-                                    <div class="esi-time-row<?php echo $closed ? ' is-disabled' : ''; ?>">
-                                        <input type="time" class="esi-open-time" value="<?php echo $open; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
-                                        <span>–</span>
-                                        <input type="time" class="esi-close-time" value="<?php echo $close; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
-                                    </div>
-                                    <label class="esi-break-wrap"><input type="checkbox" class="esi-break-cb" <?php checked( $break_enabled ); ?> <?php echo $closed ? 'disabled' : ''; ?> /> <?php esc_html_e( 'Pause', 'easy-store-info' ); ?></label>
-                                    <div class="esi-break-times<?php echo ( $break_enabled && ! $closed ) ? '' : ' is-hidden'; ?>">
-                                        <input type="time" class="esi-break-start" value="<?php echo $break_start; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
-                                        <span>–</span>
-                                        <input type="time" class="esi-break-end" value="<?php echo $break_end; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
-                                    </div>
+                                </div>
+                                <div class="esi-time-row<?php echo $closed ? ' is-disabled' : ''; ?>">
+                                    <input type="time" class="esi-open-time" value="<?php echo $open; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
+                                    <span>–</span>
+                                    <input type="time" class="esi-close-time" value="<?php echo $close; ?>" <?php echo $closed ? 'disabled' : ''; ?> />
                                 </div>
                             </div>
                             <?php endforeach; ?>

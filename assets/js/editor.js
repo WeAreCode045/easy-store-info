@@ -401,32 +401,9 @@ jQuery(function ($) {
         $(document).on('change', '.esi-closed-cb', function () {
             var $row = $(this).closest('.esi-day-row');
             var closed = $(this).is(':checked');
-            $row.find('.esi-time-row, .esi-break-wrap, .esi-break-times').toggleClass('is-disabled is-hidden', closed);
-            $row.find('.esi-open-time, .esi-close-time, .esi-break-cb, .esi-break-start, .esi-break-end').prop('disabled', closed);
-            if (closed) {
-                $row.find('.esi-break-cb').prop('checked', false);
-                $row.find('.esi-break-times').addClass('is-hidden');
-            } else {
-                var showBreak = $row.find('.esi-break-cb').is(':checked');
-                $row.find('.esi-break-times').toggleClass('is-hidden', !showBreak);
-            }
+            $row.find('.esi-time-row').toggleClass('is-disabled', closed);
+            $row.find('.esi-open-time, .esi-close-time').prop('disabled', closed);
         });
-        $(document).on('change', '.esi-break-cb', function () {
-            var $row = $(this).closest('.esi-day-row');
-            var enabled = $(this).is(':checked');
-            $row.find('.esi-break-times').toggleClass('is-hidden', !enabled);
-        });
-        function validateBreakInRange(openVal, closeVal, breakStartVal, breakEndVal) {
-            if (!openVal || !closeVal || !breakStartVal || !breakEndVal) return true;
-            var toMin = function (t) {
-                var p = (t || '00:00').split(':');
-                return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-            };
-            var o = toMin(openVal), c = toMin(closeVal), bs = toMin(breakStartVal), be = toMin(breakEndVal);
-            if (c <= o) c += 24 * 60;
-            if (be <= bs) be += 24 * 60;
-            return o <= bs && bs < be && be <= c;
-        }
         function collectManualHours() {
             var hours = {};
             $('.esi-day-row').each(function () {
@@ -435,21 +412,10 @@ jQuery(function ($) {
                 var closed = $r.find('.esi-closed-cb').is(':checked');
                 var openVal = $r.find('.esi-open-time').val() || '09:00';
                 var closeVal = $r.find('.esi-close-time').val() || '18:00';
-                var breakEnabled = $r.find('.esi-break-cb').is(':checked') && !closed;
-                var breakStart = $r.find('.esi-break-start').val() || '12:00';
-                var breakEnd = $r.find('.esi-break-end').val() || '13:00';
-                if (breakEnabled && !validateBreakInRange(openVal, closeVal, breakStart, breakEnd)) {
-                    breakEnabled = false;
-                    $r.find('.esi-break-cb').prop('checked', false);
-                    $r.find('.esi-break-times').addClass('is-hidden');
-                }
                 hours[day] = {
                     closed: closed,
                     open: openVal,
-                    close: closeVal,
-                    break_enabled: breakEnabled,
-                    break_start: breakStart,
-                    break_end: breakEnd
+                    close: closeVal
                 };
             });
             return hours;
