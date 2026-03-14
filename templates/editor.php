@@ -56,6 +56,11 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
     <!-- Tab: General info -->
     <div class="esi-tab-panel esi-tab-general" role="tabpanel" id="esi-panel-general">
         <form id="esi-general-info-form" class="esi-general-form">
+            <nav class="esi-general-subtabs" role="tablist">
+                <button type="button" class="esi-general-subtab esi-general-subtab-active" data-subtab="texte" aria-selected="true"><?php esc_html_e( 'Texte', 'easy-store-info' ); ?></button>
+                <button type="button" class="esi-general-subtab" data-subtab="hours" aria-selected="false"><?php esc_html_e( 'Öffnungszeiten & Kontakt', 'easy-store-info' ); ?></button>
+            </nav>
+            <div class="esi-general-subpanel esi-general-subpanel-texte" role="tabpanel">
             <div class="esi-general-two-col">
                 <div class="esi-general-left">
                     <div class="esi-form-section">
@@ -114,7 +119,16 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                         <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Link hinzufügen', 'easy-store-info' ); ?></button>
                     </div>
                 </div>
-                <div class="esi-general-right">
+                <div class="esi-general-right esi-general-subpanel-right-texte">
+                    <div class="esi-right-save-wrap">
+                        <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
+                        <p class="esi-general-message" aria-live="polite"></p>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="esi-general-subpanel esi-general-subpanel-hours" role="tabpanel" hidden>
+            <div class="esi-general-hours-col">
                     <div class="esi-right-save-wrap">
                         <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
                         <p class="esi-general-message" aria-live="polite"></p>
