@@ -63,11 +63,11 @@
 .esi-social-add{margin-top:8px}
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
 /* Content tabs (About / Payment / Footer) */
-.esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:10px}
-.esi-content-tabs .esi-content-tab{padding:6px 12px;border:1px solid rgba(0,0,0,.15);background:#f5f5f5;border-radius:6px;font-size:13px;cursor:pointer}
-.esi-content-tabs .esi-content-tab:hover{background:#eee}
-.esi-content-tabs .esi-content-tab-active{background:#0b66b2;border-color:#0b66b2;color:#fff}
-.esi-content-tabs .esi-content-tab-active:hover{background:#095a9e;border-color:#095a9e;color:#fff}
+.esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:6px;margin-bottom:10px}
+.esi-content-tabs .esi-content-tab{padding:8px 14px;border:none;background:#000;border-radius:4px;font-size:13px;cursor:pointer;color:#fff}
+.esi-content-tabs .esi-content-tab:hover{background:#b00;color:#fff}
+.esi-content-tabs .esi-content-tab-active{background:#000;color:#fff}
+.esi-content-tabs .esi-content-tab-active:hover{background:#000;color:#fff}
 .esi-content-panel{margin-top:0}
 /* Right column: save button at top */
 .esi-right-save-wrap{margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -101,11 +101,11 @@
 .esi-intro-text p:last-child{margin-bottom:0}
 .esi-tab-link{color:#0b66b2;text-decoration:underline;cursor:pointer}
 .esi-tab-link:hover{color:#095a9e}
-.esi-editor-tabs{display:flex;gap:12px}
-.esi-tab{padding:6px 0;border:none;background:transparent;border-radius:0;font-size:13px;cursor:pointer;color:inherit}
-.esi-tab:hover{color:#333}
-.esi-tab-active{font-weight:600;color:inherit}
-.esi-tab-active:hover{color:inherit}
+.esi-editor-tabs{display:flex;gap:8px}
+.esi-tab{padding:8px 16px;border:none;background:#000;border-radius:4px;font-size:13px;cursor:pointer;color:#fff}
+.esi-tab:hover{background:#b00;color:#fff}
+.esi-tab-active{background:#000;color:#fff}
+.esi-tab-active:hover{background:#000;color:#fff}
 
 /* Accounts panel */
 .esi-accounts-panel{max-width:360px;padding:20px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,.1);box-shadow:0 2px 8px rgba(0,0,0,.06)}
@@ -120,5 +120,5 @@
 .esi-password-message.error{color:#b00}
 
 /* Frontend editor: button styles */
-.esi-frontend-editor .button,.esi-frontend-editor .button-primary,.esi-frontend-editor .button-secondary,.esi-frontend-editor .button-small{background:#b00!important;border-color:#b00!important;color:#fff!important}
+.esi-frontend-editor .button,.esi-frontend-editor .button-primary,.esi-frontend-editor .button-secondary,.esi-frontend-editor .button-small{background:#b00!important;border-color:#b00!important;color:#fff!important;font-size:12px!important;font-weight:700!important}
 .esi-frontend-editor .button:hover,.esi-frontend-editor .button-primary:hover,.esi-frontend-editor .button-secondary:hover,.esi-frontend-editor .button-small:hover{background:#444!important;border-color:#444!important;color:#fff!important}
