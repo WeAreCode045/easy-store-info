@@ -60,6 +60,9 @@
 .esi-content-tabs .esi-content-tab-active{background:#0b66b2;border-color:#0b66b2;color:#fff}
 .esi-content-tabs .esi-content-tab-active:hover{background:#095a9e;border-color:#095a9e;color:#fff}
 .esi-content-panel{margin-top:0}
+/* Right column: save button at top */
+.esi-right-save-wrap{margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.esi-right-save-wrap .esi-general-message{margin:0}
 /* Right column containers */
 .esi-general-right{display:flex;flex-direction:column;gap:16px}
 .esi-right-container{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
@@ -69,6 +72,16 @@
 .esi-right-container .esi-oh-title{margin:0 0 10px}
 .esi-right-container .esi-social-links-wrap .esi-form-section{margin:0}
 .esi-right-container .esi-opening-hours-editor{border:none;padding:0;background:transparent}
+/* Google Places preview */
+.esi-google-preview-wrap{margin-bottom:12px}
+.esi-google-preview{margin-bottom:8px;padding:10px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;font-size:13px;max-height:200px;overflow-y:auto}
+.esi-google-preview-list{list-style:none;margin:0;padding:0}
+.esi-google-preview-list li{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.esi-google-preview-list li:last-child{border-bottom:none}
+.esi-google-preview-pre,.esi-google-preview-raw{white-space:pre-wrap;font-size:12px;margin:0}
+.esi-google-preview-loading{color:#666;margin:0}
+.esi-google-preview-error{color:#b00;margin:0}
+.esi-google-preview-refresh{margin-top:4px}
 
 /* Editor header & tabs */
 .esi-editor-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px}

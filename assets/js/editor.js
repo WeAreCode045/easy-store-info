@@ -1,6 +1,20 @@
 // Editor script (copy of frontend-editor.js)
 // This file was created to match requested structure: assets/js/editor.js
 
+window.esiMapsLoaded = function () {
+    if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+    var input = document.getElementById('esi_store_address');
+    if (input) {
+        var autocomplete = new google.maps.places.Autocomplete(input, { types: ['address'] });
+        autocomplete.addListener('place_changed', function () {
+            var place = autocomplete.getPlace();
+            if (place && place.formatted_address) {
+                input.value = place.formatted_address;
+            }
+        });
+    }
+};
+
 jQuery(function ($) {
     // Only initialize editor bindings when frontend editor wrapper is present
     if ($('.esi-frontend-editor').length === 0) {
@@ -283,14 +297,56 @@ jQuery(function ($) {
 
     initMediaDragSort();
 
-    // Opening hours editor (no auto-save; use Save Opening Hours button)
+    // Opening hours editor (no auto-save; use Save General Info)
     (function () {
         var $toggle = $('#esi_use_google_hours');
         var $manualWrap = $('.esi-manual-hours-wrap');
+        var $previewWrap = $('.esi-google-preview-wrap');
         if ($toggle.length) {
             $toggle.on('change', function () {
-                $manualWrap.toggle(!$(this).is(':checked'));
+                var useGoogle = $(this).is(':checked');
+                $manualWrap.toggle(!useGoogle);
+                $previewWrap.toggle(useGoogle);
+                if (useGoogle) { fetchGooglePlacesPreview(); }
             });
+        }
+        function fetchGooglePlacesPreview() {
+            var $preview = $('#esi-google-places-preview');
+            var $refresh = $('.esi-google-preview-refresh');
+            if (!$preview.length) return;
+            $preview.html('<p class="esi-google-preview-loading">' + (typeof esiL10n !== 'undefined' && esiL10n.loading ? esiL10n.loading : 'Loading preview…') + '</p>');
+            $refresh.prop('disabled', true);
+            $.post(typeof esiSettings !== 'undefined' ? esiSettings.ajax_url : '', {
+                action: 'esi_fetch_google_places_preview',
+                nonce: typeof esiSettings !== 'undefined' ? esiSettings.opening_hours_nonce : ''
+            }).done(function (res) {
+                if (res && res.success && res.data) {
+                    var html = '';
+                    if (res.data.weekday_text && res.data.weekday_text.length) {
+                        html = '<ul class="esi-google-preview-list">';
+                        res.data.weekday_text.forEach(function (line) {
+                            html += '<li>' + (line || '').replace(/</g, '&lt;') + '</li>';
+                        });
+                        html += '</ul>';
+                    } else if (res.data.preview) {
+                        html = '<pre class="esi-google-preview-pre">' + (res.data.preview || '').replace(/</g, '&lt;') + '</pre>';
+                    }
+                    if (!html && res.data.raw) {
+                        html = '<details><summary>Raw response</summary><pre class="esi-google-preview-raw">' + (res.data.raw || '').replace(/</g, '&lt;') + '</pre></details>';
+                    }
+                    $preview.html(html || '<p>No opening hours data returned.</p>');
+                } else {
+                    $preview.html('<p class="esi-google-preview-error">' + (res.data && res.data.message ? res.data.message : 'Could not load preview') + '</p>');
+                }
+            }).fail(function () {
+                $preview.html('<p class="esi-google-preview-error">Network error loading preview.</p>');
+            }).always(function () {
+                $refresh.prop('disabled', false);
+            });
+        }
+        $(document).on('click', '.esi-google-preview-refresh', function () { fetchGooglePlacesPreview(); });
+        if ($toggle.is(':checked') && $previewWrap.length) {
+            fetchGooglePlacesPreview();
         }
         $(document).on('change', '.esi-closed-cb', function () {
             var $row = $(this).closest('.esi-day-row');

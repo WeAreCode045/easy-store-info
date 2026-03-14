@@ -23,6 +23,8 @@ $footer = isset( $general['footer_text'] ) ? $general['footer_text'] : '';
 $contact_email = isset( $general['contact_email'] ) ? $general['contact_email'] : '';
 $contact_phone = isset( $general['contact_phone'] ) ? $general['contact_phone'] : '';
 $store_address = isset( $general['store_address'] ) ? $general['store_address'] : '';
+$google_api_key = isset( $google_api_key ) ? $google_api_key : '';
+$place_id = isset( $place_id ) ? $place_id : '';
 $social_links = isset( $general['social_links'] ) && is_array( $general['social_links'] ) ? $general['social_links'] : array();
 if ( empty( $social_links ) ) {
     $social_links = array( array( 'icon' => '', 'url' => '' ) );
@@ -80,12 +82,12 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
                         </div>
                     </div>
-                    <div class="esi-form-section">
-                        <label for="esi_store_address"><?php esc_html_e( 'Store address', 'easy-store-info' ); ?></label>
-                        <textarea id="esi_store_address" name="esi_store_address" rows="4" class="esi-input-wide"><?php echo esc_textarea( $store_address ); ?></textarea>
-                    </div>
                 </div>
                 <div class="esi-general-right">
+                    <div class="esi-right-save-wrap">
+                        <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Save General Info', 'easy-store-info' ); ?></button>
+                        <p class="esi-general-message" aria-live="polite"></p>
+                    </div>
                     <div class="esi-right-container esi-container-opening-hours">
                         <h4 class="esi-oh-title"><?php esc_html_e( 'Öffnungszeiten', 'easy-store-info' ); ?></h4>
                         <div class="esi-oh-toggle-wrap">
@@ -94,6 +96,12 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                                 <input type="checkbox" id="esi_use_google_hours" name="esi_use_google_hours" value="1" <?php checked( $use_google ); ?> class="esi-toggle-input" />
                                 <span class="esi-toggle-switch"></span>
                             </label>
+                        </div>
+                        <div class="esi-google-preview-wrap" style="<?php echo $use_google ? '' : 'display:none'; ?>">
+                            <div class="esi-google-preview" id="esi-google-places-preview" aria-live="polite">
+                                <p class="esi-google-preview-loading"><?php esc_html_e( 'Loading preview…', 'easy-store-info' ); ?></p>
+                            </div>
+                            <button type="button" class="esi-google-preview-refresh button button-small" aria-label="<?php esc_attr_e( 'Refresh preview', 'easy-store-info' ); ?>"><?php esc_html_e( 'Refresh preview', 'easy-store-info' ); ?></button>
                         </div>
                         <div class="esi-manual-hours-wrap" style="<?php echo $use_google ? 'display:none' : ''; ?>">
                             <?php foreach ( $order as $day_idx ) :
@@ -124,6 +132,13 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                                     </div>
                             </div>
                             <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <div class="esi-right-container esi-container-store-address">
+                        <h4 class="esi-container-title"><?php esc_html_e( 'Store address', 'easy-store-info' ); ?></h4>
+                        <div class="esi-form-section">
+                            <label for="esi_store_address"><?php esc_html_e( 'Address', 'easy-store-info' ); ?></label>
+                            <input type="text" id="esi_store_address" name="esi_store_address" class="esi-input-wide esi-address-autocomplete" value="<?php echo esc_attr( $store_address ); ?>" placeholder="<?php esc_attr_e( 'Start typing an address…', 'easy-store-info' ); ?>" autocomplete="off" />
                         </div>
                     </div>
                     <div class="esi-right-container esi-container-contact-details">
@@ -170,10 +185,6 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                     </div>
                 </div>
             </div>
-            <p class="esi-form-actions">
-                <button type="submit" class="button button-primary"><?php esc_html_e( 'Save General Info', 'easy-store-info' ); ?></button>
-            </p>
-            <p class="esi-general-message" aria-live="polite"></p>
         </form>
     </div>
 

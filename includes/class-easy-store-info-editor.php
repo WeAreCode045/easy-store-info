@@ -49,8 +49,10 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
                     $icon_classes[ $key ] = Easy_Store_Info::get_social_icon_class( $key );
                 }
             }
+            $google_api_key = get_option( 'esi_google_api_key', '' );
             $local = array(
-                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'ajax_url'        => admin_url( 'admin-ajax.php' ),
+                'google_api_key'  => $google_api_key,
                 'social_icon_options'  => $icon_opts,
                 'social_icon_classes'  => $icon_classes,
                 'nonce' => wp_create_nonce( 'esi-save-settings' ),

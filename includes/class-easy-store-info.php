@@ -38,6 +38,7 @@ final class Easy_Store_Info {
 		add_action( 'wp_ajax_esi_save_opening_hours', array( $this, 'ajax_save_opening_hours' ) );
 		add_action( 'wp_ajax_esi_change_password', array( $this, 'ajax_change_password' ) );
 		add_action( 'wp_ajax_esi_save_general_info', array( $this, 'ajax_save_general_info' ) );
+		add_action( 'wp_ajax_esi_fetch_google_places_preview', array( $this, 'ajax_fetch_google_places_preview' ) );
 	}
 
 	/**
@@ -769,6 +770,18 @@ final class Easy_Store_Info {
 			// enqueue the editor-only JS & CSS (registered by frontend loader)
 			wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
 			wp_enqueue_style( 'easy-store-info-editor' );
+			$api_key = get_option( 'esi_google_api_key', '' );
+			if ( ! empty( $api_key ) ) {
+				$gmap_url = add_query_arg(
+					array(
+						'key'       => $api_key,
+						'libraries' => 'places',
+						'callback'  => 'esiMapsLoaded',
+					),
+					'https://maps.googleapis.com/maps/api/js'
+				);
+				wp_enqueue_script( 'google-maps-places', $gmap_url, array(), null, true );
+			}
 			wp_enqueue_script( 'easy-store-info-editor' );
 
 			$grid = get_option( 'esi_media_grid', array() );
@@ -816,8 +829,10 @@ final class Easy_Store_Info {
 				'store_address'    => get_option( 'esi_store_address', '' ),
 				'social_links'     => get_option( 'esi_social_links', array() ),
 			);
+			$google_api_key = get_option( 'esi_google_api_key', '' );
+			$place_id       = get_option( 'esi_place_id', '' );
 			ob_start();
-			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays, 'user_display_name' => $display_name, 'general_info' => $general_info ) );
+			$this->get_template( 'editor.php', array( 'grid' => $grid, 'layout' => $layout, 'use_google_hours' => $use_google_hours, 'manual_hours' => $manual_hours, 'weekdays' => $weekdays, 'user_display_name' => $display_name, 'general_info' => $general_info, 'google_api_key' => $google_api_key, 'place_id' => $place_id ) );
 			return (string) ob_get_clean();
 		}
 
@@ -1002,6 +1017,69 @@ final class Easy_Store_Info {
 			}
 		}
 		wp_send_json_success( array( 'opening_hours_html' => $opening_hours_html ) );
+	}
+
+	/**
+	 * AJAX endpoint: fetch raw Google Places response for preview.
+	 */
+	public function ajax_fetch_google_places_preview() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'Not logged in' ), 403 );
+		}
+		$user = wp_get_current_user();
+		$allowed = current_user_can( 'manage_options' ) || ( $user && is_array( $user->roles ) && array_intersect( array( 'esi_manager', 'store_info_editor', 'administrator' ), (array) $user->roles ) );
+		if ( ! $allowed ) {
+			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+		}
+		check_ajax_referer( 'esi-save-opening-hours', 'nonce' );
+		$api_key  = get_option( 'esi_google_api_key', '' );
+		$place_id = get_option( 'esi_place_id', '' );
+		if ( empty( $api_key ) || empty( $place_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'API key and Place ID must be configured.', 'easy-store-info' ) ) );
+		}
+		$url = add_query_arg(
+			array(
+				'place_id' => rawurlencode( $place_id ),
+				'fields'   => 'opening_hours',
+				'key'      => rawurlencode( $api_key ),
+			),
+			'https://maps.googleapis.com/maps/api/place/details/json'
+		);
+		$response = wp_remote_get( $url );
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+		$body = wp_remote_retrieve_body( $response );
+		$json = json_decode( $body );
+		if ( isset( $json->error_message ) ) {
+			wp_send_json_error( array( 'message' => $json->error_message, 'raw' => $body ) );
+		}
+		$raw_response = $body;
+		$preview_text = '';
+		if ( isset( $json->result->opening_hours ) ) {
+			$oh = $json->result->opening_hours;
+			$preview_lines = array();
+			if ( ! empty( $oh->weekday_text ) && is_array( $oh->weekday_text ) ) {
+				$preview_lines = $oh->weekday_text;
+			} elseif ( ! empty( $oh->periods ) && is_array( $oh->periods ) ) {
+				$day_names = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
+				foreach ( $oh->periods as $p ) {
+					if ( isset( $p->open->day ) ) {
+						$d = (int) $p->open->day;
+						$open = isset( $p->open->time ) ? $this->format_time_Hi( $p->open->time ) : '?';
+						$close = isset( $p->close->time ) ? $this->format_time_Hi( $p->close->time ) : '';
+						$line = $day_names[ $d ] . ': ' . $open . ( $close ? ' – ' . $close : '' );
+						$preview_lines[] = $line;
+					}
+				}
+			}
+			$preview_text = implode( "\n", $preview_lines );
+		}
+		wp_send_json_success( array(
+			'raw'     => $raw_response,
+			'preview' => $preview_text,
+			'weekday_text' => isset( $json->result->opening_hours->weekday_text ) ? $json->result->opening_hours->weekday_text : array(),
+		) );
 	}
 
 	/**
