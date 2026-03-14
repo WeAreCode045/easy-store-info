@@ -783,6 +783,7 @@ final class Easy_Store_Info {
 			// enqueue the editor-only JS & CSS (registered by frontend loader)
 			wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
 			wp_enqueue_style( 'easy-store-info-editor' );
+			wp_enqueue_script( 'easy-store-info-editor' );
 			$api_key = get_option( 'esi_google_api_key', '' );
 			if ( ! empty( $api_key ) ) {
 				$gmap_url = add_query_arg(
@@ -793,9 +794,8 @@ final class Easy_Store_Info {
 					),
 					'https://maps.googleapis.com/maps/api/js'
 				);
-				wp_enqueue_script( 'google-maps-places', $gmap_url, array(), null, true );
+				wp_enqueue_script( 'google-maps-places', $gmap_url, array( 'easy-store-info-editor' ), null, true );
 			}
-			wp_enqueue_script( 'easy-store-info-editor' );
 
 			$grid = get_option( 'esi_media_grid', array() );
 			$layout = get_option( 'esi_grid_layout', '2x4' );
