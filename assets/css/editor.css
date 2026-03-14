@@ -81,10 +81,10 @@
 /* Content tabs (About / Payment / Footer) */
 .esi-content-tabs-wrap{background:#f8f9fa;border-radius:8px;padding:16px 16px 28px;border:1px solid rgba(0,0,0,.08)}
 .esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:12px}
-.esi-content-tabs .esi-content-tab{padding:8px 14px;border:1px solid rgba(0,0,0,.15);background:#e9ecef;border-radius:4px;font-size:13px;cursor:pointer;color:#333;transition:background .2s,border-color .2s}
-.esi-content-tabs .esi-content-tab:hover{background:#dee2e6;color:#333}
-.esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
-.esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
+.esi-content-tabs .esi-content-tab{padding:8px 14px;border:1px solid rgba(0,0,0,.15);background:#e9ecef;border-radius:4px;font-size:13px;cursor:pointer;color:#333}
+.esi-content-tabs .esi-content-tab:hover{background:#dee2e6}
+.esi-content-tabs .esi-content-tab-active{background:transparent;border-color:rgba(0,0,0,.2);color:#000;font-weight:600}
+.esi-content-tabs .esi-content-tab-active:hover{background:transparent}
 .esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px 12px 70px;border:1px solid rgba(0,0,0,.06)}
 .esi-content-panel .wp-editor-wrap,.esi-content-panel .mce-tinymce{max-height:232px}
 .esi-content-panel .wp-editor-container textarea.esi-wysiwyg{max-height:192px;overflow-y:auto}
@@ -94,11 +94,15 @@
 /* Right column: welcome, intro, opening hours, social links */
 .esi-right-block.esi-welcome-intro{background:#b00;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.08)}
 .esi-right-block .esi-welcome-msg{margin:0 0 8px;font-size:15px;font-weight:600;color:#fff}
-.esi-right-block .esi-intro-text{margin:0;font-size:13px;color:#fff;line-height:1.5}
+.esi-right-block .esi-intro-text{margin:0;font-size:13px;font-weight:600;color:#fff;line-height:1.5}
 .esi-right-block .esi-intro-text p{margin:0 0 6px}
 .esi-right-block .esi-intro-text p:last-child{margin-bottom:0}
 .esi-right-block .esi-tab-link{color:#fff;text-decoration:underline}
 .esi-right-block .esi-tab-link:hover{color:#fff;opacity:.9}
+.esi-container-social-links{position:relative;padding-right:44px}
+.esi-container-social-links .esi-container-title{padding-right:0}
+.esi-container-social-links .esi-social-add{position:absolute;top:8px;right:12px;margin:0;padding:6px 10px;min-width:auto}
+.esi-container-social-links .esi-social-add .esi-add-text{display:none}
 .esi-right-container{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
 .esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
 .esi-right-container .esi-form-section{margin-bottom:12px}
@@ -111,14 +115,16 @@
 /* Google Places preview */
 .esi-google-preview-wrap{margin-bottom:12px}
 .esi-google-preview{margin-bottom:8px;padding:8px 10px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;font-size:11px;line-height:1.4;overflow:visible}
-.esi-google-preview-list{list-style:none;margin:0;padding:0}
-.esi-google-preview-list li{padding:2px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:11px}
+.esi-google-preview-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.esi-google-preview-list li{padding:2px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:11px;display:flex;justify-content:space-between;gap:12px}
+.esi-google-preview-list li .esi-preview-day{flex-shrink:0}
+.esi-google-preview-list li .esi-preview-time{text-align:right}
 .esi-google-preview-list li:last-child{border-bottom:none}
 .esi-google-preview-pre,.esi-google-preview-raw{white-space:pre-wrap;font-size:10px;margin:0;line-height:1.35}
 .esi-google-preview-loading{color:#666;margin:0}
 .esi-google-preview-error{color:#b00;margin:0}
-.esi-google-preview-refresh{margin-top:4px}
-.esi-refresh-btn{background:transparent!important;border:none!important;color:#333!important}
+.esi-google-preview-refresh{margin-top:4px;font-size:11px;color:#b00!important}
+.esi-refresh-btn{background:transparent!important;border:none!important;color:#b00!important;font-size:11px}
 
 /* Editor header & tabs */
 .esi-editor-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px}

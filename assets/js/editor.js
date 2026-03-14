@@ -121,7 +121,7 @@ jQuery(function ($) {
         var $form = $(this);
         var $msg = $('.esi-general-message');
         $msg.removeClass('success error').text('');
-        $('button[form="esi-general-info-form"]').prop('disabled', true);
+        $('.esi-social-save-wrap button[form="esi-general-info-form"]').prop('disabled', true);
         var oh = typeof window.esiCollectOpeningHours === 'function' ? window.esiCollectOpeningHours() : { use_google: true, manual_hours: {} };
         var data = {
             action: 'esi_save_general_info',
@@ -147,7 +147,7 @@ jQuery(function ($) {
         }).fail(function () {
             $msg.removeClass('success').addClass('error').text('Fehler beim Speichern.');
         }).always(function () {
-            $('button[form="esi-general-info-form"]').prop('disabled', false);
+            $('.esi-social-save-wrap button[form="esi-general-info-form"]').prop('disabled', false);
         });
     });
 
@@ -361,7 +361,15 @@ jQuery(function ($) {
             }).done(function (res) {
                 if (res && res.success && res.data) {
                     var html = '';
-                    if (res.data.weekday_text && res.data.weekday_text.length) {
+                    if (res.data.preview_structured && res.data.preview_structured.length) {
+                        html = '<ul class="esi-google-preview-list">';
+                        res.data.preview_structured.forEach(function (row) {
+                            var day = (row.day || '').replace(/</g, '&lt;');
+                            var time = (row.time || '').replace(/</g, '&lt;');
+                            html += '<li><span class="esi-preview-day">' + day + '</span><span class="esi-preview-time">' + time + '</span></li>';
+                        });
+                        html += '</ul>';
+                    } else if (res.data.weekday_text && res.data.weekday_text.length) {
                         html = '<ul class="esi-google-preview-list">';
                         res.data.weekday_text.forEach(function (line) {
                             html += '<li>' + (line || '').replace(/</g, '&lt;') + '</li>';

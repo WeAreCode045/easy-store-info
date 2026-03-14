@@ -38,10 +38,6 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
             <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><i class="fas fa-images" aria-hidden="true"></i> <?php esc_html_e( 'Mediengalerie', 'easy-store-info' ); ?></button>
             <button type="button" class="esi-tab" role="tab" data-tab="account" aria-selected="false"><i class="fas fa-user" aria-hidden="true"></i> <?php esc_html_e( 'Konto', 'easy-store-info' ); ?></button>
         </nav>
-        <div class="esi-header-save-wrap">
-            <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
-            <p class="esi-general-message" aria-live="polite"></p>
-        </div>
     </header>
 
     <!-- Tab: General info -->
@@ -164,6 +160,7 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                     </div>
                     <div class="esi-right-container esi-container-social-links">
                         <h4 class="esi-container-title"><?php esc_html_e( 'Social-Media-Links', 'easy-store-info' ); ?></h4>
+                        <button type="button" class="esi-social-add button button-secondary" aria-label="<?php esc_attr_e( 'Link hinzufügen', 'easy-store-info' ); ?>"><i class="fas fa-plus" aria-hidden="true"></i><span class="esi-add-text"> <?php esc_html_e( 'Link hinzufügen', 'easy-store-info' ); ?></span></button>
                         <ul class="esi-social-links-list" id="esi-social-links" role="list">
                             <?php
                             $icon_options = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_options() : array();
@@ -183,7 +180,10 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                             </li>
                             <?php endforeach; ?>
                         </ul>
-                        <button type="button" class="esi-social-add button button-secondary"><i class="fas fa-plus" aria-hidden="true"></i> <?php esc_html_e( 'Link hinzufügen', 'easy-store-info' ); ?></button>
+                        <div class="esi-social-save-wrap">
+                            <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
+                            <p class="esi-general-message" aria-live="polite"></p>
+                        </div>
                     </div>
                 </div>
             </div>

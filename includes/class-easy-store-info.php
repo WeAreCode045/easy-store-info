@@ -1069,29 +1069,58 @@ final class Easy_Store_Info {
 		}
 		$raw_response = $body;
 		$preview_text = '';
+		$preview_structured = array();
 		if ( isset( $json->result->opening_hours ) ) {
 			$oh = $json->result->opening_hours;
 			$preview_lines = array();
-			if ( ! empty( $oh->weekday_text ) && is_array( $oh->weekday_text ) ) {
-				$preview_lines = $oh->weekday_text;
-			} elseif ( ! empty( $oh->periods ) && is_array( $oh->periods ) ) {
-				$day_names = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
+			$day_names = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
+			if ( ! empty( $oh->periods ) && is_array( $oh->periods ) ) {
+				$per_day = array_fill( 0, 7, '' );
 				foreach ( $oh->periods as $p ) {
 					if ( isset( $p->open->day ) ) {
 						$d = (int) $p->open->day;
 						$open = isset( $p->open->time ) ? $this->format_time_Hi( $p->open->time ) : '?';
 						$close = isset( $p->close->time ) ? $this->format_time_Hi( $p->close->time ) : '';
-						$line = $day_names[ $d ] . ': ' . $open . ( $close ? ' – ' . $close : '' );
-						$preview_lines[] = $line;
+						$time_str = $open . ( $close ? ' – ' . $close : '' );
+						$per_day[ $d ] = $per_day[ $d ] ? $per_day[ $d ] . ', ' . $time_str : $time_str;
 					}
+				}
+				foreach ( $per_day as $i => $t ) {
+					$time_disp = $t ? $t : __( 'Closed', 'easy-store-info' );
+					$preview_structured[] = array( 'day' => $day_names[ $i ], 'time' => $time_disp );
+					$preview_lines[] = $day_names[ $i ] . ': ' . $time_disp;
+				}
+			} elseif ( ! empty( $oh->weekday_text ) && is_array( $oh->weekday_text ) ) {
+				foreach ( $oh->weekday_text as $line ) {
+					$parts = preg_split( '/:\s*/u', $line, 2 );
+					$day = isset( $parts[0] ) ? trim( $parts[0] ) : '';
+					$timestr = isset( $parts[1] ) ? trim( $parts[1] ) : '';
+					if ( stripos( $timestr, 'closed' ) !== false ) {
+						$time_24 = __( 'Closed', 'easy-store-info' );
+					} else {
+						$ranges = preg_split( '/\s*[–—-]\s*/u', $timestr );
+						$converted = array();
+						foreach ( $ranges as $r ) {
+							if ( preg_match( '/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)/', trim( $r ), $m ) ) {
+								$ts = strtotime( trim( $m[1] ) );
+								if ( $ts !== false ) {
+									$converted[] = date( 'H:i', $ts );
+								}
+							}
+						}
+						$time_24 = ! empty( $converted ) ? implode( ' – ', $converted ) : $timestr;
+					}
+					$preview_structured[] = array( 'day' => $day, 'time' => $time_24 );
+					$preview_lines[] = $day . ': ' . $time_24;
 				}
 			}
 			$preview_text = implode( "\n", $preview_lines );
 		}
 		wp_send_json_success( array(
-			'raw'     => $raw_response,
-			'preview' => $preview_text,
-			'weekday_text' => isset( $json->result->opening_hours->weekday_text ) ? $json->result->opening_hours->weekday_text : array(),
+			'raw'                => $raw_response,
+			'preview'            => $preview_text,
+			'preview_structured' => $preview_structured,
+			'weekday_text'       => isset( $json->result->opening_hours->weekday_text ) ? $json->result->opening_hours->weekday_text : array(),
 		) );
 	}
 
