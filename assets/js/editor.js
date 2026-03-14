@@ -65,7 +65,8 @@ jQuery(function ($) {
         return links;
     }
     function buildIconList(opts, classes, selected) {
-        var $list = $('<div class="esi-social-icon-list" role="listbox" aria-label="Select platform icon"></div>');
+        var selLabel = (typeof esiSettings !== 'undefined' && esiSettings.select_icon) ? esiSettings.select_icon : 'Plattform-Symbol wählen';
+        var $list = $('<div class="esi-social-icon-list" role="listbox" aria-label="' + selLabel + '"></div>');
         $.each(opts || {}, function (key, label) {
             var fa = (classes && classes[key]) ? classes[key] : 'fas fa-link';
             var sel = selected === key;
@@ -87,7 +88,8 @@ jQuery(function ($) {
         var $row = $('<div class="esi-social-row"></div>');
         var $top = $('<div class="esi-social-row-top"></div>');
         $top.append($list);
-        $top.append($('<button type="button" class="esi-social-remove button" aria-label="Remove">−</button>'));
+        var rmLabel = (typeof esiSettings !== 'undefined' && esiSettings.remove) ? esiSettings.remove : 'Entfernen';
+        $top.append($('<button type="button" class="esi-social-remove button" aria-label="' + rmLabel + '">−</button>'));
         $row.append($top);
         $row.append($('<input type="hidden" class="esi-social-icon-value" value="" />'));
         $row.append($('<div class="esi-social-url-wrap"><input type="url" class="esi-social-url" placeholder="https://..." /></div>'));
@@ -168,10 +170,12 @@ jQuery(function ($) {
 
     // Settings page: media modal and save
     var frame;
-    var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="Add image">' +
+    var addImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.add_image) ? esiSettings.add_image : 'Bild hinzufügen';
+    var remImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.remove_image) ? esiSettings.remove_image : 'Bild entfernen';
+    var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="' + addImgLbl + '">' +
         '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '</button>';
-    var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="Remove image">' +
+    var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="' + remImgLbl + '">' +
         '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '</button>';
     $(document).on('click', '.esi-add-media', function (e) {
@@ -192,7 +196,9 @@ jQuery(function ($) {
                 frame.open();
                 return;
             }
-            frame = wp.media({ title: 'Select media', button: { text: 'Select' }, multiple: false });
+            var selMedia = (typeof esiSettings !== 'undefined' && esiSettings.select_media) ? esiSettings.select_media : 'Medien auswählen';
+            var selBtn = (typeof esiSettings !== 'undefined' && esiSettings.select) ? esiSettings.select : 'Auswählen';
+            frame = wp.media({ title: selMedia, button: { text: selBtn }, multiple: false });
             frame.on('select', function () {
                 var attachment = frame.state().get('selection').first().toJSON();
                 $item.find('input[type=hidden]').val(attachment.id);
@@ -314,7 +320,8 @@ jQuery(function ($) {
             var $preview = $('#esi-google-places-preview');
             var $refresh = $('.esi-google-preview-refresh');
             if (!$preview.length) return;
-            $preview.html('<p class="esi-google-preview-loading">' + (typeof esiL10n !== 'undefined' && esiL10n.loading ? esiL10n.loading : 'Loading preview…') + '</p>');
+            var loadingTxt = (typeof esiSettings !== 'undefined' && esiSettings.loading) ? esiSettings.loading : 'Vorschau wird geladen…';
+            $preview.html('<p class="esi-google-preview-loading">' + loadingTxt + '</p>');
             $refresh.prop('disabled', true);
             $.post(typeof esiSettings !== 'undefined' ? esiSettings.ajax_url : '', {
                 action: 'esi_fetch_google_places_preview',
@@ -334,12 +341,15 @@ jQuery(function ($) {
                     if (!html && res.data.raw) {
                         html = '<details><summary>Raw response</summary><pre class="esi-google-preview-raw">' + (res.data.raw || '').replace(/</g, '&lt;') + '</pre></details>';
                     }
-                    $preview.html(html || '<p>No opening hours data returned.</p>');
+                    var noDataTxt = (typeof esiSettings !== 'undefined' && esiSettings.no_preview) ? esiSettings.no_preview : 'Keine Öffnungszeiten-Daten vorhanden.';
+                    $preview.html(html || '<p>' + noDataTxt + '</p>');
                 } else {
-                    $preview.html('<p class="esi-google-preview-error">' + (res.data && res.data.message ? res.data.message : 'Could not load preview') + '</p>');
+                    var errTxt = (typeof esiSettings !== 'undefined' && esiSettings.preview_error) ? esiSettings.preview_error : 'Vorschau konnte nicht geladen werden.';
+                    $preview.html('<p class="esi-google-preview-error">' + (res.data && res.data.message ? res.data.message : errTxt) + '</p>');
                 }
             }).fail(function () {
-                $preview.html('<p class="esi-google-preview-error">Network error loading preview.</p>');
+                var netErrTxt = (typeof esiSettings !== 'undefined' && esiSettings.network_error) ? esiSettings.network_error : 'Netzwerkfehler beim Laden der Vorschau.';
+                $preview.html('<p class="esi-google-preview-error">' + netErrTxt + '</p>');
             }).always(function () {
                 $refresh.prop('disabled', false);
             });
@@ -577,10 +587,10 @@ jQuery(function ($) {
                     $overlay.remove();
                     debouncedPersist();
                 } else {
-                    showUploadError($overlay, 'Upload failed');
+                    showUploadError($overlay, (typeof esiSettings !== 'undefined' && esiSettings.upload_failed) ? esiSettings.upload_failed : 'Upload fehlgeschlagen');
                 }
             }).fail(function (xhr, status, err) {
-                showUploadError($overlay, 'Upload error');
+                showUploadError($overlay, (typeof esiSettings !== 'undefined' && esiSettings.upload_failed) ? esiSettings.upload_failed : 'Upload fehlgeschlagen');
             }).always(function () {
                 uploadIdx++; nextUpload();
             });
@@ -591,11 +601,13 @@ jQuery(function ($) {
     function showUploadError($overlay, msg) {
         $overlay.empty();
         var $err = $("<div class='esi-upload-error'></div>").text(msg);
-        var $retry = $("<button class='button' type='button'>Retry</button>");
+        var retryTxt = (typeof esiSettings !== 'undefined' && esiSettings.retry) ? esiSettings.retry : 'Erneut versuchen';
+        var $retry = $("<button class='button' type='button'>" + retryTxt + "</button>");
         $retry.on('click', function () {
             var $parent = $overlay.closest('.esi-media-item');
             $overlay.remove();
-            alert('Please try re-uploading by dropping the file again or using the dropzone.');
+            var retryHint = (typeof esiSettings !== 'undefined' && esiSettings.retry_upload_hint) ? esiSettings.retry_upload_hint : 'Bitte versuchen Sie den Upload erneut.';
+            alert(retryHint);
         });
         $overlay.append($err).append($retry);
     }
@@ -758,14 +770,17 @@ jQuery(function ($) {
         e.preventDefault();
         var data = collectFormData();
 
+        var savedTxt = (typeof esiSettings !== 'undefined' && esiSettings.settings_saved) ? esiSettings.settings_saved : 'Einstellungen gespeichert';
+        var errTxt = (typeof esiSettings !== 'undefined' && esiSettings.save_error) ? esiSettings.save_error : 'Fehler beim Speichern';
+        var ajaxErrTxt = (typeof esiSettings !== 'undefined' && esiSettings.ajax_error) ? esiSettings.ajax_error : 'AJAX-Fehler';
         $.post(esiSettings.ajax_url, data, function (res) {
             if (res.success) {
-                alert('Settings saved');
+                alert(savedTxt);
             } else {
-                alert('Error saving settings');
+                alert(errTxt);
             }
         }).fail(function () {
-            alert('AJAX error');
+            alert(ajaxErrTxt);
         });
     });
 });
