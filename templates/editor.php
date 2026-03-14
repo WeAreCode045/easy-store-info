@@ -87,13 +87,19 @@ $editor_settings = array( 'textarea_rows' => 10, 'editor_height' => 240, 'media_
                             <button type="button" class="esi-content-tab" data-content="footer" aria-selected="false"><?php esc_html_e( 'Fußzeile', 'easy-store-info' ); ?></button>
                         </nav>
                         <div class="esi-content-panel esi-content-about" role="tabpanel">
-                            <?php wp_editor( $about, 'esi_about_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_about_text' ) ) ); ?>
+                            <div class="esi-wysiwyg-wrap">
+                                <?php wp_editor( $about, 'esi_about_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_about_text' ) ) ); ?>
+                            </div>
                         </div>
                         <div class="esi-content-panel esi-content-payment" role="tabpanel" hidden>
-                            <?php wp_editor( $payment, 'esi_payment_details', array_merge( $editor_settings, array( 'textarea_name' => 'esi_payment_details' ) ) ); ?>
+                            <div class="esi-wysiwyg-wrap">
+                                <?php wp_editor( $payment, 'esi_payment_details', array_merge( $editor_settings, array( 'textarea_name' => 'esi_payment_details' ) ) ); ?>
+                            </div>
                         </div>
                         <div class="esi-content-panel esi-content-footer" role="tabpanel" hidden>
-                            <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
+                            <div class="esi-wysiwyg-wrap">
+                                <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
+                            </div>
                         </div>
                     </div>
                 </div>
