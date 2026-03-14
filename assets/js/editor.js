@@ -85,14 +85,13 @@ jQuery(function ($) {
         var opts = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_options) ? esiSettings.social_icon_options : {};
         var classes = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_classes) ? esiSettings.social_icon_classes : {};
         var $list = buildIconList(opts, classes, '');
-        var $row = $('<div class="esi-social-row"></div>');
-        var $top = $('<div class="esi-social-row-top"></div>');
-        $top.append($list);
         var rmLabel = (typeof esiSettings !== 'undefined' && esiSettings.remove) ? esiSettings.remove : 'Entfernen';
-        $top.append($('<button type="button" class="esi-social-remove button" aria-label="' + rmLabel + '">−</button>'));
-        $row.append($top);
+        var addLbl = (typeof esiSettings !== 'undefined' && esiSettings.add_link) ? esiSettings.add_link : 'Link hinzufügen';
+        var $row = $('<div class="esi-social-row"></div>');
+        $row.append($list);
         $row.append($('<input type="hidden" class="esi-social-icon-value" value="" />'));
-        $row.append($('<div class="esi-social-url-wrap"><input type="url" class="esi-social-url" placeholder="https://..." /></div>'));
+        $row.append($('<input type="url" class="esi-social-url" placeholder="https://..." />'));
+        $row.append($('<button type="button" class="esi-social-remove button" aria-label="' + rmLabel + '">−</button>'));
         $('#esi-social-links').append($row);
     });
     $(document).on('click', '.esi-social-remove', function () {

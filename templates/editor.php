@@ -58,13 +58,15 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
         <form id="esi-general-info-form" class="esi-general-form">
             <div class="esi-general-two-col">
                 <div class="esi-general-left">
-                    <div class="esi-form-section">
-                        <label for="esi_title"><?php esc_html_e( 'Titel', 'easy-store-info' ); ?></label>
-                        <input type="text" id="esi_title" name="esi_title" value="<?php echo esc_attr( $title_val ); ?>" class="esi-input-wide" />
-                    </div>
-                    <div class="esi-form-section">
-                        <label for="esi_subtitle"><?php esc_html_e( 'Untertitel', 'easy-store-info' ); ?></label>
-                        <input type="text" id="esi_subtitle" name="esi_subtitle" value="<?php echo esc_attr( $subtitle_val ); ?>" class="esi-input-wide" />
+                    <div class="esi-container esi-container-title-subtitle">
+                        <div class="esi-form-section">
+                            <label for="esi_title"><?php esc_html_e( 'Titel', 'easy-store-info' ); ?></label>
+                            <input type="text" id="esi_title" name="esi_title" value="<?php echo esc_attr( $title_val ); ?>" class="esi-input-wide" />
+                        </div>
+                        <div class="esi-form-section">
+                            <label for="esi_subtitle"><?php esc_html_e( 'Untertitel', 'easy-store-info' ); ?></label>
+                            <input type="text" id="esi_subtitle" name="esi_subtitle" value="<?php echo esc_attr( $subtitle_val ); ?>" class="esi-input-wide" />
+                        </div>
                     </div>
                     <div class="esi-form-section esi-content-tabs-wrap">
                         <nav class="esi-content-tabs" role="tablist">
@@ -82,7 +84,7 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
                         </div>
                     </div>
-                    <div class="esi-left-container esi-container-social-links">
+                    <div class="esi-container esi-container-social-links">
                         <h4 class="esi-container-title"><?php esc_html_e( 'Social-Media-Links', 'easy-store-info' ); ?></h4>
                         <div class="esi-social-links" id="esi-social-links">
                             <?php
@@ -91,27 +93,23 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                                 $icon_val = $link['icon'] ?? '';
                             ?>
                             <div class="esi-social-row">
-                                <div class="esi-social-row-top">
-                                    <div class="esi-social-icon-list" role="listbox" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
-                                        <?php foreach ( $icon_options as $opt_key => $opt_label ) :
-                                            $fa_class = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
-                                            $is_selected = $icon_val === $opt_key;
-                                        ?>
-                                        <button type="button" class="esi-social-icon-btn<?php echo $is_selected ? ' is-selected' : ''; ?>" data-icon="<?php echo esc_attr( $opt_key ); ?>" title="<?php echo esc_attr( $opt_label ); ?>" aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>">
-                                            <i class="<?php echo esc_attr( $fa_class ); ?>" aria-hidden="true"></i>
-                                        </button>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Entfernen', 'easy-store-info' ); ?>">−</button>
+                                <div class="esi-social-icon-list" role="listbox" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
+                                    <?php foreach ( $icon_options as $opt_key => $opt_label ) :
+                                        $fa_class = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
+                                        $is_selected = $icon_val === $opt_key;
+                                    ?>
+                                    <button type="button" class="esi-social-icon-btn<?php echo $is_selected ? ' is-selected' : ''; ?>" data-icon="<?php echo esc_attr( $opt_key ); ?>" title="<?php echo esc_attr( $opt_label ); ?>" aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>">
+                                        <i class="<?php echo esc_attr( $fa_class ); ?>" aria-hidden="true"></i>
+                                    </button>
+                                    <?php endforeach; ?>
                                 </div>
                                 <input type="hidden" class="esi-social-icon-value" value="<?php echo esc_attr( $icon_val ); ?>" />
-                                <div class="esi-social-url-wrap">
-                                    <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
-                                </div>
+                                <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
+                                <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Entfernen', 'easy-store-info' ); ?>">−</button>
                             </div>
                             <?php endforeach; ?>
                         </div>
-                        <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Link hinzufügen', 'easy-store-info' ); ?></button>
+                        <button type="button" class="esi-social-add button button-secondary" aria-label="<?php esc_attr_e( 'Link hinzufügen', 'easy-store-info' ); ?>"><i class="fas fa-plus" aria-hidden="true"></i></button>
                     </div>
                 </div>
                 <div class="esi-general-right">
@@ -132,7 +130,7 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <div class="esi-google-preview" id="esi-google-places-preview" aria-live="polite">
                                 <p class="esi-google-preview-loading"><?php esc_html_e( 'Vorschau wird geladen…', 'easy-store-info' ); ?></p>
                             </div>
-                            <button type="button" class="esi-google-preview-refresh button button-small" aria-label="<?php esc_attr_e( 'Vorschau aktualisieren', 'easy-store-info' ); ?>"><?php esc_html_e( 'Vorschau aktualisieren', 'easy-store-info' ); ?></button>
+                            <button type="button" class="esi-google-preview-refresh esi-refresh-btn" aria-label="<?php esc_attr_e( 'Vorschau aktualisieren', 'easy-store-info' ); ?>"><i class="fas fa-sync-alt" aria-hidden="true"></i> <?php esc_html_e( 'Vorschau aktualisieren', 'easy-store-info' ); ?></button>
                         </div>
                         <div class="esi-manual-hours-wrap" style="<?php echo $use_google ? 'display:none' : ''; ?>">
                             <?php foreach ( $order as $day_idx ) :
