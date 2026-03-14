@@ -54,23 +54,28 @@
 .esi-general-message{margin:10px 0 0;font-size:13px}
 .esi-general-message.success{color:#0a7a0a}
 .esi-general-message.error{color:#b00}
-.esi-social-links{margin-bottom:10px}
-.esi-social-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
-.esi-social-icon-dropdown-wrap{position:relative}
-.esi-social-icon-trigger{display:flex;align-items:center;gap:6px;padding:6px 12px;min-width:140px;justify-content:flex-start;white-space:nowrap}
-.esi-social-icon-trigger i:first-child{font-size:16px}
-.esi-social-icon-trigger .esi-social-icon-label{overflow:hidden;text-overflow:ellipsis}
-.esi-social-icon-trigger .esi-dropdown-arrow{margin-left:auto;font-size:10px;opacity:.7}
-.esi-social-icon-dropdown{position:absolute;top:100%;left:0;margin-top:4px;min-width:180px;max-height:240px;overflow-y:auto;background:#fff;border:1px solid rgba(0,0,0,.15);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:100;display:flex;flex-direction:column;padding:4px}
-.esi-social-icon-dropdown[hidden]{display:none}
-.esi-social-icon-option{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:4px;font-size:13px;cursor:pointer;text-align:left;color:#333}
-.esi-social-icon-option:hover{background:#f0f7ff}
-.esi-social-icon-option.is-selected{background:#e8f0fe;color:#0b66b2}
-.esi-social-icon-option i{font-size:16px;flex-shrink:0}
-.esi-social-icon-value{display:none}
-.esi-social-row .esi-social-url{flex:1;min-width:160px;padding:8px 12px;font-size:14px}
-.esi-social-row .esi-social-remove{flex-shrink:0;padding:6px 10px}
-.esi-social-add{margin-top:6px;padding:8px 12px;min-width:38px}
+/* Social links: read-only list with remove */
+.esi-social-links-list{list-style:none;margin:0 0 10px;padding:0}
+.esi-social-link-item{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:6px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:6px}
+.esi-social-link-item i{font-size:18px;flex-shrink:0;color:#333}
+.esi-social-link-item .esi-social-link-url{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.esi-social-link-item .esi-social-remove{flex-shrink:0;padding:4px 8px}
+.esi-social-add{margin-top:6px;padding:8px 12px}
+/* Add social link modal */
+.esi-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.esi-modal[hidden]{display:none}
+.esi-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4);cursor:pointer}
+.esi-modal-content{position:relative;background:#fff;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.2);min-width:320px;max-width:400px}
+.esi-modal-title{margin:0 0 16px;padding:16px 20px 0;font-size:16px;font-weight:600}
+.esi-modal-body{padding:0 20px}
+.esi-modal-form-section{margin-bottom:16px}
+.esi-modal-form-section label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+.esi-modal-icon-list{display:flex;flex-wrap:wrap;gap:6px}
+.esi-modal-icon-btn{width:40px;height:40px;padding:0;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#333}
+.esi-modal-icon-btn:hover{border-color:#0b66b2;background:#f0f7ff}
+.esi-modal-icon-btn.is-selected{border-color:#0b66b2;background:#0b66b2;color:#fff}
+.esi-modal-icon-btn i{font-size:18px}
+.esi-modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 20px;border-top:1px solid rgba(0,0,0,.08)}
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
 .esi-general-form .wp-media-buttons .button{background:transparent!important;border:none!important;color:inherit!important}
 /* Content tabs (About / Payment / Footer) */
@@ -80,7 +85,8 @@
 .esi-content-tabs .esi-content-tab:hover{background:#dee2e6;color:#333}
 .esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
 .esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
-.esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06)}
+.esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06);min-height:420px}
+.esi-content-panel .wp-editor-wrap,.esi-content-panel .mce-tinymce{min-height:380px}
 /* Welcome container save button - right aligned below intro */
 .esi-welcome-save-wrap{margin-top:14px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
 .esi-welcome-save-wrap .esi-general-message{margin:0}

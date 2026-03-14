@@ -56,85 +56,72 @@ jQuery(function ($) {
     }
     function collectSocialLinks() {
         var links = [];
-        $('#esi-social-links .esi-social-row').each(function () {
-            var url = $(this).find('.esi-social-url').val();
+        $('#esi-social-links .esi-social-link-item').each(function () {
+            var url = $(this).attr('data-url') || '';
             if (url && url.trim()) {
-                links.push({ icon: $(this).find('.esi-social-icon-value').val() || '', url: url.trim() });
+                links.push({ icon: $(this).attr('data-icon') || '', url: url.trim() });
             }
         });
         return links;
     }
-    function buildIconDropdown(opts, classes, selected) {
-        var selLabel = (typeof esiSettings !== 'undefined' && esiSettings.select_icon) ? esiSettings.select_icon : 'Plattform-Symbol wählen';
-        var pickLabel = (opts && opts[selected]) ? opts[selected] : ((typeof esiSettings !== 'undefined' && esiSettings.select_icon) ? esiSettings.select_icon : 'Plattform wählen');
-        var fa = (classes && classes[selected]) ? classes[selected] : 'fas fa-link';
-        var $wrap = $('<div class="esi-social-icon-dropdown-wrap"></div>');
-        var $trigger = $('<button type="button" class="esi-social-icon-trigger button" aria-haspopup="listbox" aria-expanded="false" aria-label="' + selLabel + '"><i class="' + fa + '" aria-hidden="true"></i><span class="esi-social-icon-label">' + (pickLabel || '') + '</span><i class="fas fa-chevron-down esi-dropdown-arrow" aria-hidden="true"></i></button>');
-        var $dropdown = $('<div class="esi-social-icon-dropdown" role="listbox" hidden></div>');
-        $.each(opts || {}, function (key, label) {
-            var optFa = (classes && classes[key]) ? classes[key] : 'fas fa-link';
-            var sel = selected === key;
-            $dropdown.append($('<button type="button" class="esi-social-icon-option' + (sel ? ' is-selected' : '') + '" role="option" data-icon="' + key + '" aria-selected="' + (sel ? 'true' : 'false') + '"><i class="' + optFa + '" aria-hidden="true"></i> ' + (label || '') + '</button>'));
+    (function () {
+        var $modal = $('#esi-add-social-modal');
+        var $urlInput = $('#esi-modal-url');
+        var $iconBtns = $modal.find('.esi-modal-icon-btn');
+        var selectedIcon = '';
+        function openModal() {
+            $urlInput.val('');
+            $iconBtns.removeClass('is-selected').attr('aria-selected', 'false');
+            var $first = $iconBtns.first();
+            if ($first.length) {
+                $first.addClass('is-selected').attr('aria-selected', 'true');
+                selectedIcon = $first.data('icon') || '';
+            } else {
+                selectedIcon = '';
+            }
+            $modal.attr('hidden', null);
+            $urlInput.focus();
+        }
+        function closeModal() {
+            $modal.attr('hidden', true);
+        }
+        $(document).on('click', '.esi-social-add', function () {
+            openModal();
         });
-        $wrap.append($trigger).append($dropdown);
-        return $wrap;
-    }
-    $(document).on('click', '.esi-social-icon-trigger', function (e) {
-        e.stopPropagation();
-        var $row = $(this).closest('.esi-social-row');
-        var $dd = $row.find('.esi-social-icon-dropdown');
-        var wasOpen = !$dd.attr('hidden');
-        $('.esi-social-icon-dropdown').attr('hidden', true);
-        $('.esi-social-icon-trigger').attr('aria-expanded', 'false');
-        if (!wasOpen) {
-            $dd.attr('hidden', null);
-            $(this).attr('aria-expanded', 'true');
-        }
-    });
-    $(document).on('click', function () {
-        $('.esi-social-icon-dropdown').attr('hidden', true);
-        $('.esi-social-icon-trigger').attr('aria-expanded', 'false');
-    });
-    $(document).on('click', '.esi-social-icon-dropdown', function (e) { e.stopPropagation(); });
-    $(document).on('click', '.esi-social-icon-option', function (e) {
-        e.stopPropagation();
-        var $row = $(this).closest('.esi-social-row');
-        var icon = $(this).data('icon') || '';
-        var label = $(this).clone().children().remove().end().text().trim();
-        var fa = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_classes && esiSettings.social_icon_classes[icon]) ? esiSettings.social_icon_classes[icon] : 'fas fa-link';
-        $row.find('.esi-social-icon-value').val(icon);
-        $row.find('.esi-social-icon-trigger .esi-social-icon-label').text(label || 'Plattform wählen');
-        $row.find('.esi-social-icon-trigger i:first').attr('class', fa);
-        $row.find('.esi-social-icon-dropdown .esi-social-icon-option').removeClass('is-selected').attr('aria-selected', 'false');
-        $(this).addClass('is-selected').attr('aria-selected', 'true');
-        $row.find('.esi-social-icon-dropdown').attr('hidden', true);
-        $row.find('.esi-social-icon-trigger').attr('aria-expanded', 'false');
-    });
-    $(document).on('click', '.esi-social-add', function () {
-        var opts = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_options) ? esiSettings.social_icon_options : {};
-        var classes = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_classes) ? esiSettings.social_icon_classes : {};
-        var $list = buildIconList(opts, classes, '');
-        var rmLabel = (typeof esiSettings !== 'undefined' && esiSettings.remove) ? esiSettings.remove : 'Entfernen';
-        var addLbl = (typeof esiSettings !== 'undefined' && esiSettings.add_link) ? esiSettings.add_link : 'Link hinzufügen';
-        var $row = $('<div class="esi-social-row"></div>');
-        $row.append(buildIconDropdown(opts, classes, ''));
-        $row.append($('<input type="hidden" class="esi-social-icon-value" value="" />'));
-        $row.append($('<input type="url" class="esi-social-url" placeholder="https://..." />'));
-        $row.append($('<button type="button" class="esi-social-remove button" aria-label="' + rmLabel + '">−</button>'));
-        $('#esi-social-links').append($row);
-    });
+        $(document).on('click', '.esi-modal-backdrop, .esi-modal-cancel', function () {
+            closeModal();
+        });
+        $(document).on('click', '.esi-modal-icon-btn', function () {
+            $iconBtns.removeClass('is-selected').attr('aria-selected', 'false');
+            $(this).addClass('is-selected').attr('aria-selected', 'true');
+            selectedIcon = $(this).data('icon') || '';
+        });
+        $urlInput.on('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); $modal.find('.esi-modal-save').click(); }
+        });
+        $(document).on('click', '.esi-modal-save', function () {
+            var url = $urlInput.val() || '';
+            url = url.trim();
+            if (!url) return;
+            var fa = (typeof esiSettings !== 'undefined' && esiSettings.social_icon_classes && esiSettings.social_icon_classes[selectedIcon]) ? esiSettings.social_icon_classes[selectedIcon] : 'fas fa-link';
+            var $li = $('<li class="esi-social-link-item" data-icon="' + selectedIcon + '" data-url="' + url.replace(/"/g, '&quot;') + '"><i class="' + fa + '" aria-hidden="true"></i><span class="esi-social-link-url">' + $('<div/>').text(url).html() + '</span><button type="button" class="esi-social-remove button" aria-label="Entfernen">−</button></li>');
+            $('#esi-social-links').append($li);
+            closeModal();
+        });
+        $(document).on('keydown.esiAddSocialModal', function (e) {
+            if ($modal.attr('hidden')) return;
+            if (e.key === 'Escape') { closeModal(); }
+        });
+    })();
     $(document).on('click', '.esi-social-remove', function () {
-        var $container = $('#esi-social-links');
-        if ($container.find('.esi-social-row').length > 1) {
-            $(this).closest('.esi-social-row').remove();
-        }
+        $(this).closest('.esi-social-link-item').remove();
     });
     $('#esi-general-info-form').on('submit', function (e) {
         e.preventDefault();
         var $form = $(this);
         var $msg = $('.esi-general-message');
         $msg.removeClass('success error').text('');
-        $('.esi-welcome-save-wrap button[form="esi-general-info-form"]').prop('disabled', true);
+        $('button[form="esi-general-info-form"]').prop('disabled', true);
         var oh = typeof window.esiCollectOpeningHours === 'function' ? window.esiCollectOpeningHours() : { use_google: true, manual_hours: {} };
         var data = {
             action: 'esi_save_general_info',
@@ -160,7 +147,7 @@ jQuery(function ($) {
         }).fail(function () {
             $msg.removeClass('success').addClass('error').text('Fehler beim Speichern.');
         }).always(function () {
-            $('.esi-welcome-save-wrap button[form="esi-general-info-form"]').prop('disabled', false);
+            $('button[form="esi-general-info-form"]').prop('disabled', false);
         });
     });
 
