@@ -1070,6 +1070,7 @@ final class Easy_Store_Info {
 		$raw_response = $body;
 		$preview_text = '';
 		$preview_structured = array();
+		$week_order = array( 1, 2, 3, 4, 5, 6, 0 ); // Monday first
 		if ( isset( $json->result->opening_hours ) ) {
 			$oh = $json->result->opening_hours;
 			$preview_lines = array();
@@ -1085,13 +1086,16 @@ final class Easy_Store_Info {
 						$per_day[ $d ] = $per_day[ $d ] ? $per_day[ $d ] . ', ' . $time_str : $time_str;
 					}
 				}
-				foreach ( $per_day as $i => $t ) {
+				foreach ( $week_order as $i ) {
+					$t = $per_day[ $i ];
 					$time_disp = $t ? $t : __( 'Closed', 'easy-store-info' );
 					$preview_structured[] = array( 'day' => $day_names[ $i ], 'time' => $time_disp );
 					$preview_lines[] = $day_names[ $i ] . ': ' . $time_disp;
 				}
 			} elseif ( ! empty( $oh->weekday_text ) && is_array( $oh->weekday_text ) ) {
-				foreach ( $oh->weekday_text as $line ) {
+				$wt = $oh->weekday_text;
+				foreach ( $week_order as $i ) {
+					$line = isset( $wt[ $i ] ) ? $wt[ $i ] : '';
 					$parts = preg_split( '/:\s*/u', $line, 2 );
 					$day = isset( $parts[0] ) ? trim( $parts[0] ) : '';
 					$timestr = isset( $parts[1] ) ? trim( $parts[1] ) : '';
