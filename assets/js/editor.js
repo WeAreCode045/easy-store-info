@@ -175,9 +175,7 @@ jQuery(function ($) {
     var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="' + addImgLbl + '">' +
         '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '</button>';
-    var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="' + remImgLbl + '">' +
-        '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-        '</button>';
+    var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="' + remImgLbl + '"><i class="fas fa-trash" aria-hidden="true"></i></button>';
     $(document).on('click', '.esi-add-media', function (e) {
         e.preventDefault();
         var $btn = $(this);
@@ -221,56 +219,70 @@ jQuery(function ($) {
     });
 
     function initMediaDragSort() {
-        $('.esi-drag-handle').each(function () { this.setAttribute('draggable', 'true'); });
-        $('.esi-media-item').removeAttr('draggable');
         var dragSrcEl = null;
         var pointerDragging = false;
+        var nativeDropHandled = false;
 
-        $(document).off('dragstart.handle').on('dragstart.handle', '.esi-drag-handle', function (e) {
-            var $item = $(this).closest('.esi-media-item');
+        $('.esi-media-item').each(function () {
+            this.setAttribute('draggable', 'true');
+        });
+
+        $(document).off('dragstart.handle').on('dragstart.handle', '.esi-media-item', function (e) {
+            if ($(e.target).closest('button').length) return;
+            var $item = $(this);
             dragSrcEl = $item.get(0);
-            e.originalEvent.dataTransfer.effectAllowed = 'move';
-            try { e.originalEvent.dataTransfer.setData('text/html', dragSrcEl.outerHTML); } catch (err) {}
+            var dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = 'move';
+            dt.setData('text/plain', ' ');
+            try { dt.setData('text/html', $item.get(0).innerHTML); } catch (err) {}
             $item.addClass('dragging');
         });
 
         $(document).off('dragover.item').on('dragover.item', '.esi-media-item', function (e) {
             e.preventDefault();
-            e.originalEvent.dataTransfer.dropEffect = 'move';
+            e.stopPropagation();
+            var dt = e.originalEvent.dataTransfer;
+            if (dt) dt.dropEffect = 'move';
             $(this).addClass('drag-over');
-            return false;
+        });
+
+        $(document).off('dragenter.item').on('dragenter.item', '.esi-media-item', function (e) {
+            e.preventDefault();
+            $(this).addClass('drag-over');
         });
 
         $(document).off('dragleave.item').on('dragleave.item', '.esi-media-item', function (e) {
-            $(this).removeClass('drag-over');
+            if (!$(this).get(0).contains(e.relatedTarget)) {
+                $(this).removeClass('drag-over');
+            }
         });
 
         $(document).off('drop.item').on('drop.item', '.esi-media-item', function (e) {
             e.preventDefault();
+            e.stopPropagation();
+            nativeDropHandled = true;
             var $target = $(this);
             $target.removeClass('drag-over');
-            var $dragging = $(dragSrcEl);
+            var $dragging = dragSrcEl ? $(dragSrcEl) : $();
             if ($dragging.length && $dragging[0] !== $target[0]) {
-                // Instead of moving DOM nodes, swap the media content between cells
                 swapMediaItems($dragging, $target);
                 persistGridOrder();
             }
-            return false;
         });
 
-        $(document).off('dragend.item').on('dragend.item', '.esi-drag-handle', function (e) {
-            $('.esi-media-item').removeClass('drag-over');
-            if (dragSrcEl) $(dragSrcEl).removeClass('dragging');
+        $(document).off('dragend.item').on('dragend.item', '.esi-media-item', function (e) {
+            $('.esi-media-item').removeClass('drag-over dragging');
             dragSrcEl = null;
         });
 
-        $(document).off('pointerdown.handle').on('pointerdown.handle', '.esi-drag-handle', function (ev) {
+        $(document).off('pointerdown.handle').on('pointerdown.handle', '.esi-media-item', function (ev) {
+            if ($(ev.target).closest('button').length) return;
             if (ev.originalEvent && ev.originalEvent.button && ev.originalEvent.button !== 0) return;
             pointerDragging = true;
-            var $handle = $(this);
-            dragSrcEl = $handle.closest('.esi-media-item').get(0);
-            $(dragSrcEl).addClass('dragging');
-            $handle.get(0).setPointerCapture(ev.originalEvent.pointerId);
+            var $item = $(this);
+            dragSrcEl = $item.get(0);
+            $item.addClass('dragging');
+            $item.get(0).setPointerCapture(ev.originalEvent.pointerId);
         });
 
         $(document).off('pointermove.handle').on('pointermove.handle', function (ev) {
@@ -288,15 +300,20 @@ jQuery(function ($) {
         $(document).off('pointerup.handle pointercancel.handle').on('pointerup.handle pointercancel.handle', function (ev) {
             if (!pointerDragging) return;
             pointerDragging = false;
+            if (nativeDropHandled) {
+                nativeDropHandled = false;
+                dragSrcEl = null;
+                $('.esi-media-item').removeClass('drag-over dragging');
+                return;
+            }
+            var $dragging = dragSrcEl ? $(dragSrcEl) : $();
             var targetEl = document.elementFromPoint(ev.originalEvent.clientX, ev.originalEvent.clientY);
             var $targetItem = targetEl ? $(targetEl).closest('.esi-media-item') : $();
-            var $dragging = $(dragSrcEl);
-            $('.esi-media-item').removeClass('drag-over');
+            $('.esi-media-item').removeClass('drag-over dragging');
             if ($targetItem.length && $dragging.length && $targetItem.get(0) !== $dragging.get(0)) {
                 swapMediaItems($dragging, $targetItem);
                 debouncedPersist();
             }
-            if (dragSrcEl) $(dragSrcEl).removeClass('dragging');
             dragSrcEl = null;
         });
     }
@@ -616,7 +633,8 @@ jQuery(function ($) {
         var $grid = $('.esi-media-grid');
         var idx = $grid.find('.esi-media-item').length;
         var $item = $("<div class='esi-media-item' data-index='" + idx + "'></div>");
-        $item.append('<button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>');
+        var dragLbl = (typeof esiSettings !== 'undefined' && esiSettings.drag_to_reorder) ? esiSettings.drag_to_reorder : 'Zum Umsortieren ziehen';
+        $item.append('<button type="button" class="esi-drag-handle" aria-label="' + dragLbl + '">☰</button>');
         $item.append('<div class="esi-media-empty"></div>');
         $item.append('<input type="hidden" name="esi_media_grid[]" value="0" />');
         $item.append(addBtnHtml);

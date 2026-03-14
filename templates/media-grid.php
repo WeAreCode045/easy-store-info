@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <?php foreach ( $grid as $idx => $att_id ) : ?>
         <div class="esi-media-item" data-index="<?php echo esc_attr( $idx ); ?>">
             <?php if ( ! empty( $editor ) ) : ?>
-                <button type="button" class="esi-drag-handle" aria-label="Drag to reorder">☰</button>
+                <button type="button" class="esi-drag-handle" aria-label="<?php esc_attr_e( 'Zum Umsortieren ziehen', 'easy-store-info' ); ?>">☰</button>
                 <?php if ( $att_id && get_post( $att_id ) ) :
                     $url = wp_get_attachment_url( $att_id );
                     $mime = get_post_mime_type( $att_id );
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <?php endif; ?>
                     <?php endif; ?>
                     <input type="hidden" name="esi_media_grid[]" value="<?php echo esc_attr( $att_id ); ?>" />
-                    <button class="esi-remove-media button" type="button" aria-label="Remove image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="#b00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="esi-remove-media button" type="button" aria-label="<?php esc_attr_e( 'Bild entfernen', 'easy-store-info' ); ?>"><i class="fas fa-trash" aria-hidden="true"></i></button>
                 <?php else : ?>
                     <div class="esi-media-empty"></div>
                     <input type="hidden" name="esi_media_grid[]" value="0" />
