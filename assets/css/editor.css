@@ -85,7 +85,7 @@
 .esi-content-tabs .esi-content-tab:hover{background:#dee2e6;color:#333}
 .esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
 .esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
-.esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06)}
+.esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px 12px 70px;border:1px solid rgba(0,0,0,.06)}
 .esi-content-panel .wp-editor-wrap,.esi-content-panel .mce-tinymce{max-height:232px}
 .esi-content-panel .wp-editor-container textarea.esi-wysiwyg{max-height:192px;overflow-y:auto}
 /* Welcome container save button - right aligned below intro */
