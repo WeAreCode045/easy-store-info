@@ -180,10 +180,10 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                             </li>
                             <?php endforeach; ?>
                         </ul>
-                        <div class="esi-social-save-wrap">
-                            <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
-                            <p class="esi-general-message" aria-live="polite"></p>
-                        </div>
+                    </div>
+                    <div class="esi-right-save-wrap">
+                        <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
+                        <p class="esi-general-message" aria-live="polite"></p>
                     </div>
                 </div>
             </div>

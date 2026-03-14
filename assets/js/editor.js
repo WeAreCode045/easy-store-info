@@ -121,7 +121,7 @@ jQuery(function ($) {
         var $form = $(this);
         var $msg = $('.esi-general-message');
         $msg.removeClass('success error').text('');
-        $('.esi-social-save-wrap button[form="esi-general-info-form"]').prop('disabled', true);
+        $('.esi-right-save-wrap button[form="esi-general-info-form"]').prop('disabled', true);
         var oh = typeof window.esiCollectOpeningHours === 'function' ? window.esiCollectOpeningHours() : { use_google: true, manual_hours: {} };
         var data = {
             action: 'esi_save_general_info',
@@ -147,7 +147,7 @@ jQuery(function ($) {
         }).fail(function () {
             $msg.removeClass('success').addClass('error').text('Fehler beim Speichern.');
         }).always(function () {
-            $('.esi-social-save-wrap button[form="esi-general-info-form"]').prop('disabled', false);
+            $('.esi-right-save-wrap button[form="esi-general-info-form"]').prop('disabled', false);
         });
     });
 
