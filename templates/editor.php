@@ -29,7 +29,7 @@ $social_links = isset( $general['social_links'] ) && is_array( $general['social_
 if ( empty( $social_links ) ) {
     $social_links = array( array( 'icon' => '', 'url' => '' ) );
 }
-$editor_settings = array( 'textarea_rows' => 10, 'media_buttons' => true, 'teeny' => true, 'quicktags' => true, 'textarea_name' => 'esi_wysiwyg_placeholder', 'editor_class' => 'esi-wysiwyg' );
+$editor_settings = array( 'textarea_rows' => 10, 'editor_height' => 240, 'media_buttons' => true, 'teeny' => true, 'quicktags' => true, 'textarea_name' => 'esi_wysiwyg_placeholder', 'editor_class' => 'esi-wysiwyg' );
 ?>
 <div class="esi-settings-wrap esi-frontend-editor">
     <header class="esi-editor-header">

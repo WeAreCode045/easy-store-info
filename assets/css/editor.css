@@ -70,7 +70,7 @@
 .esi-modal-body{padding:0 20px}
 .esi-modal-form-section{margin-bottom:16px}
 .esi-modal-form-section label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
-.esi-modal-icon-list{display:flex;flex-wrap:wrap;gap:6px}
+.esi-modal-icon-list{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto}
 .esi-modal-icon-btn{width:40px;height:40px;padding:0;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#333}
 .esi-modal-icon-btn:hover{border-color:#0b66b2;background:#f0f7ff}
 .esi-modal-icon-btn.is-selected{border-color:#0b66b2;background:#0b66b2;color:#fff}
@@ -86,9 +86,8 @@
 .esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
 .esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
 .esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06)}
-.esi-content-panel .wp-editor-wrap{max-height:320px}
-.esi-content-panel .mce-tinymce{max-height:280px}
-.esi-content-panel .wp-editor-container textarea.esi-wysiwyg{max-height:260px;overflow-y:auto;min-height:120px}
+.esi-content-panel .wp-editor-wrap,.esi-content-panel .mce-tinymce{height:280px}
+.esi-content-panel .wp-editor-container textarea.esi-wysiwyg{height:240px;min-height:240px;overflow-y:auto}
 /* Welcome container save button - right aligned below intro */
 .esi-welcome-save-wrap{margin-top:14px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
 .esi-welcome-save-wrap .esi-general-message{margin:0}
