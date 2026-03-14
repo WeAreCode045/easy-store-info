@@ -79,7 +79,7 @@
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
 .esi-general-form .wp-media-buttons .button{background:transparent!important;border:none!important;color:inherit!important}
 /* Content tabs (About / Payment / Footer) */
-.esi-content-tabs-wrap{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.08)}
+.esi-content-tabs-wrap{background:#f8f9fa;border-radius:8px;padding:16px 16px 28px;border:1px solid rgba(0,0,0,.08)}
 .esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:12px}
 .esi-content-tabs .esi-content-tab{padding:8px 14px;border:1px solid rgba(0,0,0,.15);background:#e9ecef;border-radius:4px;font-size:13px;cursor:pointer;color:#333;transition:background .2s,border-color .2s}
 .esi-content-tabs .esi-content-tab:hover{background:#dee2e6;color:#333}
