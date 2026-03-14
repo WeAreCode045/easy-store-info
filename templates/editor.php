@@ -29,7 +29,7 @@ $social_links = isset( $general['social_links'] ) && is_array( $general['social_
 if ( empty( $social_links ) ) {
     $social_links = array( array( 'icon' => '', 'url' => '' ) );
 }
-$editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny' => true, 'quicktags' => true, 'textarea_name' => 'esi_wysiwyg_placeholder', 'editor_class' => 'esi-wysiwyg' );
+$editor_settings = array( 'textarea_rows' => 14, 'media_buttons' => true, 'teeny' => true, 'quicktags' => true, 'textarea_name' => 'esi_wysiwyg_placeholder', 'editor_class' => 'esi-wysiwyg' );
 ?>
 <div class="esi-settings-wrap esi-frontend-editor">
     <header class="esi-editor-header">
@@ -38,10 +38,6 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
             <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><?php esc_html_e( 'Mediengalerie', 'easy-store-info' ); ?></button>
             <button type="button" class="esi-tab" role="tab" data-tab="account" aria-selected="false"><?php esc_html_e( 'Konto', 'easy-store-info' ); ?></button>
         </nav>
-        <div class="esi-header-save-wrap">
-            <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
-            <p class="esi-general-message" aria-live="polite"></p>
-        </div>
     </header>
 
     <!-- Tab: General info -->
@@ -109,6 +105,10 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             );
                             ?></p>
                         </div>
+                        <div class="esi-welcome-save-wrap">
+                            <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
+                            <p class="esi-general-message" aria-live="polite"></p>
+                        </div>
                     </div>
                     <div class="esi-right-container esi-container-opening-hours">
                         <h4 class="esi-oh-title"><?php esc_html_e( 'Öffnungszeiten', 'easy-store-info' ); ?></h4>
@@ -163,17 +163,27 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             $icon_options = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_options() : array();
                             foreach ( $social_links as $idx => $link ) :
                                 $icon_val = $link['icon'] ?? '';
+                                $fa_class = ( $icon_val && class_exists( 'Easy_Store_Info' ) ) ? Easy_Store_Info::get_social_icon_class( $icon_val ) : 'fas fa-link';
+                                $icon_label = isset( $icon_options[ $icon_val ] ) ? $icon_options[ $icon_val ] : __( 'Plattform wählen', 'easy-store-info' );
                             ?>
                             <div class="esi-social-row">
-                                <div class="esi-social-icon-list" role="listbox" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
-                                    <?php foreach ( $icon_options as $opt_key => $opt_label ) :
-                                        $fa_class = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
-                                        $is_selected = $icon_val === $opt_key;
-                                    ?>
-                                    <button type="button" class="esi-social-icon-btn<?php echo $is_selected ? ' is-selected' : ''; ?>" data-icon="<?php echo esc_attr( $opt_key ); ?>" title="<?php echo esc_attr( $opt_label ); ?>" aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>">
+                                <div class="esi-social-icon-dropdown-wrap">
+                                    <button type="button" class="esi-social-icon-trigger button" aria-haspopup="listbox" aria-expanded="false" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
                                         <i class="<?php echo esc_attr( $fa_class ); ?>" aria-hidden="true"></i>
+                                        <span class="esi-social-icon-label"><?php echo esc_html( $icon_label ); ?></span>
+                                        <i class="fas fa-chevron-down esi-dropdown-arrow" aria-hidden="true"></i>
                                     </button>
-                                    <?php endforeach; ?>
+                                    <div class="esi-social-icon-dropdown" role="listbox" hidden>
+                                        <?php foreach ( $icon_options as $opt_key => $opt_label ) :
+                                            $opt_fa = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
+                                            $is_selected = $icon_val === $opt_key;
+                                        ?>
+                                        <button type="button" class="esi-social-icon-option<?php echo $is_selected ? ' is-selected' : ''; ?>" role="option" data-icon="<?php echo esc_attr( $opt_key ); ?>" aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>">
+                                            <i class="<?php echo esc_attr( $opt_fa ); ?>" aria-hidden="true"></i>
+                                            <?php echo esc_html( $opt_label ); ?>
+                                        </button>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </div>
                                 <input type="hidden" class="esi-social-icon-value" value="<?php echo esc_attr( $icon_val ); ?>" />
                                 <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
