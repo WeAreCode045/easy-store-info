@@ -102,6 +102,7 @@ final class Easy_Store_Info {
 		add_shortcode( 'esi_about_text', array( $this, 'shortcode_about_text' ) );
 		add_shortcode( 'esi_payment_info', array( $this, 'shortcode_payment_info' ) );
 		add_shortcode( 'esi_footer_text', array( $this, 'shortcode_footer_text' ) );
+		add_shortcode( 'esi_address', array( $this, 'shortcode_address' ) );
 	}
 
 	/**
@@ -223,6 +224,18 @@ final class Easy_Store_Info {
 			return '';
 		}
 		return '<div class="esi-footer-text">' . $content . '</div>';
+	}
+
+	/**
+	 * Shortcode: store address
+	 */
+	public function shortcode_address( $atts = array() ) {
+		$address = get_option( 'esi_store_address', '' );
+		if ( '' === (string) $address ) {
+			return '';
+		}
+		$address = nl2br( esc_html( $address ) );
+		return '<span class="esi-address">' . $address . '</span>';
 	}
 
 	/**
