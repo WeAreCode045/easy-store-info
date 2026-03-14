@@ -35,11 +35,17 @@
 
 /* General info tab - two column layout */
 .esi-general-form .esi-general-two-col{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
-.esi-general-left{flex:1;min-width:280px}
+.esi-general-left{flex:1;min-width:320px}
+.esi-general-right{flex:0 0 340px;min-width:280px;display:flex;flex-direction:column;gap:16px}
 .esi-container{margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:8px;border:1px solid rgba(0,0,0,.08)}
 .esi-container .esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
+/* Store info container - 2 columns: left title/subtitle, right address + email/phone */
+.esi-container-store-info .esi-store-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:680px){.esi-container-store-info .esi-store-info-grid{grid-template-columns:1fr}}
+.esi-store-info-left,.esi-store-info-right{display:flex;flex-direction:column;gap:12px}
+.esi-store-info-right .esi-contact-row{display:flex;gap:12px;flex-wrap:wrap}
+.esi-store-info-right .esi-contact-row .esi-form-section{flex:1;min-width:120px}
 .esi-left-container{margin-top:20px;padding-top:16px;border-top:1px solid rgba(0,0,0,.08)}
-.esi-general-right{flex:1;min-width:280px;max-width:420px}
 .esi-general-form .esi-form-section{margin-bottom:20px}
 .esi-general-form .esi-form-section label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .esi-general-form .esi-input-wide{width:100%;max-width:100%;padding:8px 10px;font-size:14px}
@@ -69,11 +75,15 @@
 .esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
 .esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
 .esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06)}
-/* Right column: save button at top */
-.esi-right-save-wrap{margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.esi-right-save-wrap .esi-general-message{margin:0}
-/* Right column containers */
-.esi-general-right{display:flex;flex-direction:column;gap:16px}
+/* Header save button */
+.esi-header-save-wrap{margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.esi-header-save-wrap .esi-general-message{margin:0}
+/* Right column: welcome, intro, opening hours, social links */
+.esi-right-block.esi-welcome-intro{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
+.esi-right-block .esi-welcome-msg{margin:0 0 8px;font-size:15px;font-weight:600}
+.esi-right-block .esi-intro-text{margin:0;font-size:13px;color:#555;line-height:1.5}
+.esi-right-block .esi-intro-text p{margin:0 0 6px}
+.esi-right-block .esi-intro-text p:last-child{margin-bottom:0}
 .esi-right-container{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
 .esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
 .esi-right-container .esi-form-section{margin-bottom:12px}
