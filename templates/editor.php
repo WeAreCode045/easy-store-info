@@ -82,6 +82,37 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <?php wp_editor( $footer, 'esi_footer_text', array_merge( $editor_settings, array( 'textarea_name' => 'esi_footer_text' ) ) ); ?>
                         </div>
                     </div>
+                    <div class="esi-left-container esi-container-social-links">
+                        <h4 class="esi-container-title"><?php esc_html_e( 'Social-Media-Links', 'easy-store-info' ); ?></h4>
+                        <div class="esi-social-links" id="esi-social-links">
+                            <?php
+                            $icon_options = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_options() : array();
+                            foreach ( $social_links as $idx => $link ) :
+                                $icon_val = $link['icon'] ?? '';
+                            ?>
+                            <div class="esi-social-row">
+                                <div class="esi-social-row-top">
+                                    <div class="esi-social-icon-list" role="listbox" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
+                                        <?php foreach ( $icon_options as $opt_key => $opt_label ) :
+                                            $fa_class = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
+                                            $is_selected = $icon_val === $opt_key;
+                                        ?>
+                                        <button type="button" class="esi-social-icon-btn<?php echo $is_selected ? ' is-selected' : ''; ?>" data-icon="<?php echo esc_attr( $opt_key ); ?>" title="<?php echo esc_attr( $opt_label ); ?>" aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>">
+                                            <i class="<?php echo esc_attr( $fa_class ); ?>" aria-hidden="true"></i>
+                                        </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Entfernen', 'easy-store-info' ); ?>">−</button>
+                                </div>
+                                <input type="hidden" class="esi-social-icon-value" value="<?php echo esc_attr( $icon_val ); ?>" />
+                                <div class="esi-social-url-wrap">
+                                    <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Link hinzufügen', 'easy-store-info' ); ?></button>
+                    </div>
                 </div>
                 <div class="esi-general-right">
                     <div class="esi-right-save-wrap">
@@ -151,37 +182,6 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <label for="esi_contact_email"><?php esc_html_e( 'E-Mail-Adresse', 'easy-store-info' ); ?></label>
                             <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
                         </div>
-                    </div>
-                    <div class="esi-right-container esi-container-social-links">
-                        <h4 class="esi-container-title"><?php esc_html_e( 'Social-Media-Links', 'easy-store-info' ); ?></h4>
-                        <div class="esi-social-links" id="esi-social-links">
-                            <?php
-                            $icon_options = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_options() : array();
-                            foreach ( $social_links as $idx => $link ) :
-                                $icon_val = $link['icon'] ?? '';
-                            ?>
-                            <div class="esi-social-row">
-                                <div class="esi-social-row-top">
-                                    <div class="esi-social-icon-list" role="listbox" aria-label="<?php esc_attr_e( 'Plattform-Symbol wählen', 'easy-store-info' ); ?>">
-                                        <?php foreach ( $icon_options as $opt_key => $opt_label ) :
-                                            $fa_class = class_exists( 'Easy_Store_Info' ) ? Easy_Store_Info::get_social_icon_class( $opt_key ) : 'fas fa-link';
-                                            $is_selected = $icon_val === $opt_key;
-                                        ?>
-                                        <button type="button" class="esi-social-icon-btn<?php echo $is_selected ? ' is-selected' : ''; ?>" data-icon="<?php echo esc_attr( $opt_key ); ?>" title="<?php echo esc_attr( $opt_label ); ?>" aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>">
-                                            <i class="<?php echo esc_attr( $fa_class ); ?>" aria-hidden="true"></i>
-                                        </button>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <button type="button" class="esi-social-remove button" aria-label="<?php esc_attr_e( 'Entfernen', 'easy-store-info' ); ?>">−</button>
-                                </div>
-                                <input type="hidden" class="esi-social-icon-value" value="<?php echo esc_attr( $icon_val ); ?>" />
-                                <div class="esi-social-url-wrap">
-                                    <input type="url" class="esi-social-url" placeholder="https://..." value="<?php echo esc_url( $link['url'] ?? '' ); ?>" />
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-                        <button type="button" class="esi-social-add button button-secondary"><?php esc_html_e( '+ Link hinzufügen', 'easy-store-info' ); ?></button>
                     </div>
                 </div>
             </div>
