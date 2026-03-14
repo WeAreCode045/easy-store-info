@@ -10,12 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="esi-media-grid esi-grid-<?php echo esc_attr( $layout ); ?>">
     <?php foreach ( $grid as $idx => $att_id ) : ?>
         <div class="esi-media-item" data-index="<?php echo esc_attr( $idx ); ?>">
-            <?php if ( ! empty( $editor ) ) : ?>
+            <?php if ( ! empty( $editor ) && $att_id && get_post( $att_id ) ) : ?>
                 <div class="esi-media-actions">
-                    <button type="button" class="esi-drag-handle" aria-label="<?php esc_attr_e( 'Zum Umsortieren ziehen', 'easy-store-info' ); ?>">☰</button>
-                    <?php if ( $att_id && get_post( $att_id ) ) : ?>
                     <button class="esi-remove-media button" type="button" aria-label="<?php esc_attr_e( 'Bild entfernen', 'easy-store-info' ); ?>"><i class="fas fa-trash" aria-hidden="true"></i></button>
-                    <?php endif; ?>
                 </div>
                 <?php if ( $att_id && get_post( $att_id ) ) :
                     $url = wp_get_attachment_url( $att_id );
