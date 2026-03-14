@@ -44,14 +44,6 @@ jQuery(function ($) {
         $('.esi-content-panel').prop('hidden', true);
         $('.esi-content-' + content).prop('hidden', false);
     });
-    // General info sub-tabs (Texte | Öffnungszeiten & Kontakt)
-    $(document).on('click', '.esi-general-subtab', function () {
-        var subtab = $(this).data('subtab');
-        $('.esi-general-subtab').removeClass('esi-general-subtab-active').attr('aria-selected', 'false');
-        $(this).addClass('esi-general-subtab-active').attr('aria-selected', 'true');
-        $('.esi-general-subpanel').prop('hidden', true);
-        $('.esi-general-subpanel-' + subtab).prop('hidden', false);
-    });
 
     // General info form
     function getWysiwygContent(id) {

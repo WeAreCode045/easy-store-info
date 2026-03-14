@@ -34,12 +34,6 @@
 .esi-sidebar-actions .esi-save-button{width:100%;display:block}
 
 /* General info tab - two column layout */
-.esi-general-subtabs{display:flex;gap:8px;margin-bottom:20px}
-.esi-general-subtab{padding:8px 16px;border:none;background:#000;border-radius:4px;font-size:13px;cursor:pointer;color:#fff}
-.esi-general-subtab:hover{background:#b00;color:#fff}
-.esi-general-subtab-active{background:#000;color:#fff}
-.esi-general-subtab-active:hover{background:#000;color:#fff}
-.esi-general-hours-col{display:flex;flex-direction:column;gap:16px;max-width:420px}
 .esi-general-form .esi-general-two-col{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
 .esi-general-left{flex:1;min-width:280px}
 .esi-left-container{margin-top:20px;padding-top:16px;border-top:1px solid rgba(0,0,0,.08)}
@@ -69,12 +63,13 @@
 .esi-social-add{margin-top:8px}
 .esi-general-form .wp-editor-container{border:1px solid #ddd;border-radius:4px}
 /* Content tabs (About / Payment / Footer) */
-.esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:6px;margin-bottom:10px}
-.esi-content-tabs .esi-content-tab{padding:8px 14px;border:none;background:#000;border-radius:4px;font-size:13px;cursor:pointer;color:#fff}
-.esi-content-tabs .esi-content-tab:hover{background:#b00;color:#fff}
-.esi-content-tabs .esi-content-tab-active{background:#000;color:#fff}
-.esi-content-tabs .esi-content-tab-active:hover{background:#000;color:#fff}
-.esi-content-panel{margin-top:0}
+.esi-content-tabs-wrap{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.08)}
+.esi-content-tabs-wrap .esi-content-tabs{display:flex;gap:4px;margin-bottom:12px}
+.esi-content-tabs .esi-content-tab{padding:8px 14px;border:1px solid rgba(0,0,0,.15);background:#e9ecef;border-radius:4px;font-size:13px;cursor:pointer;color:#333;transition:background .2s,border-color .2s}
+.esi-content-tabs .esi-content-tab:hover{background:#dee2e6;color:#333}
+.esi-content-tabs .esi-content-tab-active{background:#000;border-color:#000;color:#fff}
+.esi-content-tabs .esi-content-tab-active:hover{background:#000;border-color:#000;color:#fff}
+.esi-content-panel{margin-top:0;background:#fff;border-radius:4px;padding:12px;border:1px solid rgba(0,0,0,.06)}
 /* Right column: save button at top */
 .esi-right-save-wrap{margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .esi-right-save-wrap .esi-general-message{margin:0}
