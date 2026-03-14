@@ -78,6 +78,8 @@
 .esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
 .esi-right-container .esi-form-section{margin-bottom:12px}
 .esi-right-container .esi-form-section:last-child{margin-bottom:0}
+.esi-contact-row{display:flex;gap:16px;flex-wrap:wrap}
+.esi-contact-row .esi-form-section{flex:1;min-width:120px}
 .esi-right-container .esi-oh-title{margin:0 0 10px}
 .esi-right-container .esi-social-links-wrap .esi-form-section{margin:0}
 .esi-right-container .esi-opening-hours-editor{border:none;padding:0;background:transparent}

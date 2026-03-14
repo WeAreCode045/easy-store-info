@@ -113,9 +113,12 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                     </div>
                 </div>
                 <div class="esi-general-right">
-                    <div class="esi-right-save-wrap">
-                        <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
-                        <p class="esi-general-message" aria-live="polite"></p>
+                    <div class="esi-right-container esi-container-store-address">
+                        <h4 class="esi-container-title"><?php esc_html_e( 'Geschäftsadresse', 'easy-store-info' ); ?></h4>
+                        <div class="esi-form-section">
+                            <label for="esi_store_address"><?php esc_html_e( 'Adresse', 'easy-store-info' ); ?></label>
+                            <input type="text" id="esi_store_address" name="esi_store_address" class="esi-input-wide esi-address-autocomplete" value="<?php echo esc_attr( $store_address ); ?>" placeholder="<?php esc_attr_e( 'Adresse eingeben…', 'easy-store-info' ); ?>" autocomplete="off" />
+                        </div>
                     </div>
                     <div class="esi-right-container esi-container-opening-hours">
                         <h4 class="esi-oh-title"><?php esc_html_e( 'Öffnungszeiten', 'easy-store-info' ); ?></h4>
@@ -163,23 +166,22 @@ $editor_settings = array( 'textarea_rows' => 6, 'media_buttons' => true, 'teeny'
                             <?php endforeach; ?>
                         </div>
                     </div>
-                    <div class="esi-right-container esi-container-store-address">
-                        <h4 class="esi-container-title"><?php esc_html_e( 'Geschäftsadresse', 'easy-store-info' ); ?></h4>
-                        <div class="esi-form-section">
-                            <label for="esi_store_address"><?php esc_html_e( 'Adresse', 'easy-store-info' ); ?></label>
-                            <input type="text" id="esi_store_address" name="esi_store_address" class="esi-input-wide esi-address-autocomplete" value="<?php echo esc_attr( $store_address ); ?>" placeholder="<?php esc_attr_e( 'Adresse eingeben…', 'easy-store-info' ); ?>" autocomplete="off" />
-                        </div>
-                    </div>
                     <div class="esi-right-container esi-container-contact-details">
                         <h4 class="esi-container-title"><?php esc_html_e( 'Kontaktdaten', 'easy-store-info' ); ?></h4>
-                        <div class="esi-form-section">
-                            <label for="esi_contact_phone"><?php esc_html_e( 'Telefonnummer', 'easy-store-info' ); ?></label>
-                            <input type="tel" id="esi_contact_phone" name="esi_contact_phone" value="<?php echo esc_attr( $contact_phone ); ?>" class="esi-input-wide" />
+                        <div class="esi-contact-row">
+                            <div class="esi-form-section">
+                                <label for="esi_contact_phone"><?php esc_html_e( 'Telefonnummer', 'easy-store-info' ); ?></label>
+                                <input type="tel" id="esi_contact_phone" name="esi_contact_phone" value="<?php echo esc_attr( $contact_phone ); ?>" class="esi-input-wide" />
+                            </div>
+                            <div class="esi-form-section">
+                                <label for="esi_contact_email"><?php esc_html_e( 'E-Mail-Adresse', 'easy-store-info' ); ?></label>
+                                <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
+                            </div>
                         </div>
-                        <div class="esi-form-section">
-                            <label for="esi_contact_email"><?php esc_html_e( 'E-Mail-Adresse', 'easy-store-info' ); ?></label>
-                            <input type="email" id="esi_contact_email" name="esi_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="esi-input-wide" />
-                        </div>
+                    </div>
+                    <div class="esi-right-save-wrap">
+                        <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
+                        <p class="esi-general-message" aria-live="polite"></p>
                     </div>
                 </div>
             </div>
