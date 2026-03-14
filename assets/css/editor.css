@@ -93,11 +93,13 @@
 .esi-welcome-save-wrap{margin-top:14px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
 .esi-welcome-save-wrap .esi-general-message{margin:0}
 /* Right column: welcome, intro, opening hours, social links */
-.esi-right-block.esi-welcome-intro{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
-.esi-right-block .esi-welcome-msg{margin:0 0 8px;font-size:15px;font-weight:600}
-.esi-right-block .esi-intro-text{margin:0;font-size:13px;color:#555;line-height:1.5}
+.esi-right-block.esi-welcome-intro{background:#b00;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.08)}
+.esi-right-block .esi-welcome-msg{margin:0 0 8px;font-size:15px;font-weight:600;color:#fff}
+.esi-right-block .esi-intro-text{margin:0;font-size:13px;color:#fff;line-height:1.5}
 .esi-right-block .esi-intro-text p{margin:0 0 6px}
 .esi-right-block .esi-intro-text p:last-child{margin-bottom:0}
+.esi-right-block .esi-tab-link{color:#fff;text-decoration:underline}
+.esi-right-block .esi-tab-link:hover{color:#fff;opacity:.9}
 .esi-right-container{background:#f8f9fa;border-radius:8px;padding:16px;border:1px solid rgba(0,0,0,.06)}
 .esi-container-title{margin:0 0 12px;font-size:14px;font-weight:600}
 .esi-right-container .esi-form-section{margin-bottom:12px}
@@ -109,11 +111,11 @@
 .esi-right-container .esi-opening-hours-editor{border:none;padding:0;background:transparent}
 /* Google Places preview */
 .esi-google-preview-wrap{margin-bottom:12px}
-.esi-google-preview{margin-bottom:8px;padding:10px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;font-size:13px;max-height:200px;overflow-y:auto}
+.esi-google-preview{margin-bottom:8px;padding:8px 10px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;font-size:11px;line-height:1.4;overflow:visible}
 .esi-google-preview-list{list-style:none;margin:0;padding:0}
-.esi-google-preview-list li{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.esi-google-preview-list li{padding:2px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:11px}
 .esi-google-preview-list li:last-child{border-bottom:none}
-.esi-google-preview-pre,.esi-google-preview-raw{white-space:pre-wrap;font-size:12px;margin:0}
+.esi-google-preview-pre,.esi-google-preview-raw{white-space:pre-wrap;font-size:10px;margin:0;line-height:1.35}
 .esi-google-preview-loading{color:#666;margin:0}
 .esi-google-preview-error{color:#b00;margin:0}
 .esi-google-preview-refresh{margin-top:4px}
@@ -128,11 +130,12 @@
 .esi-intro-text p:last-child{margin-bottom:0}
 .esi-tab-link{color:#0b66b2;text-decoration:underline;cursor:pointer}
 .esi-tab-link:hover{color:#095a9e}
-.esi-editor-tabs{display:flex;gap:8px}
-.esi-tab{padding:8px 16px;border:none;background:#000;border-radius:4px;font-size:13px;cursor:pointer;color:#fff}
-.esi-tab:hover{background:#b00;color:#fff}
-.esi-tab-active{background:#000;color:#fff}
-.esi-tab-active:hover{background:#000;color:#fff}
+.esi-editor-tabs{display:flex;gap:16px}
+.esi-tab{padding:6px 0;border:none;background:transparent;border-radius:0;font-size:14px;cursor:pointer;color:#000}
+.esi-tab i{margin-right:6px}
+.esi-tab:hover{background:transparent;color:#b00}
+.esi-tab-active{background:transparent;color:#b00}
+.esi-tab-active:hover{background:transparent;color:#b00}
 
 /* Accounts panel */
 .esi-accounts-panel{max-width:360px;padding:20px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,.1);box-shadow:0 2px 8px rgba(0,0,0,.06)}

@@ -34,9 +34,9 @@ $editor_settings = array( 'textarea_rows' => 10, 'media_buttons' => true, 'teeny
 <div class="esi-settings-wrap esi-frontend-editor">
     <header class="esi-editor-header">
         <nav class="esi-editor-tabs" role="tablist">
-            <button type="button" class="esi-tab esi-tab-active" role="tab" data-tab="general" aria-selected="true"><?php esc_html_e( 'Allgemeine Infos', 'easy-store-info' ); ?></button>
-            <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><?php esc_html_e( 'Mediengalerie', 'easy-store-info' ); ?></button>
-            <button type="button" class="esi-tab" role="tab" data-tab="account" aria-selected="false"><?php esc_html_e( 'Konto', 'easy-store-info' ); ?></button>
+            <button type="button" class="esi-tab esi-tab-active" role="tab" data-tab="general" aria-selected="true"><i class="fas fa-store" aria-hidden="true"></i> <?php esc_html_e( 'Allgemeine Infos', 'easy-store-info' ); ?></button>
+            <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><i class="fas fa-images" aria-hidden="true"></i> <?php esc_html_e( 'Mediengalerie', 'easy-store-info' ); ?></button>
+            <button type="button" class="esi-tab" role="tab" data-tab="account" aria-selected="false"><i class="fas fa-user" aria-hidden="true"></i> <?php esc_html_e( 'Konto', 'easy-store-info' ); ?></button>
         </nav>
         <div class="esi-header-save-wrap">
             <button type="submit" form="esi-general-info-form" class="button button-primary"><?php esc_html_e( 'Allgemeine Infos speichern', 'easy-store-info' ); ?></button>
