@@ -36,7 +36,6 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
         <nav class="esi-editor-tabs" role="tablist">
             <button type="button" class="esi-tab esi-tab-active" role="tab" data-tab="general" aria-selected="true"><i class="fas fa-store" aria-hidden="true"></i> <?php esc_html_e( 'Allgemeine Infos', 'easy-store-info' ); ?></button>
             <button type="button" class="esi-tab" role="tab" data-tab="media" aria-selected="false"><i class="fas fa-images" aria-hidden="true"></i> <?php esc_html_e( 'Mediengalerie', 'easy-store-info' ); ?></button>
-            <button type="button" class="esi-tab" role="tab" data-tab="account" aria-selected="false"><i class="fas fa-user" aria-hidden="true"></i> <?php esc_html_e( 'Konto', 'easy-store-info' ); ?></button>
         </nav>
     </header>
 
