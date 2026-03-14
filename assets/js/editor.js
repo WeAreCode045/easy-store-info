@@ -622,8 +622,11 @@ jQuery(function ($) {
                         $target.find('.esi-media-empty').replaceWith($thumb);
                     }
                     $target.find('input[type=hidden]').val(attId);
-                    var $btn = $target.find('.esi-add-media');
-                    if ($btn.length) { $btn.replaceWith(removeBtnHtml); }
+                    var $addBtn = $target.find('.esi-add-media');
+                    if ($addBtn.length) {
+                        $addBtn.remove();
+                        $target.find('.esi-media-actions').append(removeBtnHtml);
+                    }
                     $overlay.remove();
                     debouncedPersist();
                 } else {
@@ -657,7 +660,7 @@ jQuery(function ($) {
         var idx = $grid.find('.esi-media-item').length;
         var $item = $("<div class='esi-media-item' data-index='" + idx + "'></div>");
         var dragLbl = (typeof esiSettings !== 'undefined' && esiSettings.drag_to_reorder) ? esiSettings.drag_to_reorder : 'Zum Umsortieren ziehen';
-        $item.append('<button type="button" class="esi-drag-handle" aria-label="' + dragLbl + '">☰</button>');
+        $item.append('<div class="esi-media-actions"><button type="button" class="esi-drag-handle" aria-label="' + dragLbl + '">☰</button></div>');
         $item.append('<div class="esi-media-empty"></div>');
         $item.append('<input type="hidden" name="esi_media_grid[]" value="0" />');
         $item.append(addBtnHtml);
@@ -744,7 +747,8 @@ jQuery(function ($) {
                     $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
                     // ensure remove button exists
                     if ($it.find('.esi-remove-media').length === 0) {
-                        $it.find('.esi-add-media').replaceWith(removeBtnHtml);
+                        $it.find('.esi-add-media').remove();
+                        $it.find('.esi-media-actions').append(removeBtnHtml);
                     }
                 } else {
                     // empty state
@@ -752,7 +756,8 @@ jQuery(function ($) {
                         $it.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
                     }
                     if ($it.find('.esi-add-media').length === 0) {
-                        $it.find('.esi-remove-media').replaceWith(addBtnHtml);
+                        $it.find('.esi-remove-media').remove();
+                        $it.append(addBtnHtml);
                     }
                 }
             };

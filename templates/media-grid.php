@@ -11,7 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     <?php foreach ( $grid as $idx => $att_id ) : ?>
         <div class="esi-media-item" data-index="<?php echo esc_attr( $idx ); ?>">
             <?php if ( ! empty( $editor ) ) : ?>
-                <button type="button" class="esi-drag-handle" aria-label="<?php esc_attr_e( 'Zum Umsortieren ziehen', 'easy-store-info' ); ?>">☰</button>
+                <div class="esi-media-actions">
+                    <button type="button" class="esi-drag-handle" aria-label="<?php esc_attr_e( 'Zum Umsortieren ziehen', 'easy-store-info' ); ?>">☰</button>
+                    <?php if ( $att_id && get_post( $att_id ) ) : ?>
+                    <button class="esi-remove-media button" type="button" aria-label="<?php esc_attr_e( 'Bild entfernen', 'easy-store-info' ); ?>"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                    <?php endif; ?>
+                </div>
                 <?php if ( $att_id && get_post( $att_id ) ) :
                     $url = wp_get_attachment_url( $att_id );
                     $mime = get_post_mime_type( $att_id );
@@ -28,11 +33,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <?php endif; ?>
                     <?php endif; ?>
                     <input type="hidden" name="esi_media_grid[]" value="<?php echo esc_attr( $att_id ); ?>" />
-                    <button class="esi-remove-media button" type="button" aria-label="<?php esc_attr_e( 'Bild entfernen', 'easy-store-info' ); ?>"><i class="fas fa-trash" aria-hidden="true"></i></button>
                 <?php else : ?>
                     <div class="esi-media-empty"></div>
                     <input type="hidden" name="esi_media_grid[]" value="0" />
-                    <button class="esi-add-media button" type="button" aria-label="Add image"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="esi-add-media button" type="button" aria-label="<?php esc_attr_e( 'Bild hinzufügen', 'easy-store-info' ); ?>"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="#0b66b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <?php endif; ?>
             <?php else : ?>
                 <?php if ( $att_id && get_post( $att_id ) ) :

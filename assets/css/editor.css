@@ -1,8 +1,11 @@
 .esi-frontend-editor .esi-editor-wrap{display:flex;gap:16px;align-items:flex-start}.esi-editor-wrap .esi-media-grid{flex:1}.esi-editor-sidebar{width:320px;background:#fff;padding:16px;border:1px solid #eee;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.04)}.esi-media-item.selected{outline:2px solid #0b66b2}.esi-dropzone{border:2px dashed #ddd;padding:18px;border-radius:6px;text-align:center;cursor:pointer;background:#fafafa}.esi-dropzone.dragover{background:#eef6ff;border-color:#8fbfff}.esi-upload-overlay{position:absolute;inset:0;background:rgba(255,255,255,0.85);display:flex;align-items:center;justify-content:center;flex-direction:column}.esi-upload-progress{width:70%;height:8px;background:#eee;border-radius:8px;overflow:hidden;margin-top:8px}.esi-upload-progress i{display:block;height:100%;background:#3b82f6;width:0}.esi-media-item{position:relative}
-.esi-media-item .esi-remove-media{position:absolute!important;top:6px!important;right:6px!important;left:auto!important;width:auto!important;min-width:auto!important;z-index:10;margin:0;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,.9)!important;color:#b00!important;border:1px solid rgba(0,0,0,.15);cursor:pointer}
-.esi-media-item .esi-remove-media:hover{background:#fff;color:#c00}
-.esi-media-item .esi-remove-media i{font-size:14px}
-.esi-media-item .esi-drag-handle{position:absolute;top:6px;left:6px;z-index:10}
+.esi-media-item{overflow:hidden}
+.esi-media-item .esi-media-actions{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
+.esi-media-item .esi-media-actions .esi-drag-handle,.esi-media-item .esi-media-actions .esi-remove-media{pointer-events:auto}
+.esi-media-item:hover .esi-media-actions{opacity:1}
+.esi-media-item .esi-media-actions .esi-drag-handle,.esi-media-item .esi-media-actions .esi-remove-media{position:relative;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.95)!important;color:#b00!important;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:background .2s,color .2s}
+.esi-media-item .esi-remove-media:hover,.esi-media-item .esi-drag-handle:hover{background:#fff!important;color:#c00!important}
+.esi-media-item .esi-remove-media i,.esi-media-item .esi-drag-handle{font-size:16px}
 .esi-media-item.dragging{opacity:.6}
 .esi-media-item.drag-over{outline:2px solid #0b66b2;outline-offset:2px}
 .esi-thumb{width:100%;height:100%;object-fit:cover;display:block}.esi-media-empty{height:80px;background:#f6f6f6;border:1px dashed #eee;border-radius:4px}.esi-drag-handle{cursor:grab;border:none;background:transparent;padding:6px}
@@ -140,7 +143,7 @@
 .esi-editor-tabs{display:flex;gap:16px}
 .esi-tab{padding:6px 0;border:none;background:none!important;border-radius:0;font-size:14px;cursor:pointer;color:#000}
 .esi-tab i{margin-right:6px}
-.esi-tab:hover{background:transparent;color:#b00}
+.esi-tab:hover{background:none!important;color:#b00!important}
 .esi-tab-active{background:transparent;color:#b00}
 .esi-tab-active:hover{background:transparent;color:#b00}
 
@@ -159,4 +162,4 @@
 /* Frontend editor: button styles */
 .esi-frontend-editor .button,.esi-frontend-editor .button-primary,.esi-frontend-editor .button-secondary,.esi-frontend-editor .button-small{background:#b00!important;border-color:#b00!important;color:#fff!important;font-size:12px!important;font-weight:700!important}
 .esi-frontend-editor .button:hover,.esi-frontend-editor .button-primary:hover,.esi-frontend-editor .button-secondary:hover,.esi-frontend-editor .button-small:hover{background:#444!important;border-color:#444!important;color:#fff!important}
-.esi-media-item .esi-remove-media,.esi-media-item .esi-remove-media:hover{background:rgba(255,255,255,.9)!important;border-color:rgba(0,0,0,.15)!important;color:#b00!important;width:auto!important;min-width:auto!important}
+.esi-media-item .esi-media-actions .esi-remove-media,.esi-media-item .esi-media-actions .esi-remove-media:hover{background:rgba(255,255,255,.95)!important;border:none!important;color:#b00!important}
