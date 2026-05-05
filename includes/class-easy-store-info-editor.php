@@ -39,7 +39,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
             // frontend display script
             wp_enqueue_script( 'easy-store-info-frontend', $base . '/assets/js/frontend.js', array( 'jquery' ), '1.0.0', false );
             // register editor script (not enqueued globally)
-            wp_register_script( 'easy-store-info-editor', $base . '/assets/js/editor.js', array( 'jquery' ), '1.0.0', false );
+            wp_register_script( 'easy-store-info-editor', $base . '/assets/js/editor.js', array( 'jquery', 'media-views' ), '1.0.0', true );
             // localize settings for both frontend and editor scripts
             $icon_opts = array();
             $icon_classes = array();

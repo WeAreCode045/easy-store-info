@@ -185,6 +185,7 @@ jQuery(function ($) {
 
     // Settings page: media modal and save
     var frame;
+    var suppressRasterTileClick = false;
     var addImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.add_image) ? esiSettings.add_image : 'Bild hinzufügen';
     var remImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.remove_image) ? esiSettings.remove_image : 'Bild entfernen';
     var addBtnHtml = '<button class="esi-add-media button" type="button" aria-label="' + addImgLbl + '">' +
@@ -193,37 +194,8 @@ jQuery(function ($) {
     var removeBtnHtml = '<button class="esi-remove-media button" type="button" aria-label="' + remImgLbl + '"><i class="fas fa-trash" aria-hidden="true"></i></button>';
     $(document).on('click', '.esi-add-media', function (e) {
         e.preventDefault();
-        var $btn = $(this);
-        var $item = $btn.closest('.esi-media-item');
-            if (frame) {
-                try { frame.off('select'); } catch (e) { }
-                frame.on('select', function () {
-                    var attachment = frame.state().get('selection').first().toJSON();
-                    $item.find('input[type=hidden]').val(attachment.id);
-                    var img = attachment.url || (attachment.sizes && attachment.sizes.full ? attachment.sizes.full.url : '');
-                    var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
-                    $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
-                    $item.find('.esi-media-empty').replaceWith($thumb);
-                    $btn.remove();
-                    $item.prepend('<div class="esi-media-actions">' + removeBtnHtml + '</div>');
-                });
-                frame.open();
-                return;
-            }
-            var selMedia = (typeof esiSettings !== 'undefined' && esiSettings.select_media) ? esiSettings.select_media : 'Medien auswählen';
-            var selBtn = (typeof esiSettings !== 'undefined' && esiSettings.select) ? esiSettings.select : 'Auswählen';
-            frame = wp.media({ title: selMedia, button: { text: selBtn }, multiple: false });
-            frame.on('select', function () {
-                var attachment = frame.state().get('selection').first().toJSON();
-                $item.find('input[type=hidden]').val(attachment.id);
-                var img = attachment.url || (attachment.sizes && attachment.sizes.full ? attachment.sizes.full.url : '');
-                var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + img + '" /></div>');
-                $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
-                $item.find('.esi-media-empty').replaceWith($thumb);
-                $btn.remove();
-                $item.prepend('<div class="esi-media-actions">' + removeBtnHtml + '</div>');
-            });
-            frame.open();
+        e.stopPropagation();
+        openWpMediaForItem($(this).closest('.esi-media-item'));
     });
 
     $(document).on('click', '.esi-remove-media', function (e) {
@@ -285,6 +257,7 @@ jQuery(function ($) {
             var $dragging = dragSrcEl ? $(dragSrcEl) : $();
             if ($dragging.length && $dragging[0] !== $target[0]) {
                 swapMediaItems($dragging, $target);
+                suppressRasterTileClick = true;
                 persistGridOrder();
             }
         });
@@ -340,6 +313,7 @@ jQuery(function ($) {
             $('.esi-media-item').removeClass('drag-over dragging');
             if ($targetItem.length && $dragging.length && $targetItem.get(0) !== $dragging.get(0)) {
                 swapMediaItems($dragging, $targetItem);
+                suppressRasterTileClick = true;
                 debouncedPersist();
             }
             dragSrcEl = null;
@@ -514,9 +488,16 @@ jQuery(function ($) {
 
     $(document).on('click', '.esi-media-item', function (e) {
         if ($(e.target).is('button') || $(e.target).is('input') || $(e.target).closest('button').length) return;
+        if (suppressRasterTileClick) {
+            suppressRasterTileClick = false;
+            return;
+        }
         $('.esi-media-item').removeClass('selected');
         $selectedSlot = $(this);
         $selectedSlot.addClass('selected');
+        if (typeof wp !== 'undefined' && wp.media) {
+            openWpMediaForItem($selectedSlot);
+        }
     });
 
     // On init: generate thumbnails for video slots that exposed data-video-src
@@ -759,6 +740,51 @@ jQuery(function ($) {
     }
 
     var debouncedPersist = debounce(function () { persistGridOrder(); }, 700);
+
+    function applyAttachmentToMediaItem($item, attachment) {
+        var mime = (attachment.mime || '').toString();
+        var type = (attachment.type || '').toString();
+        var isVideo = mime.indexOf('video/') === 0 || type === 'video';
+        var url = attachment.url || (attachment.sizes && attachment.sizes.full ? attachment.sizes.full.url : '') || '';
+        $item.find('input[type=hidden]').val(attachment.id);
+        $item.find('.esi-thumb-wrap').remove();
+        $item.find('.esi-media-empty').remove();
+        var $hidden = $item.find('input[type=hidden]');
+        if (isVideo && url) {
+            var $empty = $('<div class="esi-media-empty"></div>');
+            $hidden.before($empty);
+            generateVideoThumbnail($empty, url);
+        } else {
+            var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + url + '" alt="" /></div>');
+            $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
+            $hidden.before($thumb);
+        }
+        $item.find('.esi-add-media').remove();
+        $item.find('.esi-media-actions').remove();
+        $item.prepend('<div class="esi-media-actions">' + removeBtnHtml + '</div>');
+        debouncedPersist();
+    }
+
+    function openWpMediaForItem($item) {
+        if (typeof wp === 'undefined' || !wp.media || !$item || !$item.length) {
+            return;
+        }
+        var selMedia = (typeof esiSettings !== 'undefined' && esiSettings.select_media) ? esiSettings.select_media : 'Medien auswählen';
+        var selBtn = (typeof esiSettings !== 'undefined' && esiSettings.select) ? esiSettings.select : 'Auswählen';
+        function onSelect() {
+            var attachment = frame.state().get('selection').first().toJSON();
+            applyAttachmentToMediaItem($item, attachment);
+        }
+        if (frame) {
+            try { frame.off('select'); } catch (err) { }
+            frame.on('select', onSelect);
+            frame.open();
+            return;
+        }
+        frame = wp.media({ title: selMedia, button: { text: selBtn }, multiple: false });
+        frame.on('select', onSelect);
+        frame.open();
+    }
 
     // When layout select changes, immediately adjust DOM grid to match new slot count
     $(document).on('change', '#esi_grid_layout', function () {
