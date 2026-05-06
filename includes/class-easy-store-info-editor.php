@@ -62,6 +62,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
                 'add_image'       => __( 'Bild hinzufügen', 'easy-store-info' ),
                 'remove_image'    => __( 'Bild entfernen', 'easy-store-info' ),
                 'select_media'    => __( 'Medien auswählen', 'easy-store-info' ),
+                'insert_grid_images' => __( 'Bilder aus Mediathek wählen', 'easy-store-info' ),
                 'select'          => __( 'Auswählen', 'easy-store-info' ),
                 'upload_failed'   => __( 'Upload fehlgeschlagen', 'easy-store-info' ),
                 'retry'           => __( 'Erneut versuchen', 'easy-store-info' ),

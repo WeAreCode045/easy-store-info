@@ -185,6 +185,7 @@ jQuery(function ($) {
 
     // Settings page: media modal and save
     var frame;
+    var bulkInsertFrame;
     var suppressRasterTileClick = false;
     var addImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.add_image) ? esiSettings.add_image : 'Bild hinzufügen';
     var remImgLbl = (typeof esiSettings !== 'undefined' && esiSettings.remove_image) ? esiSettings.remove_image : 'Bild entfernen';
@@ -416,28 +417,28 @@ jQuery(function ($) {
         };
     })();
 
-    var $dzPlaceholder = $('.esi-dropzone-placeholder');
-    if ($dzPlaceholder.length) {
-        var $dz = $('<div class="esi-dropzone" tabindex="0"><div class="esi-dropzone-text">Ziehen Sie Bilder oder Videos hierher oder klicken, um mehrere hochzuladen</div><div class="esi-dropzone-hint">(PNG, JPG, GIF, MP4)</div><div class="esi-dropzone-progress" aria-hidden="true"></div></div>');
-        $dzPlaceholder.append($dz);
-
-        $dz.on('click', function () {
-            var $input = $('<input type="file" accept="image/*,video/*" multiple style="display:none">');
-            $input.on('change', function () { handleFiles(this.files); $input.remove(); });
-            $(document.body).append($input);
-            $input.trigger('click');
-        });
-
-        $dz.on('dragover', function (e) { e.preventDefault(); e.stopPropagation(); $dz.addClass('dragover'); });
-        $dz.on('dragleave drop', function (e) { e.preventDefault(); e.stopPropagation(); $dz.removeClass('dragover'); });
-        $dz.on('drop', function (e) {
-            var dt = e.originalEvent.dataTransfer;
-            if (!dt || !dt.files) return;
-            handleFiles(dt.files);
-        });
-    }
-
     var $selectedSlot = null;
+
+    function getBulkInsertTargets() {
+        var $targets = $();
+        if ($selectedSlot && $selectedSlot.length) {
+            var startIdx = $selectedSlot.index();
+            var $allItems = $('.esi-media-item');
+            var s;
+            for (s = startIdx; s < $allItems.length; s++) {
+                $targets = $targets.add($($allItems.get(s)));
+            }
+            for (s = 0; s < startIdx; s++) {
+                $targets = $targets.add($($allItems.get(s)));
+            }
+        } else {
+            $targets = $('.esi-media-item').filter(function () {
+                var v = $(this).find('input[type=hidden]').val();
+                return !v || v === '0';
+            });
+        }
+        return $targets;
+    }
 
     // Generate a thumbnail image from a video URL and replace the empty slot.
     function generateVideoThumbnail($empty, src) {
@@ -507,115 +508,6 @@ jQuery(function ($) {
         if (src) generateVideoThumbnail($el, src);
     });
 
-    function handleFiles(fileList) {
-        if (!fileList || !fileList.length) return;
-        var files = Array.prototype.slice.call(fileList);
-
-        var $targets = $();
-        if ($selectedSlot && $selectedSlot.length) {
-            var startIdx = $selectedSlot.index();
-            var $allItems = $('.esi-media-item');
-            for (var s = startIdx; s < $allItems.length; s++) { $targets = $targets.add($($allItems.get(s))); }
-            for (var s2 = 0; s2 < startIdx; s2++) { $targets = $targets.add($($allItems.get(s2))); }
-        } else {
-            $targets = $('.esi-media-item').filter(function () { var v = $(this).find('input[type=hidden]').val(); return !v || v === '0'; });
-        }
-
-        if (files.length > $targets.length) {
-            var need = files.length - $targets.length;
-            for (var a = 0; a < need; a++) { $targets = $targets.add(createEmptySlot()); }
-        }
-
-        $dz.addClass('uploading');
-        var uploadIdx = 0;
-        function nextUpload() {
-            if (uploadIdx >= files.length) { $dz.removeClass('uploading'); return; }
-            var file = files[uploadIdx];
-                // Allow images and videos
-                if (!file.type.match('image.*') && !file.type.match('video.*')) { uploadIdx++; nextUpload(); return; }
-            var $target = $($targets.get(uploadIdx));
-            if (!$target || !$target.length) { uploadIdx++; nextUpload(); return; }
-                    var $overlay = $("<div class='esi-upload-overlay'><div class='esi-upload-percent'>0%</div><div class='esi-upload-progress'><i style='width:0%'></i></div></div>");
-                    $target.append($overlay);
-
-                // Show immediate preview for images/videos using local object URL
-                try {
-                    var localSrc = null;
-                    if (file.type.match('image.*')) {
-                        localSrc = URL.createObjectURL(file);
-                        var $empty = $target.find('.esi-media-empty');
-                        if ($empty.length) {
-                            var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + localSrc + '" alt="" /></div>');
-                            $empty.replaceWith($thumb);
-                        }
-                    } else if (file.type.match('video.*')) {
-                        localSrc = URL.createObjectURL(file);
-                        var $emptyV = $target.find('.esi-media-empty');
-                        if ($emptyV.length) {
-                            generateVideoThumbnail($emptyV, localSrc);
-                        }
-                    }
-                    // revoke after a short delay (poster preserved in DOM as data URL)
-                    (function (url) { if (url && url.indexOf('blob:') === 0) { setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 5000); } })(localSrc);
-                } catch (err) {}
-
-            uploadFile(file, function (pct) {
-                $overlay.find('.esi-upload-percent').text(Math.round(pct) + '%');
-                $overlay.find('.esi-upload-progress > i').css('width', Math.round(pct) + '%');
-            }).done(function (res) {
-                var attId = (res && res.id) ? res.id : 0;
-                var src = (res && (res.source_url || res.source_url)) ? (res.source_url || res.source_url) : '';
-                var mime = (res && res.mime_type) ? res.mime_type : (res && res.mime) ? res.mime : '';
-                if (attId && src) {
-                    // if video, attempt to generate a thumbnail from the uploaded video file
-                    if (mime && mime.indexOf && mime.indexOf('video') === 0) {
-                        // ensure we have an empty slot element to replace
-                        var $empty = $target.find('.esi-media-empty');
-                        if ($empty.length) {
-                            generateVideoThumbnail($empty, src);
-                        } else {
-                            var $thumb = $('<div class="esi-thumb-wrap"><video class="esi-thumb" src="' + src + '" muted preload="metadata"></video>');
-                            $target.find('.esi-media-empty').replaceWith($thumb);
-                        }
-                    } else {
-                        var $thumb = $('<div class="esi-thumb-wrap"><img class="esi-thumb" src="' + src + '" alt="" /></div>');
-                        $thumb.find('img').removeAttr('width').removeAttr('height').removeAttr('style').removeAttr('srcset').removeAttr('sizes');
-                        $target.find('.esi-media-empty').replaceWith($thumb);
-                    }
-                    $target.find('input[type=hidden]').val(attId);
-                    var $addBtn = $target.find('.esi-add-media');
-                    if ($addBtn.length) {
-                        $addBtn.remove();
-                        $target.prepend('<div class="esi-media-actions">' + removeBtnHtml + '</div>');
-                    }
-                    $overlay.remove();
-                    debouncedPersist();
-                } else {
-                    showUploadError($overlay, (typeof esiSettings !== 'undefined' && esiSettings.upload_failed) ? esiSettings.upload_failed : 'Upload fehlgeschlagen');
-                }
-            }).fail(function (xhr, status, err) {
-                showUploadError($overlay, (typeof esiSettings !== 'undefined' && esiSettings.upload_failed) ? esiSettings.upload_failed : 'Upload fehlgeschlagen');
-            }).always(function () {
-                uploadIdx++; nextUpload();
-            });
-        }
-        nextUpload();
-    }
-
-    function showUploadError($overlay, msg) {
-        $overlay.empty();
-        var $err = $("<div class='esi-upload-error'></div>").text(msg);
-        var retryTxt = (typeof esiSettings !== 'undefined' && esiSettings.retry) ? esiSettings.retry : 'Erneut versuchen';
-        var $retry = $("<button class='button' type='button'>" + retryTxt + "</button>");
-        $retry.on('click', function () {
-            var $parent = $overlay.closest('.esi-media-item');
-            $overlay.remove();
-            var retryHint = (typeof esiSettings !== 'undefined' && esiSettings.retry_upload_hint) ? esiSettings.retry_upload_hint : 'Bitte versuchen Sie den Upload erneut.';
-            alert(retryHint);
-        });
-        $overlay.append($err).append($retry);
-    }
-
     function createEmptySlot() {
         var $grid = $('.esi-media-grid');
         var idx = $grid.find('.esi-media-item').length;
@@ -626,36 +518,6 @@ jQuery(function ($) {
         $grid.append($item);
         initMediaDragSort();
         return $item;
-    }
-
-    function uploadFile(file, onProgress) {
-        var url = window.location.origin + '/wp-json/wp/v2/media';
-        var fd = new FormData();
-        fd.append('file', file, file.name);
-        return $.ajax({
-            url: url,
-            method: 'POST',
-            data: fd,
-            processData: false,
-            contentType: false,
-            xhr: function () {
-                var xhr = $.ajaxSettings.xhr();
-                if (xhr.upload && typeof onProgress === 'function') {
-                    xhr.upload.addEventListener('progress', function (e) {
-                        if (e.lengthComputable) {
-                            var pct = (e.loaded / e.total) * 100;
-                            onProgress(pct);
-                        }
-                    }, false);
-                }
-                return xhr;
-            },
-            beforeSend: function (xhr) {
-                if (typeof esiSettings !== 'undefined' && esiSettings.rest_nonce) {
-                    xhr.setRequestHeader('X-WP-Nonce', esiSettings.rest_nonce);
-                }
-            }
-        });
     }
 
     function collectFormData() {
@@ -788,6 +650,46 @@ jQuery(function ($) {
         frame.on('select', onSelect);
         frame.open();
     }
+
+    function openBulkInsertMediaGrid() {
+        if (typeof wp === 'undefined' || !wp.media) return;
+        var title = (typeof esiSettings !== 'undefined' && esiSettings.insert_grid_images) ? esiSettings.insert_grid_images : 'Bilder aus Mediathek wählen';
+        var selBtn = (typeof esiSettings !== 'undefined' && esiSettings.select) ? esiSettings.select : 'Auswählen';
+        function onBulkSelect() {
+            var selection = bulkInsertFrame.state().get('selection');
+            var attachments = [];
+            selection.each(function (att) {
+                attachments.push(att.toJSON());
+            });
+            if (!attachments.length) return;
+            var $targets = getBulkInsertTargets();
+            var n = Math.min(attachments.length, $targets.length);
+            var i;
+            for (i = 0; i < n; i++) {
+                applyAttachmentToMediaItem($($targets.get(i)), attachments[i]);
+            }
+        }
+        if (bulkInsertFrame) {
+            try { bulkInsertFrame.off('select'); } catch (ignore) {}
+            bulkInsertFrame.on('select', onBulkSelect);
+            bulkInsertFrame.open();
+            return;
+        }
+        bulkInsertFrame = wp.media({
+            title: title,
+            button: { text: selBtn },
+            multiple: true,
+            library: { type: 'image' }
+        });
+        bulkInsertFrame.on('select', onBulkSelect);
+        bulkInsertFrame.open();
+    }
+
+    $(document).on('click', '.esi-insert-grid-images', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openBulkInsertMediaGrid();
+    });
 
     // When layout select changes, immediately adjust DOM grid to match new slot count
     $(document).on('change', '#esi_grid_layout', function () {

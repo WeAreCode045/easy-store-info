@@ -188,7 +188,7 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                     <?php $this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout, 'editor' => true ) ); ?>
                 </div>
                 <aside class="esi-editor-sidebar">
-                    <p class="esi-editor-instructions"><?php esc_html_e( 'Ziehen Sie Elemente mit dem Griff ☰, um die Reihenfolge zu ändern. Änderungen werden automatisch gespeichert.', 'easy-store-info' ); ?></p>
+                    <p class="esi-editor-instructions"><?php esc_html_e( 'Ziehen Sie Kacheln zum Umsortieren. Raster wird automatisch gespeichert. Mehrere Bilder über „Bilder einfügen“ oder eine Kachel anklicken.', 'easy-store-info' ); ?></p>
                     <div class="esi-layout-control">
                         <label for="esi_grid_layout"><?php esc_html_e( 'Raster-Layout', 'easy-store-info' ); ?></label>
                         <select id="esi_grid_layout" name="esi_grid_layout">
@@ -201,7 +201,10 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                             ?>
                         </select>
                     </div>
-                    <div class="esi-dropzone-placeholder"></div>
+                    <div class="esi-media-insert-wrap">
+                        <button type="button" class="button button-secondary esi-insert-grid-images" id="esi-insert-grid-images"><?php esc_html_e( 'Bilder einfügen', 'easy-store-info' ); ?></button>
+                        <p class="esi-media-insert-hint"><?php esc_html_e( 'Öffnet die Mediathek; wählen Sie mehrere Bilder aus, die in freie Kacheln (oder ab der markierten Kachel) eingefügt werden.', 'easy-store-info' ); ?></p>
+                    </div>
                     <div class="esi-sidebar-actions">
                         <button class="button button-primary esi-save-button" type="submit"><?php esc_html_e( 'Raster speichern', 'easy-store-info' ); ?></button>
                     </div>
