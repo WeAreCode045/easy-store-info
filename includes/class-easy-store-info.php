@@ -733,26 +733,36 @@ final class Easy_Store_Info {
 	}
 
 	/**
+	 * Trim / pad media grid attachment IDs to match a layout slot count.
+	 *
+	 * @param array  $grid   Raw attachment IDs per cell.
+	 * @param string $layout Layout key, e.g. 2x4.
+	 * @return array<int,int>
+	 */
+	private function normalize_media_grid_for_layout( $grid, $layout ) {
+		$allowed_layouts = array( '2x3', '2x4', '2x5', '3x3', '3x4', '3x5' );
+		if ( ! in_array( $layout, $allowed_layouts, true ) ) {
+			$layout = '2x4';
+		}
+		$parts = explode( 'x', $layout );
+		$rows  = isset( $parts[0] ) ? intval( $parts[0] ) : 2;
+		$cols  = isset( $parts[1] ) ? intval( $parts[1] ) : 4;
+		$slots = max( 1, $rows * $cols );
+		if ( ! is_array( $grid ) ) {
+			$grid = array();
+		}
+		$grid = array_values( array_map( 'absint', $grid ) );
+		$grid = array_slice( $grid, 0, $slots );
+		return array_pad( $grid, $slots, 0 );
+	}
+
+	/**
 	 * Shortcode: media grid
 	 */
 	public function shortcode_media_grid( $atts = array() ) {
-		$grid = get_option( 'esi_media_grid', array() );
-		// layout option controls the number of slots shown
 		$layout = get_option( 'esi_grid_layout', '2x4' );
-		list( $rows, $cols ) = explode( 'x', $layout ) + array( 2, 4 );
-		$rows = intval( $rows );
-		$cols = intval( $cols );
-		$slots = max( 1, $rows * $cols );
-		// Ensure stored grid matches the configured number of slots: trim or pad as necessary
-		if ( is_array( $grid ) ) {
-			$grid = array_slice( $grid, 0, $slots );
-			if ( count( $grid ) < $slots ) {
-				$grid = array_pad( $grid, $slots, 0 );
-			}
-		} else {
-			$grid = array_pad( array(), $slots, 0 );
-		}
-		// Use template for rendering media grid
+		$grid   = get_option( 'esi_media_grid', array() );
+		$grid   = $this->normalize_media_grid_for_layout( $grid, $layout );
 		ob_start();
 		$this->get_template( 'media-grid.php', array( 'grid' => $grid, 'layout' => $layout ) );
 		return (string) ob_get_clean();
@@ -904,6 +914,7 @@ final class Easy_Store_Info {
 			}
 			update_option( 'esi_google_api_key', $api_key );
 			update_option( 'esi_place_id', $place_id );
+			$grid = $this->normalize_media_grid_for_layout( $grid, $style_grid_layout );
 			update_option( 'esi_media_grid', $grid );
 			// Save style settings
 			update_option( 'esi_style_font_size', $style_font_size );
@@ -932,18 +943,18 @@ final class Easy_Store_Info {
 			update_option( 'esi_grid_layout', $style_grid_layout );
 		} elseif ( $user && is_array( $user->roles ) && array_intersect( $frontend_roles, (array) $user->roles ) ) {
 			// Frontend capability: only allow updating the media grid
-			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
-			// Normalize/pad to 8 slots to make per-item operations predictable
-			$grid = array_pad( $grid, 8, 0 );
-			update_option( 'esi_media_grid', $grid );
-			// Allow frontend editors to update grid layout as well
+			$grid            = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			$allowed_layouts = array( '2x3', '2x4', '2x5', '3x3', '3x4', '3x5' );
+			$layout          = get_option( 'esi_grid_layout', '2x4' );
 			if ( isset( $_POST['esi_grid_layout'] ) ) {
-				$allowed_layouts = array( '2x3','2x4','2x5','3x3','3x4','3x5' );
-				$layout = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
-				if ( in_array( $layout, $allowed_layouts, true ) ) {
+				$maybe = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
+				if ( in_array( $maybe, $allowed_layouts, true ) ) {
+					$layout = $maybe;
 					update_option( 'esi_grid_layout', $layout );
 				}
 			}
+			$grid = $this->normalize_media_grid_for_layout( $grid, $layout );
+			update_option( 'esi_media_grid', $grid );
 		} else {
 			wp_send_json_error( 'forbidden', 403 );
 		}
@@ -968,16 +979,18 @@ final class Easy_Store_Info {
 		$user = wp_get_current_user();
 		$frontend_roles = array( 'esi_manager', 'store_info_editor', 'administrator' );
 		if ( $user && is_array( $user->roles ) && array_intersect( $frontend_roles, (array) $user->roles ) ) {
-			$grid = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
-			$grid = array_values( $grid );
-			update_option( 'esi_media_grid', $grid );
+			$grid            = isset( $_POST['esi_media_grid'] ) && is_array( $_POST['esi_media_grid'] ) ? array_map( 'absint', $_POST['esi_media_grid'] ) : array();
+			$allowed_layouts = array( '2x3', '2x4', '2x5', '3x3', '3x4', '3x5' );
+			$layout          = get_option( 'esi_grid_layout', '2x4' );
 			if ( isset( $_POST['esi_grid_layout'] ) ) {
-				$allowed_layouts = array( '2x3','2x4','2x5','3x3','3x4','3x5' );
-				$layout = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
-				if ( in_array( $layout, $allowed_layouts, true ) ) {
+				$maybe = sanitize_text_field( wp_unslash( $_POST['esi_grid_layout'] ) );
+				if ( in_array( $maybe, $allowed_layouts, true ) ) {
+					$layout = $maybe;
 					update_option( 'esi_grid_layout', $layout );
 				}
 			}
+			$grid = $this->normalize_media_grid_for_layout( $grid, $layout );
+			update_option( 'esi_media_grid', $grid );
 			wp_send_json_success();
 		}
 		wp_send_json_error( 'forbidden', 403 );

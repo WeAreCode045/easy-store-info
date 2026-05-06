@@ -659,18 +659,21 @@ jQuery(function ($) {
     }
 
     function collectFormData() {
-        var data = [];
         var grid = [];
         $('.esi-media-item').each(function () {
             var val = $(this).find('input[type=hidden]').val() || 0;
             grid.push(parseInt(val, 10) || 0);
         });
-        for (var i = 0; i < grid.length; i++) { data.push({ name: 'esi_media_grid[]', value: grid[i] }); }
-        data.push({ name: 'action', value: 'esi_save_grid' });
-        var layoutVal = $('#esi_grid_layout').length ? $('#esi_grid_layout').val() : null;
-        if (layoutVal) { data.push({ name: 'esi_grid_layout', value: layoutVal }); }
+        // Plain object so jQuery serializes esi_media_grid as a PHP array (esi_media_grid[]=…).
+        var data = {
+            action: 'esi_save_grid',
+            esi_media_grid: grid
+        };
         if (typeof esiSettings !== 'undefined') {
-            data.push({ name: 'nonce', value: esiSettings.grid_nonce });
+            data.nonce = esiSettings.grid_nonce;
+        }
+        if ($('#esi_grid_layout').length) {
+            data.esi_grid_layout = $('#esi_grid_layout').val() || '2x4';
         }
         return data;
     }
