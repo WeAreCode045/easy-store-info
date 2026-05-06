@@ -63,6 +63,7 @@ if ( ! class_exists( 'Easy_Store_Info_Frontend' ) ) {
                 'remove_image'    => __( 'Bild entfernen', 'easy-store-info' ),
                 'select_media'    => __( 'Medien auswählen', 'easy-store-info' ),
                 'insert_grid_images' => __( 'Bilder aus Mediathek wählen', 'easy-store-info' ),
+                'bulk_clear_grid_confirm' => __( 'Alle Medien aus dem Raster entfernen? Dies kann nicht automatisch rückgängig gemacht werden.', 'easy-store-info' ),
                 'select'          => __( 'Auswählen', 'easy-store-info' ),
                 'upload_failed'   => __( 'Upload fehlgeschlagen', 'easy-store-info' ),
                 'retry'           => __( 'Erneut versuchen', 'easy-store-info' ),

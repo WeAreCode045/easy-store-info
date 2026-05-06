@@ -203,10 +203,36 @@ jQuery(function ($) {
         e.preventDefault();
         var $btn = $(this);
         var $item = $btn.closest('.esi-media-item');
+        clearMediaGridItem($item);
+    });
+
+    function clearMediaGridItem($item) {
         $item.find('input[type=hidden]').val(0);
-        $item.find('.esi-thumb-wrap').replaceWith('<div class="esi-media-empty"></div>');
         $item.find('.esi-media-actions').remove();
+        $item.find('.esi-thumb-wrap').remove();
+        $item.find('.esi-media-empty').remove();
+        $item.find('.esi-add-media').remove();
+        $item.find('input[type=hidden]').before('<div class="esi-media-empty"></div>');
         $item.append(addBtnHtml);
+        debouncedPersist();
+    }
+
+    function clearAllMediaGridItems() {
+        $('.esi-media-item').each(function () {
+            clearMediaGridItem($(this));
+        });
+        $('.esi-media-item').removeClass('selected');
+        $selectedSlot = null;
+    }
+
+    $(document).on('click', '.esi-clear-grid-media', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var msg = (typeof esiSettings !== 'undefined' && esiSettings.bulk_clear_grid_confirm)
+            ? esiSettings.bulk_clear_grid_confirm
+            : 'Alle Medien aus dem Raster entfernen?';
+        if (!window.confirm(msg)) return;
+        clearAllMediaGridItems();
     });
 
     function initMediaDragSort() {

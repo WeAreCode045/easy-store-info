@@ -204,6 +204,7 @@ $editor_settings = array( 'textarea_rows' => 8, 'editor_height' => 192, 'media_b
                     <div class="esi-media-insert-wrap">
                         <button type="button" class="button button-secondary esi-insert-grid-images" id="esi-insert-grid-images"><?php esc_html_e( 'Bilder einfügen', 'easy-store-info' ); ?></button>
                         <p class="esi-media-insert-hint"><?php esc_html_e( 'Öffnet die Mediathek; wählen Sie mehrere Bilder aus, die in freie Kacheln (oder ab der markierten Kachel) eingefügt werden.', 'easy-store-info' ); ?></p>
+                        <button type="button" class="button button-secondary esi-clear-grid-media" id="esi-clear-grid-media"><?php esc_html_e( 'Alle Raster-Medien löschen', 'easy-store-info' ); ?></button>
                     </div>
                     <div class="esi-sidebar-actions">
                         <button class="button button-primary esi-save-button" type="submit"><?php esc_html_e( 'Raster speichern', 'easy-store-info' ); ?></button>
